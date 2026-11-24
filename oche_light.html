@@ -22,12 +22,13 @@
   html, body {
     margin: 0; padding: 0; width: 100%; height: 100%;
     overflow: hidden; background: var(--slate-bg);
+    overscroll-behavior: none;
     font-family: 'Georgia', 'Palatino Linotype', 'Times New Roman', serif;
     color: var(--chalk);
   }
   #stage-canvas {
     position: fixed; inset: 0; width: 100%; height: 100%;
-    display: block; cursor: crosshair;
+    display: block; cursor: crosshair; touch-action: none;
   }
 
   /* Minimal Pub-Authentic HUD */
@@ -111,6 +112,15 @@
     border-color: rgba(60, 140, 88, 0.45); color: #9fdcb4;
     background: rgba(26, 75, 44, 0.35);
   }
+  .bridge-tag {
+    padding: 1px 7px; border-radius: 3px; font-size: 10px; font-weight: 700;
+    letter-spacing: 0.6px; display: none;
+    border: 1px solid rgba(232, 198, 130, 0.72); color: #fff2ce;
+    background: rgba(132, 92, 26, 0.48);
+  }
+  .bridge-tag.r25 { border-color: rgba(136, 185, 224, 0.75); color: #d5ecff; background: rgba(34, 68, 98, 0.55); }
+  .bridge-tag.r30 { border-color: rgba(232, 198, 130, 0.8); color: #fff3d2; background: rgba(140, 96, 26, 0.52); }
+  .bridge-tag.r35 { border-color: rgba(126, 212, 156, 0.75); color: #d6fce2; background: rgba(30, 88, 52, 0.52); }
   .prompt-main {
     display: flex; align-items: baseline; justify-content: center; gap: 11px;
     line-height: 1.08;
@@ -125,10 +135,18 @@
     font-size: 13.5px; color: var(--brass-bright); letter-spacing: 0.25px;
     max-width: 330px;
   }
-  .timer-track {
-    width: 100%; height: 4px; background: rgba(255,255,255,0.08);
-    border-radius: 99px; overflow: hidden; margin-top: 3px;
+  .timer-row {
+    display: flex; align-items: center; gap: 8px; width: 100%; margin-top: 3px;
   }
+  .timer-track {
+    flex: 1; height: 5px; background: rgba(255,255,255,0.08);
+    border-radius: 99px; overflow: hidden;
+  }
+  .timer-sec {
+    font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+    font-size: 10.5px; color: var(--chalk-dim); min-width: 32px; text-align: right;
+  }
+  .timer-sec.urgent { color: #f08980; font-weight: 700; }
   .timer-fill {
     height: 100%; width: 100%;
     background: linear-gradient(90deg, var(--brass-dim), var(--brass-bright));
@@ -329,15 +347,155 @@
     background: rgba(201,161,90,0.12); border: 1px solid rgba(201,161,90,0.4);
     font-size: 12px; line-height: 1.45; color: var(--chalk);
   }
+  .howto-card {
+    padding: 11px 13px; border-radius: 6px;
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(201,161,90,0.24);
+    font-size: 12.5px; line-height: 1.48; color: var(--chalk);
+  }
+  .howto-card h4 {
+    margin: 0 0 6px; font-size: 12px; letter-spacing: 1px; text-transform: uppercase;
+    font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace; color: var(--brass-bright);
+  }
+  .howto-card ul { margin: 4px 0 0 16px; padding: 0; }
+  .howto-card li { margin-bottom: 4px; color: var(--chalk-dim); }
+  .howto-card li strong { color: var(--chalk); }
+
+  /* Floating Thumb Aim Badge (Phone/Touch Press-Slide-Release) */
+  .touch-aim-pill {
+    position: fixed; z-index: 25; pointer-events: none; display: none;
+    transform: translate(-50%, -100%);
+    background: rgba(15, 19, 26, 0.94);
+    border: 1.5px solid var(--brass-bright);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.7);
+    color: var(--brass-bright); border-radius: 8px;
+    padding: 6px 12px; text-align: center;
+    font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+    font-size: 14px; font-weight: 700; white-space: nowrap;
+  }
+  .touch-aim-pill .sub {
+    display: block; font-size: 10px; font-weight: 400; color: var(--chalk-dim); margin-top: 1px;
+  }
+  .touch-aim-pill.cancel { border-color: rgba(184,66,57,0.75); color: #f0a8a2; }
+
+  /* Non-blocking Welcome Quick-Start & Level-Up Banners */
+  .toast-stack {
+    position: fixed; left: 50%; bottom: 64px; transform: translateX(-50%);
+    z-index: 18; display: flex; flex-direction: column; align-items: center; gap: 8px;
+    width: min(640px, calc(100vw - 24px)); pointer-events: none;
+  }
+  .welcome-banner, .levelup-banner {
+    pointer-events: auto; width: 100%; padding: 10px 14px;
+    display: none; flex-direction: column; gap: 7px;
+    background: rgba(16, 21, 29, 0.94);
+    border: 1px solid rgba(232, 198, 130, 0.62);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.7); border-radius: 7px;
+  }
+  .welcome-banner.show, .levelup-banner.show { display: flex; }
+  .levelup-banner {
+    background: linear-gradient(135deg, rgba(46, 34, 15, 0.96), rgba(18, 22, 29, 0.96));
+    border-color: var(--brass-bright);
+  }
+  .banner-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; font-size: 12.5px; line-height: 1.4; }
+  .banner-title { color: var(--brass-bright); font-weight: 700; letter-spacing: 0.4px; }
+  .banner-actions { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .chip-btn {
+    background: rgba(201,161,90,0.18); border: 1px solid rgba(232,198,130,0.65);
+    color: var(--brass-bright); border-radius: 4px; padding: 5px 10px;
+    font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace; font-size: 11px;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .chip-btn:hover { background: rgba(201,161,90,0.32); }
+  .chip-btn.ghost { background: transparent; border-color: rgba(232,225,207,0.28); color: var(--chalk-dim); }
+  .chip-x {
+    background: transparent; border: none; color: var(--chalk-dim);
+    font-size: 17px; line-height: 1; cursor: pointer; padding: 0 4px;
+  }
+  .rank-pill {
+    color: var(--brass-bright); font-weight: 700;
+  }
+
+  .kb-hint { opacity: 0.72; }
+
+  /* Pre-Stage Chalk Briefing Card (pauses countdown until player steps up!) */
+  .briefing-backdrop {
+    position: fixed; inset: 0; z-index: 28;
+    background: rgba(6, 9, 14, 0.72); backdrop-filter: blur(3px);
+    display: none; align-items: center; justify-content: center; padding: 14px;
+  }
+  .briefing-backdrop.open { display: flex; }
+  .briefing-card {
+    width: min(520px, 95vw); max-height: 86vh; overflow-y: auto;
+    background: #121821; border: 1.5px solid rgba(232, 198, 130, 0.62);
+    box-shadow: 0 18px 50px rgba(0,0,0,0.82), inset 0 1px 0 rgba(255,240,200,0.14);
+    border-radius: 9px; padding: 18px 20px; display: flex; flex-direction: column; gap: 11px;
+  }
+  .briefing-kicker {
+    font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+    font-size: 10.5px; letter-spacing: 1.4px; text-transform: uppercase;
+    color: var(--brass); display: flex; justify-content: space-between; align-items: center;
+  }
+  .briefing-title { font-size: 20px; font-weight: 700; color: var(--brass-bright); margin: 0; }
+  .briefing-goal { font-size: 13.5px; line-height: 1.45; color: var(--chalk); margin: 0; }
+  .briefing-box {
+    background: rgba(255,255,255,0.035); border: 1px solid rgba(201,161,90,0.26);
+    border-radius: 6px; padding: 10px 12px; font-size: 12.5px; line-height: 1.5; color: var(--chalk-dim);
+  }
+  .briefing-box strong { color: var(--chalk); }
+  .briefing-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+    gap: 5px; margin-top: 6px;
+  }
+  .b-chip {
+    background: rgba(0,0,0,0.34); border: 1px solid rgba(201,161,90,0.28);
+    border-radius: 4px; padding: 4px 6px; text-align: center;
+    font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace; font-size: 11px; color: var(--chalk);
+  }
+  .b-chip b { color: var(--brass-bright); }
+  .briefing-foot {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    flex-wrap: wrap; margin-top: 4px;
+  }
+  .briefing-start {
+    background: linear-gradient(135deg, rgba(201,161,90,0.34), rgba(145,104,38,0.42));
+    border: 1.5px solid var(--brass-bright); color: #fff6df;
+    border-radius: 5px; padding: 9px 18px; font-weight: 700; letter-spacing: 0.5px;
+    font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace; font-size: 12px;
+    cursor: pointer; text-transform: uppercase;
+  }
+  .briefing-start:hover { filter: brightness(1.15); }
+  .briefing-note { font-size: 11px; color: var(--chalk-dim); font-family: ui-monospace, monospace; }
 
   @media (max-width: 780px) {
-    .hud-layer { padding: 8px 10px; }
-    .brand-plate { min-width: auto; padding: 6px 9px; }
-    .prompt-plate { min-width: 0; padding: 7px 11px; }
-    .score-big { font-size: 26px; }
-    .prompt-task { font-size: 12px; }
-    .numpad-panel { right: 10px; bottom: 58px; width: 184px; }
+    .hud-layer { padding: 7px 8px; gap: 5px; }
+    .hud-top { flex-direction: column; align-items: stretch; gap: 5px; }
+    .brand-plate {
+      min-width: 0; padding: 5px 8px; flex-direction: row; align-items: center;
+      justify-content: space-between; gap: 6px;
+    }
+    .brand-row { gap: 6px; flex-shrink: 0; }
+    .brand-title { font-size: 12px; letter-spacing: 1.2px; white-space: nowrap; }
+    .ghost-pill { font-size: 9.5px; padding: 2px 6px; white-space: nowrap; }
+    .stage-btn { padding: 4px 7px; font-size: 11px; min-width: 0; flex: 1; max-width: 52vw; }
+    .stage-btn span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .prompt-plate { min-width: 0; max-width: none; width: 100%; padding: 6px 10px 6px; }
+    .score-big { font-size: 24px; }
+    .prompt-task { font-size: 12px; max-width: none; }
+    .right-stack { flex-direction: column; align-items: stretch; width: 100%; gap: 4px; }
+    .controls-row { gap: 4px; width: 100%; justify-content: space-between; }
+    .kb-hint { display: none; }
+    .hud-btn { padding: 5px 7px; font-size: 10px; flex: 1; text-align: center; white-space: nowrap; }
+    .flow-plate { padding: 4px 9px; gap: 10px; font-size: 10px; justify-content: space-between; width: 100%; }
+    .flow-plate .hide-sm { display: none; }
+    .hud-bottom { gap: 6px; }
+    .feedback-strip { font-size: 11.5px; padding: 6px 9px; min-height: 32px; }
+    .sound-pill { padding: 5px 8px; font-size: 10px; white-space: nowrap; }
     .hover-bed { display: none; }
+    .numpad-panel {
+      left: 50%; right: auto; transform: translateX(-50%);
+      bottom: 50px; width: min(280px, calc(100vw - 24px)); padding: 9px;
+    }
+    .np-key { padding: 11px 0; font-size: 16px; }
+    .toast-stack { bottom: 50px; }
   }
 </style>
 </head>
@@ -363,24 +521,32 @@
         <span class="dart-icons" id="dart-icons">
           <span class="dart-pip"></span><span class="dart-pip"></span><span class="dart-pip"></span>
         </span>
+        <span id="bridge-tag" class="bridge-tag">Rule of 30</span>
         <span id="rival-tag" class="rival-tag" style="display:none">Rival on D16</span>
       </div>
       <div class="prompt-main">
         <div id="score-big" class="score-big">148</div>
         <div id="prompt-task" class="prompt-task">Click opening treble on the board</div>
       </div>
-      <div class="timer-track"><div id="timer-fill" class="timer-fill"></div></div>
+      <div class="timer-row">
+        <div class="timer-track"><div id="timer-fill" class="timer-fill"></div></div>
+        <span id="timer-sec" class="timer-sec">4.0s</span>
+      </div>
     </div>
 
     <div class="right-stack">
       <div class="controls-row">
-        <button id="hint-btn" class="hud-btn" title="Show formula or visual link on board (H)">Cue [H]</button>
-        <button id="skip-btn" class="hud-btn" title="Next throw (N)">Next [N]</button>
-        <button id="ledger-btn" class="hud-btn" title="Stages & Mastery Ledger (L)">Ledger [L]</button>
+        <button id="pace-btn" class="hud-btn" title="Cycle countdown difficulty (Relaxed / Pub League / Pro Oche)">Pace: League</button>
+        <button id="rules-btn" class="hud-btn" title="View current stage rules & cheat sheet (R)">Rules<span class="kb-hint"> [R]</span></button>
+        <button id="hint-btn" class="hud-btn" title="Show formula or visual link on board (H)">Cue<span class="kb-hint"> [H]</span></button>
+        <button id="skip-btn" class="hud-btn" title="Next throw (N)">Next<span class="kb-hint"> [N]</span></button>
+        <button id="ledger-btn" class="hud-btn" title="Stages & Mastery Ledger (L)">Ledger<span class="kb-hint"> [L]</span></button>
+        <button id="help-btn" class="hud-btn" title="How to Play (?)" style="flex:0 0 auto">?</button>
       </div>
       <div class="plate flow-plate">
+        <span id="rank-pill" class="rank-pill">Oche Rookie</span>
         <span>FLOW <span id="flow-val" class="flow-val">0</span></span>
-        <span>AVG <span id="avg-ms" class="flow-val">—</span></span>
+        <span class="hide-sm">AVG <span id="avg-ms" class="flow-val">—</span></span>
         <span id="tier-badge" class="tier-badge t1">Guided</span>
       </div>
     </div>
@@ -389,11 +555,41 @@
   <div class="hud-bottom">
     <button id="sound-pill" class="sound-pill">Click for Sound</button>
     <div id="feedback-strip" class="plate feedback-strip cue">
-      Oche Ghost playing — click any bed on the 3D dartboard to take over.
+      Oche Ghost playing — click or tap any bed on the 3D dartboard to take over.
     </div>
     <div class="plate hover-bed">
       <span>Aiming At</span>
       <div id="hover-bed-val">—</div>
+    </div>
+  </div>
+</div>
+
+<!-- Floating Fingertip Aim Badge (Touch Press-Slide-Release) -->
+<div id="touch-aim-pill" class="touch-aim-pill">T14 · 42<span class="sub">Lift finger to throw</span></div>
+
+<!-- Non-blocking Quick-Start & Level-Up Banners -->
+<div class="toast-stack">
+  <div id="levelup-banner" class="levelup-banner">
+    <div class="banner-top">
+      <div><span id="levelup-title" class="banner-title">Stage Cleared!</span> <span id="levelup-msg"></span></div>
+      <button id="levelup-close" class="chip-x" aria-label="Dismiss">×</button>
+    </div>
+    <div id="levelup-actions" class="banner-actions"></div>
+  </div>
+  <div id="welcome-banner" class="welcome-banner">
+    <div class="banner-top">
+      <div>
+        <span class="banner-title">Welcome to Oche Light:</span>
+        The Ghost is demoing live. <strong>Desktop:</strong> click any bed on the board.
+        <strong>Phone:</strong> touch &amp; slide your finger to aim, then lift to throw.
+        Use <strong>Pace</strong> to slow down or speed up the countdown.
+      </div>
+      <button id="welcome-close" class="chip-x" aria-label="Dismiss">×</button>
+    </div>
+    <div class="banner-actions">
+      <button id="w-start-0a" class="chip-btn">Start Stage 0A (Doubles)</button>
+      <button id="w-calib" class="chip-btn">60s Placement Check</button>
+      <button id="w-howto" class="chip-btn ghost">How to Play ?</button>
     </div>
   </div>
 </div>
@@ -409,6 +605,23 @@
   </div>
 </div>
 
+<!-- Pre-Stage Briefing Card (Timer paused while player reads stage rules!) -->
+<div id="briefing-backdrop" class="briefing-backdrop">
+  <div class="briefing-card">
+    <div class="briefing-kicker">
+      <span id="briefing-tag">STAGE BRIEFING</span>
+      <button id="briefing-x" class="chip-x" aria-label="Close">×</button>
+    </div>
+    <h3 id="briefing-title" class="briefing-title">Stage 2 · The Golden 44</h3>
+    <p id="briefing-goal" class="briefing-goal"></p>
+    <div id="briefing-body" class="briefing-box"></div>
+    <div class="briefing-foot">
+      <span class="briefing-note">Countdown paused — tap Rules [R] anytime to review</span>
+      <button id="briefing-start" class="briefing-start">Step Up to the Oche &rarr;</button>
+    </div>
+  </div>
+</div>
+
 <!-- Slide-Over Chalkboard Drawer -->
 <div id="drawer-backdrop" class="drawer-backdrop">
   <div class="drawer">
@@ -416,6 +629,7 @@
       <div class="drawer-tabs">
         <button class="dtab active" data-tab="stages">Pub Ladder</button>
         <button class="dtab" data-tab="ledger">Mastery Ledger</button>
+        <button class="dtab" data-tab="howto">How to Play</button>
       </div>
       <button id="drawer-close" class="drawer-close" aria-label="Close">×</button>
     </div>
@@ -503,9 +717,9 @@ function xyToBed(x, y) {
 const GOLDEN_44 = [
   // Green Quick Wins (Tens, Say-60, Bull Staircase, Treble+40/20)
   { score: 60, group: 'green', route: ['S20', 'D20'], alts: [], miss: 40, aimHigh: true, cue: 'Aim high above T20 -> S20 leaves D20 (40)' },
-  { score: 70, group: 'green', route: ['T20', 'D5'], alts: [['T18','D8'],['T10','D20']], miss: 50, link: ['T20','D5'], cue: 'Zero-ending -> T20 D5 (adjacent 20-5, miss 50)' },
+  { score: 70, group: 'green', route: ['T20', 'D5'], alts: [['T18','D8'],['T10','D20']], miss: 50, link: ['T20','D5'], cue: 'Zero-ending (T+D=25): T20 D5 (adjacent 20-5, miss 50)' },
   { score: 80, group: 'green', route: ['T20', 'D10'], alts: [['T16','D16']], miss: 60, cue: 'Multiple of 10 -> T20 (60) + D10 (20), miss 60' },
-  { score: 90, group: 'green', route: ['T20', 'D15'], alts: [['T18','D18']], miss: 70, cue: 'Multiple of 10 -> T20 (60) + D15 (30) [or T18 D18]' },
+  { score: 90, group: 'green', route: ['T20', 'D15'], alts: [['T18','D18']], miss: 70, cue: 'Zero-ending (T+D=35): T20 (60) + D15 (30) [or T18 D18], miss 70' },
   { score: 100, group: 'green', route: ['T20', 'D20'], alts: [], miss: 80, cue: 'Multiple of 10 -> T20 (60) + D20 (40), miss 80' },
   { score: 84, group: 'green', route: ['T20', 'D12'], alts: [['T16','D18']], miss: 64, cue: 'Say "60" for T20 -> 24 left = D12 [or T16 D18]' },
   { score: 88, group: 'green', route: ['T20', 'D14'], alts: [['T16','D20']], miss: 68, cue: 'Say "60" for T20 -> 28 left = D14, miss 68 (<70!)' },
@@ -534,13 +748,13 @@ const GOLDEN_44 = [
   { score: 68, group: 'yellow60', route: ['T18', 'D7'], alts: [['T20','D4'],['T16','D10']], miss: 50, link: ['T18','D7'], cue: '60s FDI (T+D=25): T18 D7 (opposite ends of wheel spoke!), miss 50' },
   { score: 69, group: 'yellow60', route: ['T19', 'D6'], alts: [['T15','D12']], miss: 50, link: ['T19','D6'], cue: '60s FDI (T+D=25): T19 D6 (quarter past = D6!), miss 50' },
 
-  // Yellow FDIs — 70s (Rule of 30 / Complement to 10, miss always 60) — Latest Revised Routes!
-  { score: 72, group: 'yellow70', route: ['T12', 'D18'], alts: [['T16','D12']], miss: 60, link: ['T12','D18'], cue: '70s FDI (10-2=8 -> D18): T12 D18 (10-to/10-past mirror), miss 60' },
-  { score: 74, group: 'yellow70', route: ['T14', 'D16'], alts: [['T18','D10']], miss: 60, link: ['T14','D16'], cue: '70s FDI (10-4=6 -> D16): T14 D16 (safer than T18!), miss 60' },
-  { score: 75, group: 'yellow70', route: ['T15', 'D15'], alts: [['T17','D12']], miss: 60, link: ['T15','D15'], cue: '70s FDI (10-5=5 -> D15): "All the 15s" T15 D15, miss 60' },
-  { score: 76, group: 'yellow70', route: ['T16', 'D14'], alts: [['T20','D8'],['D18','D20']], miss: 60, link: ['T16','D14'], cue: '70s FDI (10-6=4 -> D14): T16 D14 (16 down to 14), miss 60' },
-  { score: 78, group: 'yellow70', route: ['T18', 'D12'], alts: [], miss: 60, link: ['T18','D12'], cue: '70s FDI (10-8=2 -> D12): T18 D12 (mirror of 72), miss 60' },
-  { score: 79, group: 'yellow70', route: ['T19', 'D11'], alts: [['T13','D20']], miss: 60, link: ['T19','D11'], cue: '70s FDI (10-9=1 -> D11): T19 D11 (quarter to = D11!), miss 60' },
+  // Yellow FDIs — 70s (Rule of 30: T+D=30 & Complement to 10, miss always 60) — Latest Revised Routes!
+  { score: 72, group: 'yellow70', route: ['T12', 'D18'], alts: [['T16','D12']], miss: 60, link: ['T12','D18'], cue: '70s FDI (T+D=30 / 10-2=8 -> D18): T12 D18 (10-to/10-past mirror), miss 60' },
+  { score: 74, group: 'yellow70', route: ['T14', 'D16'], alts: [['T18','D10']], miss: 60, link: ['T14','D16'], cue: '70s FDI (T+D=30 / 10-4=6 -> D16): T14 D16 (safer than T18!), miss 60' },
+  { score: 75, group: 'yellow70', route: ['T15', 'D15'], alts: [['T17','D12']], miss: 60, link: ['T15','D15'], cue: '70s FDI (T+D=30 / 10-5=5 -> D15): "All the 15s" T15 D15, miss 60' },
+  { score: 76, group: 'yellow70', route: ['T16', 'D14'], alts: [['T20','D8'],['D18','D20']], miss: 60, link: ['T16','D14'], cue: '70s FDI (T+D=30 / 10-6=4 -> D14): T16 D14 (16 down to 14), miss 60' },
+  { score: 78, group: 'yellow70', route: ['T18', 'D12'], alts: [], miss: 60, link: ['T18','D12'], cue: '70s FDI (T+D=30 / 10-8=2 -> D12): T18 D12 (mirror of 72), miss 60' },
+  { score: 79, group: 'yellow70', route: ['T19', 'D11'], alts: [['T13','D20']], miss: 60, link: ['T19','D11'], cue: '70s FDI (T+D=30 / 10-9=1 -> D11): T19 D11 (quarter to = D11!), miss 60' },
 
   // Yellow FDIs — 80s & 95 (T + D = 35, miss 70 / 80)
   { score: 85, group: 'yellow80', route: ['T15', 'D20'], alts: [], miss: 70, link: ['T15','D20'], cue: '80s FDI (T+D=35): T15 (45) + D20 (40), miss 70' },
@@ -556,6 +770,29 @@ const GOLDEN_44 = [
   { score: 93, group: 'red', route: ['T19', 'D18'], alts: [], miss: 74, link: ['T19','D18'], cue: 'Red Outlaw: T19 (57) + D18 (36) (19 down to 18) · Miss 74' },
 ];
 const G44_BY_SCORE = Object.fromEntries(GOLDEN_44.map(x => [x.score, x]));
+
+// Exact 25 / 30 / 35 Decade-Sum FDI Rule lookup (used to drive live Stage 2 & Stage 4 bridges!)
+function getFdiRule(score) {
+  if (score >= 61 && score <= 69) {
+    const t = 10 + (score % 10), d = 25 - t;
+    return { decade: '60s', sum: 25, cls: 'r25', treble: 'T' + t, dbl: 'D' + d, tNum: t, dNum: d, miss: 50 };
+  }
+  if (score === 70) {
+    return { decade: '60s', sum: 25, cls: 'r25', treble: 'T20', dbl: 'D5', tNum: 20, dNum: 5, miss: 50 };
+  }
+  if ([72, 74, 75, 76, 78, 79].includes(score)) {
+    const unit = score % 10, t = 10 + unit, d = 30 - t;
+    return { decade: '70s', sum: 30, cls: 'r30', treble: 'T' + t, dbl: 'D' + d, tNum: t, dNum: d, comp10: 10 - unit, miss: 60 };
+  }
+  if ([85, 87, 89].includes(score)) {
+    const t = 10 + (score % 10), d = 35 - t;
+    return { decade: '80s', sum: 35, cls: 'r35', treble: 'T' + t, dbl: 'D' + d, tNum: t, dNum: d, miss: 70 };
+  }
+  if (score === 90) {
+    return { decade: '80s', sum: 35, cls: 'r35', treble: 'T20', dbl: 'D15', tNum: 20, dNum: 15, miss: 70 };
+  }
+  return null;
+}
 
 // Stage 0A: Halving Chains
 const HALVING_CHAINS = [
@@ -638,52 +875,63 @@ const SODS_LAW_ITEMS = [
     cue: 'Rival on D16, 1 dart on 50: Fire straight at Bullseye!' },
 ];
 
-// Stage 4: Ton-Plus Reductions (101-170) & Neighbor/Splash Traps
+// Stage 4: Ton-Plus Reductions (101-170), 25/30/35 FDI Bridges & Neighbor/Splash Traps
 const TON_PLUS_ITEMS = [
-  // Rule of 40 (T20: +40)
+  // Rule of 40 (T20: +40) & 25/30/35 FDI Bridges
   { id: 'TP_170', score: 170, open: ['T20'], next: ['T20','BULL'], cue: 'Rule of 40: 70 + 40 = 110 (T20 Bull) — The Big Fish!' },
   { id: 'TP_161', score: 161, open: ['T20','T19'], next: ['T17','BULL'], cue: 'Rule of 40: 61 + 40 = 101 (T17 Bull)' },
   { id: 'TP_160', score: 160, open: ['T20'], next: ['T20','D20'], cue: 'Rule of 40: 60 + 40 = 100 (T20 D20)' },
   { id: 'TP_156', score: 156, open: ['T20'], next: ['T20','D18'], cue: 'Rule of 40: 56 + 40 = 96 ("Say 60" -> T20 D18)' },
   { id: 'TP_152', score: 152, open: ['T20'], next: ['T20','D16'], cue: 'Rule of 40: 52 + 40 = 92 ("Say 60" -> T20 D16)' },
+  { id: 'TP_149', score: 149, fdiBridge: true, open: ['T20'], next: ['T19','D16'], cue: 'Rule of 40 -> 89 · 80s FDI (Rule of 35): T19 + D16 = 35!' },
   { id: 'TP_148', score: 148, open: ['T20'], next: ['T20','D14'], cue: 'Rule of 40 (140s double the 4!): 48 + 40 = 88 (T20 D14)' },
-  { id: 'TP_147', score: 147, open: ['T20','T19'], next: ['T17','D18'], cue: 'Rule of 40: 47 + 40 = 87 (80s FDI: T17 D18)' },
-  { id: 'TP_145', score: 145, open: ['T20'], next: ['T15','D20'], cue: 'Rule of 40: 45 + 40 = 85 (80s FDI: T15 D20)' },
-  { id: 'TP_136', score: 136, open: ['T20'], next: ['T20','D8'], cue: 'Rule of 40: 36 + 40 = 76 (stay in groove T20 T20 D8, or T16 D14)' },
-  { id: 'TP_131', score: 131, open: ['T20'], next: ['T13','D16'], cue: 'Rule of 40: 31 + 40 = 71 (T13 D16 or T17 D10)' },
+  { id: 'TP_147', score: 147, fdiBridge: true, open: ['T20','T19'], next: ['T17','D18'], cue: 'Rule of 40 -> 87 · 80s FDI (Rule of 35): T17 + D18 = 35!' },
+  { id: 'TP_145', score: 145, fdiBridge: true, open: ['T20'], next: ['T15','D20'], cue: 'Rule of 40 -> 85 · 80s FDI (Rule of 35): T15 + D20 = 35!' },
+  { id: 'TP_144', score: 144, fdiBridge: true, open: ['T20','T19'], next: ['T20','D12'], cue: 'T19 (+43) -> 87 (Rule of 35: T17+D18=35!) or T20 -> 84 (T20 D12)' },
+  { id: 'TP_142', score: 142, fdiBridge: true, open: ['T20','T19'], next: ['T14','D20'], twoT19: 'D14', cue: 'T19 (+43) -> 85 (Rule of 35: T15+D20=35!) or Two-T19 (-14 -> D14) or T20 -> 82' },
+  { id: 'TP_139', score: 139, fdiBridge: true, open: ['T20','T19'], next: ['T19','D11'], cue: 'Rule of 40 -> 79 · 70s FDI (Rule of 30): T19 + D11 = 30 (quarter to)!' },
+  { id: 'TP_136', score: 136, fdiBridge: true, open: ['T20'], next: ['T16','D14'], cue: 'Rule of 40 -> 76 · 70s FDI (Rule of 30): T16 + D14 = 30 (or T20 T20 D8)' },
+  { id: 'TP_135', score: 135, fdiBridge: true, open: ['T20','BULL'], next: ['T15','D15'], cue: 'Rule of 40 -> 75 · 70s FDI (Rule of 30): T15 + D15 = 30 ("All the 15s")!' },
+  { id: 'TP_132', score: 132, fdiBridge: true, open: ['T20','BULL'], next: ['T12','D18'], cue: 'Rule of 40 -> 72 · 70s FDI (Rule of 30): T12 + D18 = 30!' },
+  { id: 'TP_131', score: 131, open: ['T20'], next: ['T13','D16'], cue: 'Rule of 40: 31 + 40 = 71 (NOT an FDI -> T13 D16 or T17 D10)' },
+  { id: 'TP_130', score: 130, fdiBridge: true, open: ['T20','T19'], next: ['T20','D5'], twoT19: 'D8', cue: 'Rule of 40 -> 70 (Rule of 25: T20+D5=25!) or Two-T19 (-14 -> D8)' },
+  { id: 'TP_127', score: 127, fdiBridge: true, open: ['T20'], next: ['T17','D8'], cue: 'Rule of 40 -> 67 · 60s FDI (Rule of 25): T17 + D8 = 25!' },
+  { id: 'TP_125', score: 125, fdiBridge: true, open: ['T20','25','BULL'], next: ['T15','D10'], cue: 'Rule of 40 -> 65 · 60s FDI (Rule of 25): T15 + D10 = 25! (or 25 -> 100)' },
+  { id: 'TP_124', score: 124, fdiBridge: true, open: ['T20'], next: ['T14','D11'], cue: 'Rule of 40 -> 64 · 60s FDI (Rule of 25): T14 + D11 = 25 (adjacent beds)!' },
+  { id: 'TP_121', score: 121, fdiBridge: true, open: ['T20'], next: ['T11','D14'], cue: 'Rule of 40 -> 61 · 60s FDI (Rule of 25): T11 + D14 = 25 (adjacent beds)!' },
   { id: 'TP_115', score: 115, open: ['T20','T19'], next: ['S15','D20'], cue: 'Rule of 40: 15+40=55 (S15 D20) · Or 10th T19 start (miss 96 vs 95!)' },
   // Two-T19 "-14" Sequence (130, 134, 138, 142, 146, 150, 154, 164)
   { id: 'TP_164', score: 164, open: ['T20','T19'], next: ['T18','BULL'], twoT19: 'BULL', cue: 'Two-T19 (-14): 64 - 14 = 50 (Bull)! Or T20 -> 104 (T18 Bull)' },
   { id: 'TP_154', score: 154, open: ['T20','T19'], next: ['T18','D20'], twoT19: 'D20', cue: 'Two-T19 (-14): 54 - 14 = 40 (D20)! Or T20 -> 94 (T18 D20)' },
-  { id: 'TP_150', score: 150, open: ['T20','T19'], next: ['T18','D18'], twoT19: 'D18', cue: 'Two-T19 (-14): 50 - 14 = 36 (D18)! Or T20 -> 90' },
-  { id: 'TP_146', score: 146, open: ['T20','T19'], next: ['T18','D16'], twoT19: 'D16', cue: 'Two-T19 (-14): 46 - 14 = 32 (D16)! Or T20 -> 86' },
-  { id: 'TP_138', score: 138, open: ['T20','T19'], next: ['T18','D12'], twoT19: 'D12', cue: 'Two-T19 (-14): 38 - 14 = 24 (D12)! Or T20 -> 78' },
-  { id: 'TP_134', score: 134, open: ['T20','T19'], next: ['T14','D16'], twoT19: 'D10', cue: 'Two-T19 (-14): 34 - 14 = 20 (D10)! Or T20 -> 74' },
-  // Mandatory Board-Management / Splash Traps!
-  { id: 'TP_129', score: 129, open: ['T19'], next: ['T12','D18'],
+  { id: 'TP_150', score: 150, fdiBridge: true, open: ['T20','T19'], next: ['T20','D15'], twoT19: 'D18', cue: 'Rule of 40 -> 90 (Rule of 35: T20+D15=35!) or Two-T19 (-14 -> D18)' },
+  { id: 'TP_146', score: 146, fdiBridge: true, open: ['T20','T19'], next: ['T18','D16'], twoT19: 'D16', cue: 'T19 (+43) -> 89 (Rule of 35: T19+D16=35!) or Two-T19 (-14 -> D16)' },
+  { id: 'TP_138', score: 138, fdiBridge: true, open: ['T20','T19'], next: ['T18','D12'], twoT19: 'D12', cue: 'Rule of 40 -> 78 · 70s FDI (Rule of 30): T18 + D12 = 30! (or Two-T19 -> D12)' },
+  { id: 'TP_134', score: 134, fdiBridge: true, open: ['T20','T19'], next: ['T14','D16'], twoT19: 'D10', cue: 'Rule of 40 -> 74 · 70s FDI (Rule of 30): T14 + D16 = 30! (or Two-T19 -> D10)' },
+  // Mandatory Board-Management / Splash Traps! (Most also bridge straight into 25 / 30 FDIs!)
+  { id: 'TP_129', score: 129, fdiBridge: true, open: ['T19'], next: ['T12','D18'],
     traps: { T20: { drift: 'S20', why: 'Trap! S20 leaves 109 (NO 2-dart out!). Open T19 -> S19 leaves 110, T19 leaves 72 (+43)!' } },
-    cue: 'Rule of 43 (Mandatory T19): S20 leaves 109! T19 leaves 72 (T12 D18), S19 leaves 110' },
-  { id: 'TP_128', score: 128, open: ['T18'], next: ['T18','D10'],
+    cue: 'Rule of 43 (T19) -> 72 · 70s FDI (Rule of 30): T12 + D18 = 30! (S19 -> 110)' },
+  { id: 'TP_128', score: 128, fdiBridge: true, open: ['T18'], next: ['T14','D16'],
     traps: {
       T20: { drift: 'S20', why: 'Trap! S20 leaves 108 (no 2-dart out!). Open T18 -> S18 leaves 110!' },
-      T19: { drift: 'S19', why: 'Trap! S19 leaves 109 (no 2-dart out!). Open T18 -> stays on 18s (T18 T18 D10)!' }
+      T19: { drift: 'S19', why: 'Trap! S19 leaves 109 (no 2-dart out!). Open T18 -> leaves 74 (Rule of 30: T14 D16 or stay T18 D10)!' }
     },
-    cue: 'Mandatory T18 (2 below 130): S20->108 & S19->109 fail! T18->74 (T18 D10), S18->110' },
-  { id: 'TP_126', score: 126, open: ['T19'], next: ['T19','D6'],
-    traps: { T20: { drift: 'S20', why: 'Trap! S20 leaves 106 (no 2-dart out!). Open T19 -> +43 = 69 (T19 D6), S19->107!' } },
-    cue: 'Rule of 43 (Mandatory T19): 26+40+3 = 69 (T19 D6) · S19 leaves 107!' },
-  { id: 'TP_123', score: 123, open: ['T19'], next: ['T16','D9'],
+    cue: 'Mandatory T18 -> 74 · 70s FDI (Rule of 30): T14 + D16 = 30 (or stay T18 D10)!' },
+  { id: 'TP_126', score: 126, fdiBridge: true, open: ['T19'], next: ['T19','D6'],
+    traps: { T20: { drift: 'S20', why: 'Trap! S20 leaves 106 (no 2-dart out!). Open T19 -> +43 = 69 (Rule of 25: T19+D6=25)!' } },
+    cue: 'Rule of 43 (T19) -> 69 · 60s FDI (Rule of 25): T19 + D6 = 25! (S19 -> 107)' },
+  { id: 'TP_123', score: 123, fdiBridge: true, open: ['T19'], next: ['T16','D9'],
     traps: { T20: { drift: 'S20', why: 'Trap! S20 leaves 103 (no 2-dart out!). Open T19 -> +43 = 66 (NOT 69!), S19->104!' } },
-    cue: 'Rule of 43 (Mandatory T19): 23+40+3 = 66 (T16 D9) · S19 leaves 104!' },
-  { id: 'TP_122', score: 122, open: ['T18'], next: ['T18','D7'],
+    cue: 'Rule of 43 (T19) -> 66 · 60s FDI (Rule of 25): T16 + D9 = 25! (S19 -> 104)' },
+  { id: 'TP_122', score: 122, fdiBridge: true, open: ['T18'], next: ['T18','D7'],
     traps: {
-      T20: { drift: 'S20', why: 'Trap! S20 leaves 102 (no 2-dart out!). Open T18 -> 68 (T18 D7), S18->104!' },
-      T19: { drift: 'S19', why: 'Trap! S19 leaves 103 (no 2-dart out!). Open T18 -> 68 (T18 D7), S18->104!' }
+      T20: { drift: 'S20', why: 'Trap! S20 leaves 102 (no 2-dart out!). Open T18 -> 68 (Rule of 25: T18+D7=25)!' },
+      T19: { drift: 'S19', why: 'Trap! S19 leaves 103 (no 2-dart out!). Open T18 -> 68 (Rule of 25: T18+D7=25)!' }
     },
-    cue: 'Mandatory T18 (2 above 120): T18 -> 68 (T18 D7), S18 leaves 104!' },
-  { id: 'TP_119', score: 119, open: ['T19'], next: ['T12','D13'],
-    traps: { T20: { drift: 'S20', why: 'Trap! S20 leaves 99 (the ONLY 2-digit 3-dart score!). Open T19 -> 62, S19->100!' } },
-    cue: 'Rule of 43 (Mandatory T19): S20 leaves 99! T19 -> 62, S19 -> 100!' },
+    cue: 'Mandatory T18 -> 68 · 60s FDI (Rule of 25): T18 + D7 = 25! (S18 -> 104)' },
+  { id: 'TP_119', score: 119, fdiBridge: true, open: ['T19'], next: ['T12','D13'],
+    traps: { T20: { drift: 'S20', why: 'Trap! S20 leaves 99 (the ONLY 2-digit 3-dart score!). Open T19 -> 62 (Rule of 25: T12+D13=25)!' } },
+    cue: 'Rule of 43 (T19) -> 62 · 60s FDI (Rule of 25): T12 + D13 = 25! (S19 -> 100)' },
   { id: 'TP_107', score: 107, open: ['T19'], next: ['T10','D10'],
     traps: { T20: { drift: 'S1', why: 'Splash Trap! Next to 20, S1 leaves 106 and S5 leaves 102! T19 is sole winner!' } },
     cue: 'Sole Winner T19 (both 2 & 3 darts): S7->100, S3->104 · T20 risks S1->106 / S5->102!' },
@@ -793,9 +1041,152 @@ const STAGES = [
 ];
 
 /* ============================================================================
-   2. SPACED REPETITION, MASTERY LEDGER & LOCAL STORAGE ENGINE
+   2. SPACED REPETITION, DIFFICULTY PACE, PUB RANKS & MASTERY ENGINE
    ============================================================================ */
 const STORAGE_KEY = 'oche_light_mastery_v1';
+
+const DIFFICULTY_PROFILES = {
+  relaxed: {
+    id: 'relaxed', label: 'Relaxed', short: 'Relaxed',
+    timerMult: 2.1, hintPauseMs: 5200, masteryMult: 1.45, ghostStepSec: 2.25,
+    desc: '2.1× slower countdown — plenty of time to read cues & learn formulas',
+  },
+  league: {
+    id: 'league', label: 'Pub League', short: 'League',
+    timerMult: 1.25, hintPauseMs: 3400, masteryMult: 1.0, ghostStepSec: 1.55,
+    desc: 'Balanced @yourdarts training clock — builds smooth oche rhythm',
+  },
+  pro: {
+    id: 'pro', label: 'Pro Oche', short: 'Pro',
+    timerMult: 0.72, hintPauseMs: 2000, masteryMult: 0.85, ghostStepSec: 1.15,
+    desc: 'Fast brass-bell match countdown — trains instant sub-2s recall',
+  },
+};
+const DIFFICULTY_ORDER = ['relaxed', 'league', 'pro'];
+
+const PUB_RANKS = [
+  { xp: 0,    title: 'Oche Rookie' },
+  { xp: 100,  title: 'Chalk Apprentice' },
+  { xp: 260,  title: 'Double Smith' },
+  { xp: 520,  title: 'Golden 44 Caller' },
+  { xp: 900,  title: "Sod's Law Survivor" },
+  { xp: 1400, title: 'Ton-Plus Finisher' },
+  { xp: 2050, title: 'Pub Croupier' },
+  { xp: 2800, title: 'Oche Legend' },
+];
+
+const STAGE_FLOW_ORDER = ['STAGE_0A', 'STAGE_0B', 'STAGE_1', 'STAGE_2', 'STAGE_3', 'STAGE_4', 'STAGE_5', 'STAGE_6'];
+
+const STAGE_BRIEFS = {
+  CALIBRATION: '60s Placement Check: 12 quick shots across doubles, trebles, checkouts & marking to find your starting stage.',
+  STAGE_0A: 'Stage 0A Goal: Locate doubles by value, call double totals, and master halving chains (D20->D10->D5, D16->D8->D4).',
+  STAGE_0B: 'Stage 0B Goal: Lock in the 10 Essential Trebles (T10 & T12-T20) both ways in under 2 seconds.',
+  STAGE_1: 'Stage 1 Goal: Click/tap the single setup to leave your target double (-2 for D16, +4 for D18/D8, +2 for D14/D4, +6 for D12).',
+  STAGE_2: 'Stage 2 Goal: Master the Golden 44 (Green quick wins -> Yellow FDIs with 25/30/35 rules -> Red Outlaws) + Miss Rules.',
+  STAGE_3: "Stage 3 Goal: Survive Sod's Law single misses, switch off FDIs with 1 dart left (T10 hub), and stay below 70.",
+  STAGE_4: 'Stage 4 Goal: Collapse 101-170 via Rule of 40 (+40), Rule of 43 (+43), Two-T19 (-14) & dodge neighbor splash traps.',
+  STAGE_5: 'Stage 5 Goal: Dart 3 in the 220s/260s/300s — throw Teen Cover S(10+d) -> 170/160 and NEVER throw 25 on 228/268/308.',
+  STAGE_6: "Stage 6 Goal: 3 darts land at once — snap 2 known darts first ('What do I know?') and call the total before the bell!",
+};
+
+const STAGE_BRIEFING_CARDS = {
+  CALIBRATION: {
+    tag: 'PLACEMENT DIAGNOSTIC', title: '60s Oche Placement Check',
+    goal: '12 quick shots sampling doubles, trebles, below-60 setups, Golden 44 checkouts, Ton-Plus traps, and visual marking.',
+    html: `<strong>How it works:</strong> Just throw naturally at your chosen <strong>Pace</strong>. Anything you miss or hesitate on gets queued for spaced review, and at the end we recommend your ideal starting stage.`,
+  },
+  STAGE_0A: {
+    tag: 'FOUNDATION · STAGE 0A', title: 'Board Geography, Doubles & Halving Chains',
+    goal: 'Build instant (<2s) recall of where every double lives, what it is worth, and where to throw when you miss inside.',
+    html: `<strong>Three drills mixed together:</strong><br/>
+      &bull; <strong>Find the Double:</strong> Click/tap the double bed matching the score (e.g., 36 &rarr; <strong>D18</strong>, 50 &rarr; <strong>Bull</strong>).<br/>
+      &bull; <strong>Double Value:</strong> A double lights up &rarr; enter <code>2 &times; sector</code> on the numpad.<br/>
+      &bull; <strong>Halving Chains:</strong> Missing a double inside halves your leave:
+      <div class="briefing-grid">
+        <div class="b-chip"><b>D20</b>&rarr;D10&rarr;D5</div>
+        <div class="b-chip"><b>D16</b>&rarr;D8&rarr;D4</div>
+        <div class="b-chip"><b>D4</b>&rarr;D2&rarr;D1</div>
+        <div class="b-chip"><b>D18</b>&rarr;D9</div>
+        <div class="b-chip"><b>D12</b>&rarr;D6&rarr;D3</div>
+      </div>`,
+  },
+  STAGE_0B: {
+    tag: 'FOUNDATION · STAGE 0B ("LESSON #1")', title: 'The 10 Essential Trebles',
+    goal: 'Before learning checkouts, wire bidirectional (<2s) recall for T10 and T12–T20 both ways (bed ↔ score).',
+    html: `<strong>Study these 10 trebles before stepping up:</strong>
+      <div class="briefing-grid">
+        <div class="b-chip"><b>T10</b> = 30</div><div class="b-chip"><b>T12</b> = 36</div>
+        <div class="b-chip"><b>T13</b> = 39</div><div class="b-chip"><b>T14</b> = 42</div>
+        <div class="b-chip"><b>T15</b> = 45</div><div class="b-chip"><b>T16</b> = 48</div>
+        <div class="b-chip"><b>T17</b> = 51</div><div class="b-chip"><b>T18</b> = 54</div>
+        <div class="b-chip"><b>T19</b> = 57</div><div class="b-chip"><b>T20</b> = 60</div>
+      </div>`,
+  },
+  STAGE_1: {
+    tag: 'STAGE 1 · CORE FIRST', title: 'Below-60 Double Smiths',
+    goal: 'Eliminate counting up from doubles by transforming only the last digit. Core Three unlock first, then D14/D4/D12.',
+    html: `<strong>Last-Digit Formulas (Lower half = 1–9 · Upper half = 10–19):</strong><br/>
+      &bull; <strong>D20 (40) / D10 (20):</strong> Read directly off 40 or 20.<br/>
+      &bull; <strong>D16 (32) = <code>-2</code></strong> (hard cap 52: <code>49 &rarr; S17</code>, <code>41 &rarr; S9</code>).<br/>
+      &bull; <strong>D18 (36) &amp; D8 (16) = <code>+4</code></strong> ("All the 8s = +4"; cap 56; watch <code>42 &rarr; S6 D18</code>!).<br/>
+      &bull; <strong>D14 / D4 = <code>+2</code></strong> ("All the 4s = +2") &nbsp;&middot;&nbsp; <strong>D12 = <code>+6</code></strong>.<br/>
+      &bull; <strong>50 Playbook (2–3 darts):</strong> <code>T10 D10</code> (miss &rarr; 40) or <code>S18 D16</code> (aim high).<br/>
+      &bull; <strong>Safe Wedges:</strong> <code>46</code> at <strong>10/6 wire</strong> &nbsp;&middot;&nbsp; <code>48</code> at <strong>16/8 wire</strong>.`,
+  },
+  STAGE_2: {
+    tag: 'STAGE 2 · THE GOLDEN 44', title: '44 Two-Dart Finishes & The 25 / 30 / 35 Rules',
+    goal: 'Master 60–100 (excl. 99) + 101, 104, 107, 110 in motivating order: Green Quick Wins → Yellow FDIs → 5 Red Outlaws.',
+    html: `<strong>First Dart Indicators (FDIs):</strong> Stick a <code>1</code> in front of the last digit <code>d</code> to open on <code>T(10+d)</code> (zero-endings 70–110 open on <code>T20</code>).<br/>
+      <strong>The 25 / 30 / 35 Decade Sum Rules (<code>Treble + Double</code>):</strong>
+      <div class="briefing-grid" style="grid-template-columns:1fr">
+        <div class="b-chip" style="text-align:left"><b>60s (+70): T + D = 25</b> &nbsp;&middot;&nbsp; 61–69 &amp; 70 (<code>T20 D5</code>) &nbsp;&middot;&nbsp; Miss always <b>50</b></div>
+        <div class="b-chip" style="text-align:left"><b>70s: T + D = 30</b> (or <b>10 &minus; d</b>, put 1 in front!) &nbsp;&middot;&nbsp; 72, 74, 75 (<code>T15 D15</code>), 76, 78, 79 &nbsp;&middot;&nbsp; Miss always <b>60</b> &nbsp;<em>(71, 73, 77 are NOT FDIs!)</em></div>
+        <div class="b-chip" style="text-align:left"><b>80s (+90): T + D = 35</b> &nbsp;&middot;&nbsp; 85, 87, 89, 90 (<code>T20 D15</code>) &nbsp;&middot;&nbsp; Miss always <b>70</b> &nbsp;&middot;&nbsp; + <b>95</b> (<code>T15 Bull</code>, miss 80)</div>
+      </div>
+      <div style="margin-top:6px"><strong>5 Red Outlaws (drip-fed later):</strong> <code>73 (T19 D8)</code>, <code>81 (T19 D12)</code>, <code>83 (T17 D16)</code>, <code>86 (T18 D16)</code>, <code>93 (T19 D18)</code>.</div>`,
+  },
+  STAGE_3: {
+    tag: "STAGE 3 · LIVE MISSES", title: "Sod's Law, Miss Rules & Darts-in-Hand",
+    goal: 'Handle single-bed misses smoothly in real time and switch tactics when down to 1 dart in hand.',
+    html: `<strong>Key Rules for Stage 3:</strong><br/>
+      &bull; <strong>"-20, Add Back" Miss Math:</strong> <code>-19 = -20+1</code>, <code>-18 = -20+2</code>, <code>-17 = -20+3</code>, <code>-16 = -20+4</code>.<br/>
+      &bull; <strong>1 Dart Left on 62–70 (Abandon FDIs!):</strong> Use the <strong>T10 Hub</strong> (<code>62&rarr;D16</code>, <code>66&rarr;D18</code>, <code>70&rarr;D20</code>), <strong>T16</strong> (<code>64&rarr;D8</code>, <code>68&rarr;D10</code>), or <strong>T8</strong> (<code>64&rarr;D20</code>).<br/>
+      &bull; <strong>&lt;70 Safety Rule:</strong> Favor routes whose single miss drops below 70 (<code>74&rarr;T14</code>, <code>88</code> 1-dart<code>&rarr;T20</code>, <code>129</code> 1-dart<code>&rarr;T20</code>).<br/>
+      &bull; <strong>Aim High &amp; Bottom Wire:</strong> Aim high on <code>60/56/52/50</code>; aim bottom wire on double-double <code>76 (D18 D20)</code> &amp; <code>64 (D16 D16)</code>.`,
+  },
+  STAGE_4: {
+    tag: 'STAGE 4 · 101–170 + 25/30/35 BRIDGES', title: 'Ton-Plus Reductions, FDI Bridges & Splash Traps',
+    goal: 'Collapse 101–170 into a Golden 44 finish, bridge straight into the 25 / 30 / 35 FDI rules without peeking at the double, and dodge neighbor traps!',
+    html: `<strong>Opening-Treble Formulas (drop leading 1, then add):</strong><br/>
+      &bull; <strong>Rule of 40 (T20 = 60):</strong> Last two digits <strong><code>+ 40</code></strong> (<code>147 &rarr; 87</code>, <code>134 &rarr; 74</code>, <code>124 &rarr; 64</code>).<br/>
+      &bull; <strong>Rule of 43 (T19 = 57):</strong> Last two digits <strong><code>+ 40, then + 3</code></strong> (<code>129 &rarr; 72</code>, <code>126 &rarr; 69</code>).<br/>
+      &bull; <strong>Live 25 / 30 / 35 FDI Bridge (No Chalkboard Peek!):</strong> After Dart 2 hits the FDI treble, the board locks on the 2-dart score instead of giving away the double — solve <code>T + D(?) = 25 / 30 / 35</code> for <strong>+10 FDI Bonus XP</strong>!<br/>
+      &bull; <strong>Two-T19 Sequence (<code>-14</code> from 114):</strong> On <code>130..154, 164</code>, subtract 14 for the double.<br/>
+      &bull; <strong>Mandatory Trap Saves:</strong> Leave T20 when single/neighbor leaves <code>99, 102, 103, 105, 106, 108, 109</code> (<code>129/126/123/119/107/103 &rarr; T19</code>, <code>128/122 &rarr; T18</code>, <code>104</code> 3d <code>&rarr; T19/T16</code>, <code>101</code> 3d <code>&rarr; T20</code>).`,
+  },
+  STAGE_5: {
+    tag: 'STAGE 5 · MIDDLE GAME', title: 'Bogey Dodger (220s / 260s / 300s)',
+    goal: 'Spot the 7 uncheckoutable bogeys and throw the Dart-3 Teen Cover Shot to leave 170 (or 160) instead.',
+    html: `<strong>The 7 Bogey Numbers:</strong> <code>159, 162, 163, 165, 166, 168, 169</code>.<br/>
+      &bull; <strong>147 Snooker Trick:</strong> In the 160s, only <code>161, 164, 167</code> (plus <code>160, 170</code>) are checkoutable!<br/>
+      &bull; <strong>Teen Cover Shot:</strong> On Dart 3 when S20 leaves a bogey, look at the last digit <code>d</code> and throw <strong><code>S(10 + d)</code></strong> to leave exact <strong>170</strong> (or <strong>160</strong> on <code>219/259</code>).<br/>
+      &bull; <strong>CRITICAL TRAP:</strong> <strong>NEVER</strong> throw 25/Bull on <code>228, 268, or 308</code> — hitting 25 leaves bogey <strong>163</strong>!`,
+  },
+  STAGE_6: {
+    tag: "PARALLEL STAGE 6 · VISUAL MARKING", title: "Croupier's Chalk (Casino Pattern Calling)",
+    goal: 'Stop adding dart 1 + dart 2 + dart 3! Recognize visual board shapes instantly and call the total before the bell.',
+    html: `<strong>Core Three Shapes (4&times;–9&times; on 19, 18, 17):</strong>
+      <div class="briefing-grid" style="grid-template-columns:repeat(3,1fr)">
+        <div class="b-chip"><b>4&times;</b> 76 / 72 / 68</div>
+        <div class="b-chip"><b>5&times;</b> 95 / 90 / 85</div>
+        <div class="b-chip"><b>6&times;</b> 114 / 108 / 102</div>
+        <div class="b-chip"><b>7&times;</b> 133 / 126 / 119</div>
+        <div class="b-chip"><b>8&times;</b> 152 / 144 / 136</div>
+        <div class="b-chip"><b>9&times;</b> 171 / 162 / 153</div>
+      </div>
+      <div style="margin-top:6px"><strong>"What do I know?" Rule:</strong> On messy visits, snap the 2 darts forming a known shape (highlighted in amber on Cue), then add the odd 3rd dart using nearest-10/20 rounding (<code>+15 = +20, -5</code>).</div>`,
+  },
+};
 
 class MasteryEngine {
   constructor() {
@@ -804,19 +1195,37 @@ class MasteryEngine {
     this.recentRt = [];
   }
   load() {
+    const base = {
+      items: {}, streak: 0, bestStreak: 0, totalCorrect: 0, totalAttempts: 0,
+      xp: 0, difficulty: 'league', welcomed: false, promotedStages: {},
+    };
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) return JSON.parse(raw);
+      if (raw) return { ...base, ...JSON.parse(raw) };
     } catch (_) {}
-    return { items: {}, streak: 0, bestStreak: 0, totalCorrect: 0, totalAttempts: 0 };
+    return base;
   }
   save() {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(this.data)); } catch (_) {}
   }
   reset() {
-    this.data = { items: {}, streak: 0, bestStreak: 0, totalCorrect: 0, totalAttempts: 0 };
+    const diff = this.data.difficulty || 'league';
+    this.data = {
+      items: {}, streak: 0, bestStreak: 0, totalCorrect: 0, totalAttempts: 0,
+      xp: 0, difficulty: diff, welcomed: true, promotedStages: {},
+    };
     this.recentRt = [];
     this.save();
+  }
+  getRank(xp = this.data.xp || 0) {
+    let cur = PUB_RANKS[0], next = PUB_RANKS[1] || null;
+    for (let i = 0; i < PUB_RANKS.length; i++) {
+      if (xp >= PUB_RANKS[i].xp) {
+        cur = PUB_RANKS[i];
+        next = PUB_RANKS[i + 1] || null;
+      }
+    }
+    return { cur, next };
   }
   get(id) {
     return this.data.items[id] || { ok: 0, miss: 0, streak: 0, bestMs: 99999, lastMs: 0, dueTurn: 0 };
@@ -824,33 +1233,45 @@ class MasteryEngine {
   // Tier 1 = Guided, Tier 2 = Hint-on-Hesitation, Tier 3 = Match-Speed Rolodex
   tier(id, speedTargetMs = 3000) {
     const s = this.get(id);
-    if (s.streak >= 3 && s.bestMs <= speedTargetMs) return 3;
+    const mult = (DIFFICULTY_PROFILES[this.data.difficulty] || DIFFICULTY_PROFILES.league).masteryMult;
+    if (s.streak >= 3 && s.bestMs <= speedTargetMs * mult) return 3;
     if (s.ok >= 1 && s.streak >= 1) return 2;
     return 1;
   }
   // Visual ledger status: 'dim' | 'amber' | 'brass'
   badge(id, speedTargetMs = 2800) {
     const s = this.get(id);
-    if (s.streak >= 2 && s.bestMs <= speedTargetMs) return 'brass';
+    const mult = (DIFFICULTY_PROFILES[this.data.difficulty] || DIFFICULTY_PROFILES.league).masteryMult;
+    if (s.streak >= 2 && s.bestMs <= speedTargetMs * mult) return 'brass';
     if (s.ok >= 1) return 'amber';
     return 'dim';
   }
   record(id, correct, ms, usedHint = false, speedTargetMs = 3000) {
     this.turn++;
     const s = this.get(id);
+    const prevBadge = this.badge(id, speedTargetMs);
+    const prevRank = this.getRank().cur.title;
+    const mult = (DIFFICULTY_PROFILES[this.data.difficulty] || DIFFICULTY_PROFILES.league).masteryMult;
+    const gateMs = speedTargetMs * mult;
+    let xpGain = 0;
+
     this.data.totalAttempts++;
     if (correct) {
       this.data.totalCorrect++;
       this.data.streak++;
       if (this.data.streak > this.data.bestStreak) this.data.bestStreak = this.data.streak;
+      const firstHit = s.ok === 0;
       s.ok++;
       s.lastMs = Math.round(ms);
       if (!usedHint && ms < s.bestMs) s.bestMs = Math.round(ms);
-      if (usedHint || ms > speedTargetMs * 1.2) {
+      xpGain += 10;
+      if (firstHit) xpGain += 15;
+      if (usedHint || ms > gateMs * 1.2) {
         s.streak = Math.max(1, s.streak);
         s.dueTurn = this.turn + 3; // resurface soon if slow or hinted
       } else {
         s.streak++;
+        xpGain += 5; // fast flow bonus
         s.dueTurn = this.turn + Math.min(20, 4 + s.streak * 4);
       }
       this.recentRt.push(ms);
@@ -862,7 +1283,12 @@ class MasteryEngine {
       s.dueTurn = this.turn + 2; // Leitner: return in 2 turns!
     }
     this.data.items[id] = s;
+    const newBadge = this.badge(id, speedTargetMs);
+    if (correct && prevBadge !== 'brass' && newBadge === 'brass') xpGain += 20;
+    this.data.xp = (this.data.xp || 0) + xpGain;
+    const newRank = this.getRank().cur.title;
     this.save();
+    return { xpGain, rankedUp: newRank !== prevRank ? newRank : null };
   }
   pickNext(pool, idFn, avoidId = null) {
     if (!pool.length) return null;
@@ -1060,7 +1486,7 @@ const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x111822);
 scene.fog = new THREE.FogExp2(0x111822, 0.042);
 
-const camera = new THREE.PerspectiveCamera(34, window.innerWidth / window.innerHeight, 0.4, 28);
+const camera = new THREE.PerspectiveCamera(34, window.innerWidth / window.innerHeight, 0.4, 38);
 const BASE_CAM = new THREE.Vector3(0.92, 0.44, 10.65);
 const BASE_LOOK = new THREE.Vector3(0.86, 0.16, 0);
 camera.position.copy(BASE_CAM);
@@ -1914,12 +2340,40 @@ function buildDartMesh(accentHex = 0x8f231e) {
   return g;
 }
 
-function clearDarts() {
-  for (const d of activeDarts) dartPoolGroup.remove(d.mesh);
-  activeDarts.length = 0;
+function disposeDartMesh(grp) {
+  grp.traverse(obj => {
+    if (obj.geometry) obj.geometry.dispose();
+    if (obj.material && obj.material !== brassMat) obj.material.dispose();
+  });
 }
 
-function throwDartTo(x, y, { kind = 'S', accent = 0x8f231e, delay = 0, onLand = null, wireTink = false } = {}) {
+function clearDarts() {
+  for (const d of activeDarts) {
+    dartPoolGroup.remove(d.mesh);
+    disposeDartMesh(d.mesh);
+  }
+  activeDarts.length = 0;
+  while (dartPoolGroup.children.length) {
+    const orphan = dartPoolGroup.children.pop();
+    disposeDartMesh(orphan);
+  }
+}
+
+function throwDartTo(x, y, { kind = 'S', accent = 0x8f231e, delay = 0, onLand = null, wireTink = false, ephemeral = false } = {}) {
+  // Wrong/trap throws automatically pull back out shortly after impact so the board never fills past 3 real darts!
+  const isEphemeral = ephemeral || wireTink;
+  // Never keep more than 3 committed darts on the board at once
+  if (!isEphemeral) {
+    const committed = activeDarts.filter(d => !d.ephemeral);
+    while (committed.length >= 3) {
+      const oldest = committed.shift();
+      const idx = activeDarts.indexOf(oldest);
+      if (idx >= 0) activeDarts.splice(idx, 1);
+      dartPoolGroup.remove(oldest.mesh);
+      disposeDartMesh(oldest.mesh);
+    }
+  }
+
   const mesh = buildDartMesh(accent);
   const start = new THREE.Vector3(x * 0.35 + (Math.random() - 0.5) * 0.45, -1.55, 6.2);
   const end = new THREE.Vector3(x, y, 0.0);
@@ -1934,13 +2388,16 @@ function throwDartTo(x, y, { kind = 'S', accent = 0x8f231e, delay = 0, onLand = 
     mesh, start, end, t: -delay, duration: 0.28,
     landed: false, wobbleT: 0, entryPitch, entryYaw,
     kind, wireTink, onLand,
+    ephemeral: isEphemeral,
+    pullAge: 0,
   };
   activeDarts.push(dart);
   return dart;
 }
 
 function updateDarts(dt) {
-  for (const d of activeDarts) {
+  for (let i = activeDarts.length - 1; i >= 0; i--) {
+    const d = activeDarts[i];
     if (!d.landed) {
       d.t += dt;
       if (d.t < 0) continue;
@@ -1949,11 +2406,9 @@ function updateDarts(dt) {
       const pos = new THREE.Vector3().lerpVectors(d.start, d.end, u);
       pos.y += Math.sin(u * Math.PI) * 0.58; // realistic parabolic loft
       d.mesh.position.copy(pos);
-      // Orient along trajectory tangent
       const uNext = Math.min(1, u + 0.04);
       const next = new THREE.Vector3().lerpVectors(d.start, d.end, uNext);
       next.y += Math.sin(uNext * Math.PI) * 0.58;
-      // Local -Z points toward tip? No: tip at 0, flight at +Z, so looking AWAY from target aligns tip forward!
       d.mesh.lookAt(pos.clone().sub(next.clone().sub(pos)));
 
       if (u >= 1) {
@@ -1966,11 +2421,28 @@ function updateDarts(dt) {
         cameraKick = 0.032;
         if (d.onLand) d.onLand();
       }
-    } else if (d.wobbleT < 0.45) {
-      d.wobbleT += dt;
-      const damp = Math.exp(-d.wobbleT * 11) * Math.sin(d.wobbleT * 52) * 0.055;
-      d.mesh.rotation.x = d.entryPitch + damp;
-      d.mesh.rotation.y = d.entryYaw + damp * 0.6;
+    } else {
+      if (d.wobbleT < 0.45) {
+        d.wobbleT += dt;
+        const damp = Math.exp(-d.wobbleT * 11) * Math.sin(d.wobbleT * 52) * 0.055;
+        d.mesh.rotation.x = d.entryPitch + damp;
+        d.mesh.rotation.y = d.entryYaw + damp * 0.6;
+      }
+      // Wrong/trap darts cleanly bounce out & fall away after 0.65s so they never clutter the board!
+      if (d.ephemeral) {
+        d.pullAge += dt;
+        if (d.pullAge > 0.65) {
+          const dropT = d.pullAge - 0.65;
+          d.mesh.position.z += 2.6 * dt;
+          d.mesh.position.y -= (1.8 + dropT * 9.0) * dt;
+          d.mesh.rotation.x += 2.8 * dt;
+          if (d.pullAge > 1.15) {
+            dartPoolGroup.remove(d.mesh);
+            disposeDartMesh(d.mesh);
+            activeDarts.splice(i, 1);
+          }
+        }
+      }
     }
   }
 }
@@ -1982,17 +2454,24 @@ const state = {
   stage: 'STAGE_2',
   ghostMode: true,
   hintMode: 'auto', // 'auto' | 'always' | 'blind'
+  difficulty: mastery.data.difficulty || 'league',
+  fdiBridgesOnly: false,
   rivalPressure: false,
+  isTouch: ('ontouchstart' in window) || (navigator.maxTouchPoints > 0),
   lastPlayerInputAt: 0,
   ghostTimer: 0,
+  briefingOpen: false,
+  seenBriefings: new Set(),
   challenge: null,
   challengeStartMs: 0,
+  bellChimed: false,
   stepIndex: 0,
   remainingScore: 0,
   dartsLeft: 3,
   usedHint: false,
   hintShown: false,
   busy: false,
+  advanceTimerId: null,
   numInput: '',
   lastItemId: null,
   calibQueue: [],
@@ -2001,6 +2480,13 @@ const state = {
   stage2Phase: 'green', // progresses green -> yellow -> red organically
 };
 
+function currentProfile() {
+  return DIFFICULTY_PROFILES[state.difficulty] || DIFFICULTY_PROFILES.league;
+}
+function actionVerb() {
+  return state.isTouch ? 'Tap' : 'Click';
+}
+
 // DOM References
 const elGhostPill   = document.getElementById('ghost-pill');
 const elStageLabel  = document.getElementById('stage-label');
@@ -2008,29 +2494,130 @@ const elPromptSub   = document.getElementById('prompt-sub');
 const elScoreBig    = document.getElementById('score-big');
 const elPromptTask  = document.getElementById('prompt-task');
 const elDartIcons   = document.getElementById('dart-icons');
+const elBridgeTag   = document.getElementById('bridge-tag');
 const elRivalTag    = document.getElementById('rival-tag');
 const elTimerFill   = document.getElementById('timer-fill');
+const elTimerSec    = document.getElementById('timer-sec');
 const elFeedback    = document.getElementById('feedback-strip');
 const elFlowVal     = document.getElementById('flow-val');
 const elAvgMs       = document.getElementById('avg-ms');
+const elRankPill    = document.getElementById('rank-pill');
+const elPaceBtn     = document.getElementById('pace-btn');
 const elTierBadge   = document.getElementById('tier-badge');
 const elNumpad      = document.getElementById('numpad-panel');
 const elNumDisp     = document.getElementById('numpad-display');
 const elSoundPill   = document.getElementById('sound-pill');
 const elDrawerBg    = document.getElementById('drawer-backdrop');
 const elDrawerBody  = document.getElementById('drawer-body');
+const elTouchAim    = document.getElementById('touch-aim-pill');
+const elWelcome     = document.getElementById('welcome-banner');
+const elLevelUp     = document.getElementById('levelup-banner');
+const elLevelUpTitle = document.getElementById('levelup-title');
+const elLevelUpMsg   = document.getElementById('levelup-msg');
+const elLevelUpActs  = document.getElementById('levelup-actions');
+const elBriefBg      = document.getElementById('briefing-backdrop');
+const elBriefTag     = document.getElementById('briefing-tag');
+const elBriefTitle   = document.getElementById('briefing-title');
+const elBriefGoal    = document.getElementById('briefing-goal');
+const elBriefBody    = document.getElementById('briefing-body');
+
+function openStageBriefing(stageId) {
+  const card = STAGE_BRIEFING_CARDS[stageId];
+  if (!card) return;
+  state.briefingOpen = true;
+  state.seenBriefings.add(stageId);
+  elBriefTag.textContent = card.tag;
+  elBriefTitle.textContent = card.title;
+  elBriefGoal.textContent = card.goal;
+  elBriefBody.innerHTML = card.html;
+  elBriefBg.classList.add('open');
+}
+
+function closeStageBriefing() {
+  if (!state.briefingOpen) return;
+  state.briefingOpen = false;
+  elBriefBg.classList.remove('open');
+  // Fresh start for the countdown timer once player steps up to the oche!
+  state.challengeStartMs = performance.now();
+  state.lastPlayerInputAt = performance.now();
+  state.bellChimed = false;
+}
+
+function setBridgeBadge(fdi) {
+  if (!fdi) {
+    elBridgeTag.style.display = 'none';
+    return;
+  }
+  elBridgeTag.style.display = 'inline-block';
+  elBridgeTag.className = 'bridge-tag ' + fdi.cls;
+  elBridgeTag.textContent = `${fdi.decade} FDI · Rule of ${fdi.sum}`;
+}
 
 function setFeedback(text, cls = 'cue') {
   elFeedback.textContent = text;
   elFeedback.className = 'plate feedback-strip ' + cls;
 }
 
+function dismissWelcome() {
+  elWelcome.classList.remove('show');
+  if (!mastery.data.welcomed) { mastery.data.welcomed = true; mastery.save(); }
+}
+
+function showLevelUpBanner(title, msg, actions = []) {
+  elLevelUpTitle.textContent = title;
+  elLevelUpMsg.textContent = msg;
+  elLevelUpActs.innerHTML = '';
+  for (const act of actions) {
+    const b = document.createElement('button');
+    b.className = 'chip-btn' + (act.ghost ? ' ghost' : '');
+    b.textContent = act.label;
+    b.addEventListener('click', () => {
+      elLevelUp.classList.remove('show');
+      if (act.onClick) act.onClick();
+    });
+    elLevelUpActs.appendChild(b);
+  }
+  elLevelUp.classList.add('show');
+}
+
+function setDifficulty(diffId, announce = true) {
+  if (!DIFFICULTY_PROFILES[diffId]) return;
+  state.difficulty = diffId;
+  mastery.data.difficulty = diffId;
+  mastery.save();
+  state.challengeStartMs = performance.now();
+  state.bellChimed = false;
+  updateHudStats();
+  if (announce) {
+    const p = currentProfile();
+    setFeedback(`Countdown Pace: ${p.label} — ${p.desc}`, 'cue');
+  }
+}
+
+function selectStage(stageId, startAsPlayer = true, forceBriefing = false) {
+  if (startAsPlayer) claimPlayerControl();
+  dismissWelcome();
+  elLevelUp.classList.remove('show');
+  state.stage = stageId;
+  if (stageId === 'CALIBRATION') { state.calibQueue = []; state.calibIndex = 0; }
+  loadChallenge(nextChallengeForStage(stageId));
+  if (STAGE_BRIEFS[stageId]) setFeedback(STAGE_BRIEFS[stageId], 'cue');
+  if (startAsPlayer && (forceBriefing || !state.seenBriefings.has(stageId))) {
+    openStageBriefing(stageId);
+  }
+}
+
 function updateHudStats() {
   elFlowVal.textContent = String(mastery.data.streak);
   const avg = mastery.avgMs();
   elAvgMs.textContent = avg ? (avg / 1000).toFixed(2) + 's' : '—';
+  const rk = mastery.getRank();
+  elRankPill.textContent = rk.cur.title;
+  const prof = currentProfile();
+  elPaceBtn.textContent = `Pace: ${prof.short}`;
   const st = STAGES.find(s => s.id === state.stage);
-  elStageLabel.textContent = st ? st.short : state.stage;
+  const pct = state.stage !== 'CALIBRATION' ? stageProgressPct(state.stage) : null;
+  elStageLabel.textContent = st ? (pct !== null ? `${st.short} (${pct}%)` : st.short) : state.stage;
   elGhostPill.textContent = state.ghostMode ? 'Ghost Demo' : 'Your Throw';
   elGhostPill.classList.toggle('active-player', !state.ghostMode);
   const pips = elDartIcons.querySelectorAll('.dart-pip');
@@ -2143,7 +2730,8 @@ function nextChallengeForStage(stageId) {
   }
 
   if (stageId === 'STAGE_4') {
-    const item = mastery.pickNext(TON_PLUS_ITEMS, x => x.id, state.lastItemId);
+    const pool = state.fdiBridgesOnly ? TON_PLUS_ITEMS.filter(x => x.fdiBridge) : TON_PLUS_ITEMS;
+    const item = mastery.pickNext(pool, x => x.id, state.lastItemId);
     return { kind: 'tonplus', item, speedMs: 4400 };
   }
 
@@ -2167,6 +2755,7 @@ function challengeItemId(ch) {
 }
 
 function loadChallenge(ch) {
+  if (state.advanceTimerId) { clearTimeout(state.advanceTimerId); state.advanceTimerId = null; }
   clearDarts();
   clearGroup(overlayGroup);
   state.challenge = ch;
@@ -2175,6 +2764,7 @@ function loadChallenge(ch) {
   state.usedHint = false;
   state.hintShown = false;
   state.busy = false;
+  state.bellChimed = false;
   state.challengeStartMs = performance.now();
   state.ghostTimer = 0;
 
@@ -2182,13 +2772,15 @@ function loadChallenge(ch) {
   const tier = state.hintMode === 'always' ? 1 : state.hintMode === 'blind' ? 3 : mastery.tier(id, ch.speedMs || 3000);
   updateTierBadge(tier);
   elRivalTag.style.display = 'none';
+  setBridgeBadge(null);
+  const V = actionVerb();
 
   // Configure per challenge type
   if (ch.kind === 'double_find') {
     state.dartsLeft = 1;
     elPromptSub.textContent = 'Stage 0A · Find Double';
     elScoreBig.textContent = String(ch.val);
-    elPromptTask.textContent = `Click the double worth ${ch.val}`;
+    elPromptTask.textContent = `${V} the double worth ${ch.val}`;
     showNumpad(false);
     renderChalkboard({ header: 'DOUBLES DRILL', big: ch.val, sub: 'Find the double bed', lines: tier === 1 ? [ch.cue] : ['Locate on the 3D board (<2s)'] });
     if (tier === 1) applyChallengeHint(true);
@@ -2196,7 +2788,7 @@ function loadChallenge(ch) {
     state.dartsLeft = 1;
     elPromptSub.textContent = 'Stage 0A · Double Value';
     elScoreBig.textContent = ch.target;
-    elPromptTask.textContent = `Enter the value of ${ch.target}`;
+    elPromptTask.textContent = `Enter the value of ${ch.target} & press CALL`;
     showNumpad(true);
     showBoardOverlays({ highlights: [{ code: ch.target, color: 0xf3cc7d, opacity: 0.56 }] });
     renderChalkboard({ header: 'DOUBLES VALUE', big: ch.target, sub: 'Type total & press CALL', lines: tier === 1 ? [ch.cue] : ['2 × sector number (<2s)'] });
@@ -2204,7 +2796,7 @@ function loadChallenge(ch) {
     state.dartsLeft = 2;
     elPromptSub.textContent = 'Stage 0A · Halving Chain';
     elScoreBig.textContent = ch.start;
-    elPromptTask.textContent = `Missed ${ch.start} inside -> click next double!`;
+    elPromptTask.textContent = `Missed ${ch.start} inside -> ${V.toLowerCase()} next double!`;
     showNumpad(false);
     const p = bedToXY('S' + ch.start.slice(1), { inner: false });
     throwDartTo(p.x, p.y, { kind: 'S' });
@@ -2214,7 +2806,7 @@ function loadChallenge(ch) {
     state.dartsLeft = 1;
     elPromptSub.textContent = 'Stage 0B · Essential 10 Trebles';
     elScoreBig.textContent = String(ch.val);
-    elPromptTask.textContent = `Click the treble worth ${ch.val}`;
+    elPromptTask.textContent = `${V} the treble worth ${ch.val}`;
     showNumpad(false);
     renderChalkboard({ header: '10 TREBLES', big: ch.val, sub: 'Bidirectional <2s', lines: [tier === 1 ? ch.cue : 'T10 & T12–T20 only'] });
     if (tier === 1) applyChallengeHint(true);
@@ -2222,7 +2814,7 @@ function loadChallenge(ch) {
     state.dartsLeft = 1;
     elPromptSub.textContent = 'Stage 0B · Essential 10 Trebles';
     elScoreBig.textContent = ch.target;
-    elPromptTask.textContent = `Enter the value of ${ch.target}`;
+    elPromptTask.textContent = `Enter the value of ${ch.target} & press CALL`;
     showNumpad(true);
     showBoardOverlays({ highlights: [{ code: ch.target, color: 0xf3cc7d, opacity: 0.62 }] });
     renderChalkboard({ header: '10 TREBLES', big: ch.target, sub: 'Type value (<2s)', lines: [tier === 1 ? ch.cue : 'Instant recall, no counting'] });
@@ -2233,8 +2825,8 @@ function loadChallenge(ch) {
     elPromptSub.textContent = it.targetD === 'ANY' ? 'Stage 1 · Setup Playbook' : `Stage 1 · Leave ${it.targetD}`;
     elScoreBig.textContent = String(it.score);
     elPromptTask.textContent = it.targetD === 'ANY'
-      ? `Click smart setup on ${it.score}`
-      : `Click single setup to leave ${it.targetD}`;
+      ? `${V} smart setup on ${it.score}`
+      : `${V} single setup to leave ${it.targetD}`;
     showNumpad(false);
     renderChalkboard({ header: 'BELOW 60', big: it.score, sub: it.targetD === 'ANY' ? 'Safe setup / wedge' : `Target: ${it.targetD}`,
       lines: [tier === 1 ? it.cue : 'Apply -2 (D16), +4 (D18/D8), +2 (D14/D4), +6 (D12)'] });
@@ -2243,13 +2835,15 @@ function loadChallenge(ch) {
     const it = ch.item;
     state.remainingScore = it.score;
     state.dartsLeft = 2;
+    const fdi = getFdiRule(it.score);
+    if (fdi) setBridgeBadge(fdi);
     const grpName = it.group === 'green' ? 'Green Quick Win' : it.group === 'red' ? 'Red Outlaw' : 'Yellow FDI';
     elPromptSub.textContent = `Stage 2 · Golden 44 (${grpName})`;
     elScoreBig.textContent = String(it.score);
-    elPromptTask.textContent = `2-dart checkout on ${it.score} — click Dart 1`;
+    elPromptTask.textContent = `2-dart checkout on ${it.score} — ${V.toLowerCase()} Dart 1`;
     showNumpad(false);
-    renderChalkboard({ header: 'GOLDEN 44', big: it.score, sub: grpName,
-      lines: [tier === 1 ? it.cue : 'Dart 1 -> Double -> Miss Rule'] });
+    renderChalkboard({ header: 'GOLDEN 44', big: it.score, sub: fdi ? `${fdi.decade} FDI · Rule of ${fdi.sum}` : grpName,
+      lines: [tier === 1 ? (fdi ? `Open ${fdi.treble}, then ${fdi.tNum} + D(?) = ${fdi.sum}` : it.cue) : 'Dart 1 -> Double -> Miss Rule'] });
     if (tier === 1) applyChallengeHint(true);
   } else if (ch.kind === 'sods') {
     const it = ch.item;
@@ -2264,7 +2858,7 @@ function loadChallenge(ch) {
     elPromptSub.textContent = `Stage 3 · Sod's Law (${it.darts} ${it.darts === 1 ? 'Dart' : 'Darts'} Left)`;
     elScoreBig.textContent = String(it.score);
     elPromptTask.textContent = it.darts === 1
-      ? `1 dart left on ${it.score} — click best setup!`
+      ? `1 dart left on ${it.score} — ${V.toLowerCase()} best setup!`
       : `Play ${it.score} safely (watch for single-miss!)`;
     showNumpad(false);
     renderChalkboard({ header: "SOD'S LAW", big: it.score, sub: `${it.darts} dart(s) in hand`,
@@ -2276,7 +2870,7 @@ function loadChallenge(ch) {
     state.dartsLeft = 3;
     elPromptSub.textContent = 'Stage 4 · Ton-Plus (3 Darts)';
     elScoreBig.textContent = String(it.score);
-    elPromptTask.textContent = `3 darts on ${it.score} — click opening treble`;
+    elPromptTask.textContent = `3 darts on ${it.score} — ${V.toLowerCase()} opening treble`;
     showNumpad(false);
     renderChalkboard({ header: 'TON-PLUS 101-170', big: it.score, sub: '3 darts in hand',
       lines: [tier === 1 ? it.cue : 'Rule of 40 (+40), Rule of 43 (+43), check splash traps'] });
@@ -2362,11 +2956,28 @@ function applyChallengeHint(auto = false) {
   } else if (ch.kind === 'tonplus') {
     const it = ch.item;
     const trapBeds = it.traps ? Object.keys(it.traps) : [];
-    const hl = state.stepIndex === 0
-      ? it.open.map(c => ({ code: c, color: 0xf3cc7d, opacity: 0.48 }))
-      : [];
-    showBoardOverlays({ highlights: hl, trapBeds });
-    setFeedback(`Cue: ${it.cue}`, 'cue');
+    if (state.stepIndex === 0) {
+      showBoardOverlays({ highlights: it.open.map(c => ({ code: c, color: 0xf3cc7d, opacity: 0.48 })), trapBeds });
+      setFeedback(`Cue: ${it.cue}`, 'cue');
+    } else if (state.stepIndex === 1) {
+      const fdi = getFdiRule(state.remainingScore);
+      const g = G44_BY_SCORE[state.remainingScore];
+      const nextT = fdi ? fdi.treble : (g ? g.route[0] : it.next[0]);
+      showBoardOverlays({
+        highlights: [{ code: nextT, color: 0xf3cc7d, opacity: 0.52 }],
+        link: fdi ? [fdi.treble, fdi.dbl] : null,
+      });
+      setFeedback(fdi
+        ? `Cue (${fdi.decade} FDI · Rule of ${fdi.sum}): Hit ${fdi.treble}, then solve ${fdi.tNum} + D(?) = ${fdi.sum}!`
+        : `Cue: On ${state.remainingScore}, throw ${nextT}!`, 'cue');
+    } else {
+      const outBed = state.remainingScore === 50 ? 'BULL' : 'D' + (state.remainingScore / 2);
+      showBoardOverlays({ highlights: [{ code: outBed, color: 0x79d499, opacity: 0.56 }] });
+      const fdi = ch.activeFdi;
+      setFeedback(fdi && ch.usedFdiTreble
+        ? `Cue: ${fdi.tNum} + ${fdi.dNum} = ${fdi.sum} -> finish on ${fdi.dbl}!`
+        : `Cue: Finish on ${outBed} (${state.remainingScore})!`, 'cue');
+    }
   } else if (ch.kind === 'bogey') {
     const it = ch.item;
     showBoardOverlays({
@@ -2389,8 +3000,10 @@ function applyChallengeHint(auto = false) {
 }
 
 function advanceAfter(delayMs = 1150) {
+  if (state.advanceTimerId) clearTimeout(state.advanceTimerId);
   state.busy = true;
-  setTimeout(() => {
+  state.advanceTimerId = setTimeout(() => {
+    state.advanceTimerId = null;
     if (state.stage === 'CALIBRATION') {
       state.calibIndex++;
       if (state.calibIndex >= state.calibQueue.length) {
@@ -2403,6 +3016,7 @@ function advanceAfter(delayMs = 1150) {
 }
 
 function finishCalibration() {
+  if (state.advanceTimerId) clearTimeout(state.advanceTimerId);
   const { ok, total, weakStages } = state.calibStats;
   const order = ['STAGE_0A', 'STAGE_0B', 'STAGE_1', 'STAGE_2', 'STAGE_3', 'STAGE_4', 'STAGE_6'];
   const rec = order.find(s => weakStages.has(s)) || 'STAGE_2';
@@ -2414,7 +3028,47 @@ function finishCalibration() {
     lines: [{ text: recTitle, kind: 'ok' }, 'Slow beds queued for spaced review!'],
   });
   state.stage = rec;
-  setTimeout(() => loadChallenge(nextChallengeForStage(state.stage)), 2400);
+  state.advanceTimerId = setTimeout(() => {
+    state.advanceTimerId = null;
+    loadChallenge(nextChallengeForStage(state.stage));
+  }, 2400);
+}
+
+function checkStagePromotion(rankUpTitle) {
+  if (state.ghostMode || state.stage === 'CALIBRATION') return;
+  const idx = STAGE_FLOW_ORDER.indexOf(state.stage);
+  const pct = stageProgressPct(state.stage);
+  const nextId = idx >= 0 && idx < STAGE_FLOW_ORDER.length - 1 ? STAGE_FLOW_ORDER[idx + 1] : null;
+  const alreadyPromoted = mastery.data.promotedStages && mastery.data.promotedStages[state.stage];
+
+  if (nextId && pct >= 75 && !alreadyPromoted) {
+    mastery.data.promotedStages = mastery.data.promotedStages || {};
+    mastery.data.promotedStages[state.stage] = true;
+    mastery.save();
+    const curSt = STAGES.find(s => s.id === state.stage);
+    const nextSt = STAGES.find(s => s.id === nextId);
+    audio.playApplause();
+    showLevelUpBanner(
+      `Stage Cleared (${pct}%)!`,
+      `You've mastered the core of ${curSt.short}. Ready to level up to ${nextSt.short}?`,
+      [
+        { label: `Advance to ${nextSt.short} →`, onClick: () => selectStage(nextId, true) },
+        { label: 'Keep Drilling Here', ghost: true },
+      ]
+    );
+    return;
+  }
+  if (rankUpTitle) {
+    audio.playApplause();
+    showLevelUpBanner(
+      `Rank Up — ${rankUpTitle}!`,
+      `Your speed & accuracy promoted you to ${rankUpTitle} (${mastery.data.xp} XP).`,
+      [
+        { label: 'View Mastery Ledger', onClick: () => openDrawer('ledger') },
+        { label: 'Keep Throwing', ghost: true },
+      ]
+    );
+  }
 }
 
 function completeChallenge(correct, customMsg = null, customCueLines = null) {
@@ -2422,11 +3076,13 @@ function completeChallenge(correct, customMsg = null, customCueLines = null) {
   if (!ch) return;
   const id = challengeItemId(ch);
   const ms = performance.now() - state.challengeStartMs;
+  let rec = { xpGain: 0, rankedUp: null };
   if (!state.ghostMode) {
-    mastery.record(id, correct, ms, state.usedHint, ch.speedMs || 3000);
+    rec = mastery.record(id, correct, ms, state.usedHint, ch.speedMs || 3000);
     if (state.stage === 'CALIBRATION') {
       state.calibStats.total++;
-      if (correct && ms <= (ch.speedMs || 3200) * 1.35) state.calibStats.ok++;
+      const gate = (ch.speedMs || 3200) * currentProfile().masteryMult;
+      if (correct && ms <= gate * 1.35) state.calibStats.ok++;
       else if (ch.stageTag) state.calibStats.weakStages.add(ch.stageTag);
     }
   }
@@ -2434,10 +3090,12 @@ function completeChallenge(correct, customMsg = null, customCueLines = null) {
   if (correct) {
     audio.playBell('ok');
     if (mastery.data.streak > 0 && mastery.data.streak % 5 === 0 && !state.ghostMode) audio.playApplause();
-    setFeedback(customMsg || `Clean! (${(ms / 1000).toFixed(2)}s)`, 'ok');
+    const xpTxt = !state.ghostMode && rec.xpGain ? ` (+${rec.xpGain} XP)` : '';
+    setFeedback((customMsg || `Clean! (${(ms / 1000).toFixed(2)}s)`) + xpTxt, 'ok');
     if (customCueLines) {
       renderChalkboard({ header: 'CHECKED OUT', big: '✓', sub: `${(ms / 1000).toFixed(2)}s`, lines: customCueLines });
     }
+    checkStagePromotion(rec.rankedUp);
     advanceAfter(state.ghostMode ? 1250 : 1050);
   } else {
     audio.playWireTink();
@@ -2511,9 +3169,11 @@ function handleBoardClick(bed, rawXY) {
     return;
   }
 
-  // 3. Stage 2 — The Golden 44 (2-dart finish + periodic 4-Rounds Miss Rule check!)
+  // 3. Stage 2 — The Golden 44 (No Chalkboard Peek on FDI doubles + live 25/30/35 ? equation + Round 4 Miss Rule!)
   if (ch.kind === 'g44') {
     const it = ch.item;
+    const fdi = getFdiRule(it.score);
+    const tier = state.hintMode === 'always' ? 1 : state.hintMode === 'blind' ? 3 : mastery.tier('G44_' + it.score, ch.speedMs || 3200);
     const validFirsts = [it.route[0], ...it.alts.map(a => a[0])];
     if (state.stepIndex === 0) {
       if (validFirsts.includes(bed.code)) {
@@ -2522,12 +3182,33 @@ function handleBoardClick(bed, rawXY) {
         state.dartsLeft = 1;
         state.stepIndex = 1;
         ch.chosenFirst = bed.code;
-        elScoreBig.textContent = String(state.remainingScore);
-        const remBed = state.remainingScore === 50 ? 'BULL' : 'D' + (state.remainingScore / 2);
-        elPromptTask.textContent = `${bed.code} hits! Finish on ${remBed}`;
+        clearGroup(overlayGroup);
+        const usedFdi = fdi && bed.code === fdi.treble;
+        ch.usedFdi = usedFdi;
+        if (usedFdi) {
+          // NO CHALKBOARD PEEK: Keep big score on the 2-dart FDI so player solves T + D(?) = 25/30/35 instead of dividing!
+          elScoreBig.textContent = String(it.score);
+          setBridgeBadge(fdi);
+          const compTip = fdi.comp10 !== undefined ? ` (or 10-${it.score % 10}=${fdi.comp10})` : '';
+          elPromptTask.textContent = tier === 1
+            ? `${bed.code} hits! Solve ${fdi.tNum} + D(?) = ${fdi.sum}`
+            : `${bed.code} hits! Hit the double (Rule of ${fdi.sum} — no peek!)`;
+          renderChalkboard({
+            header: `RULE OF ${fdi.sum}`, big: it.score, sub: `${bed.code} embedded · No peek!`,
+            lines: tier === 1
+              ? [`${fdi.tNum} + D(?) = ${fdi.sum}${compTip}`, 'Tap the double without dividing!']
+              : [`Use ${fdi.decade} Rule of ${fdi.sum} to snap the double!`],
+          });
+          setFeedback(tier === 1
+            ? `${bed.code} hits! Solve ${fdi.tNum} + D(?) = ${fdi.sum}${compTip} (press Cue [H] if stuck)`
+            : `${bed.code} hits! Snap the double using Rule of ${fdi.sum} — no chalkboard peek!`, 'cue');
+        } else {
+          elScoreBig.textContent = String(state.remainingScore);
+          elPromptTask.textContent = `${bed.code} hits! Finish ${state.remainingScore} on the double`;
+          renderChalkboard({ header: 'GOLDEN 44', big: state.remainingScore, sub: `${bed.code} hits!`, lines: ['Finish on the double!'] });
+          setFeedback(`${bed.code} leaves ${state.remainingScore} -> finish on the double!`, 'cue');
+        }
         updateHudStats();
-        renderChalkboard({ header: 'GOLDEN 44', big: state.remainingScore, sub: `${bed.code} -> ${remBed}`, lines: [it.cue] });
-        setFeedback(`${bed.code} leaves ${state.remainingScore} -> click ${remBed}`, 'cue');
       } else {
         throwDartTo(x, y, { kind: bed.ring, wireTink: true });
         applyChallengeHint(false);
@@ -2538,7 +3219,8 @@ function handleBoardClick(bed, rawXY) {
       if (bed.code === targetOut) {
         throwDartTo(x, y, { kind: targetOut === 'BULL' ? 'BULL' : 'D' });
         state.dartsLeft = 0;
-        // 40% of player Golden 44 rounds ask quick Round-4 Miss Rule check!
+        const verifyLine = ch.usedFdi && fdi ? `${fdi.treble} + ${fdi.dbl} = ${fdi.sum} ✓` : `${it.score}: ${ch.chosenFirst} + ${targetOut}`;
+        // 38% of player Golden 44 rounds ask quick Round-4 Miss Rule check!
         const firstIsTreble = ch.chosenFirst === it.route[0] && it.route[0][0] === 'T';
         if (!state.ghostMode && firstIsTreble && state.stage === 'STAGE_2' && Math.random() < 0.38) {
           ch.missPrompt = true;
@@ -2548,15 +3230,16 @@ function handleBoardClick(bed, rawXY) {
           elScoreBig.textContent = `${it.score} - ${singleName}`;
           elPromptTask.textContent = `Quick! If ${it.route[0]} hits ${singleName}, what's left?`;
           showNumpad(true);
-          renderChalkboard({ header: 'MISS RULE', big: '?', sub: `${it.score} hit ${singleName}`, lines: ['Pair every finish with its single-miss leave!'] });
-          setFeedback(`Checked out! Now Round 4: hit ${singleName} on ${it.score} -> what's left?`, 'cue');
+          renderChalkboard({ header: 'MISS RULE', big: '?', sub: verifyLine, lines: [`${it.score} hit ${singleName} -> what's left?`] });
+          setFeedback(`${verifyLine}! Now Round 4: hit ${singleName} on ${it.score} -> what's left?`, 'cue');
         } else {
-          completeChallenge(true, `Game shot ${it.score}! (${it.route.join(' ')} · Miss -> ${it.miss})`,
-            [{ text: `${it.score}: ${it.route.join(' + ')}`, kind: 'ok' }, `Miss Rule -> ${it.miss}`, it.cue]);
+          completeChallenge(true, `Game shot ${it.score}! ${verifyLine} · Miss -> ${it.miss}`,
+            [{ text: verifyLine, kind: 'ok' }, `Miss Rule -> ${it.miss}`, it.cue]);
         }
       } else {
         throwDartTo(x, y, { kind: bed.ring, wireTink: true });
-        completeChallenge(false, `Need ${targetOut} (${state.remainingScore}) to check out!`);
+        const fdiTip = ch.usedFdi && fdi ? ` Solve ${fdi.tNum} + D(?) = ${fdi.sum}!` : ` Need ${targetOut} (${state.remainingScore})!`;
+        completeChallenge(false, `Not ${bed.code}!${fdiTip}`);
       }
     }
     return;
@@ -2622,9 +3305,10 @@ function handleBoardClick(bed, rawXY) {
     return;
   }
 
-  // 5. Stage 4 — Ton-Plus (101-170) & Diagnostic Splash Traps!
+  // 5. Stage 4 — Ton-Plus (101-170), Live 25/30/35 FDI Bridges (No Chalkboard Peek!) & Splash Traps
   if (ch.kind === 'tonplus') {
     const it = ch.item;
+    const tier = state.hintMode === 'always' ? 1 : state.hintMode === 'blind' ? 3 : mastery.tier(it.id, ch.speedMs || 4400);
     if (state.stepIndex === 0) {
       if (it.traps && it.traps[bed.code]) {
         const tr = it.traps[bed.code];
@@ -2645,14 +3329,39 @@ function handleBoardClick(bed, rawXY) {
         state.dartsLeft = 2;
         state.stepIndex = 1;
         ch.openedWith = bed.code;
+        ch.afterDart1Score = state.remainingScore;
+        clearGroup(overlayGroup);
+
+        const fdi = getFdiRule(state.remainingScore);
+        ch.activeFdi = fdi;
+        setBridgeBadge(fdi);
         elScoreBig.textContent = String(state.remainingScore);
+
         const formulaNote = bed.code === 'T20' ? `Rule of 40 (+40) -> ${state.remainingScore}`
           : bed.code === 'T19' ? `Rule of 43 (+43) -> ${state.remainingScore}`
           : `${bed.code} leaves ${state.remainingScore}`;
-        elPromptTask.textContent = `${formulaNote} — click Dart 2!`;
+
+        if (fdi) {
+          const bridgeLine = `${it.score} -> ${bed.code} = ${state.remainingScore}`;
+          elPromptTask.textContent = tier === 1
+            ? `${fdi.decade} FDI (Rule of ${fdi.sum}): ${actionVerb()} ${fdi.treble}, then ${fdi.tNum} + D(?) = ${fdi.sum}`
+            : `${formulaNote} -> ${fdi.decade} FDI (Rule of ${fdi.sum}) — ${actionVerb().toLowerCase()} Dart 2!`;
+          renderChalkboard({
+            header: `BRIDGE: RULE OF ${fdi.sum}`, big: state.remainingScore, sub: bridgeLine,
+            lines: tier === 1
+              ? [`${fdi.decade} FDI: Open ${fdi.treble}`, `Solve ${fdi.tNum} + D(?) = ${fdi.sum} for +10 Bonus XP!`]
+              : [`${fdi.decade} FDI · Rule of ${fdi.sum}`, 'Snap the FDI route for +10 Bonus XP!'],
+          });
+          setFeedback(`${bridgeLine} — ${fdi.decade} FDI (Rule of ${fdi.sum})!`, 'cue');
+          if (tier === 1) {
+            showBoardOverlays({ highlights: [{ code: fdi.treble, color: 0xf3cc7d, opacity: 0.48 }] });
+          }
+        } else {
+          elPromptTask.textContent = `${formulaNote} — ${actionVerb().toLowerCase()} Dart 2!`;
+          renderChalkboard({ header: 'TON-PLUS', big: state.remainingScore, sub: formulaNote, lines: [tier === 1 ? it.cue : 'Finish the Golden 44!'] });
+          setFeedback(`${bed.code} hits! ${formulaNote}`, 'cue');
+        }
         updateHudStats();
-        renderChalkboard({ header: 'TON-PLUS', big: state.remainingScore, sub: formulaNote, lines: [it.cue] });
-        setFeedback(`${bed.code} hits! ${formulaNote}`, 'cue');
       } else {
         throwDartTo(x, y, { kind: bed.ring, wireTink: true });
         applyChallengeHint(false);
@@ -2667,11 +3376,40 @@ function handleBoardClick(bed, rawXY) {
         state.remainingScore = leaves;
         state.dartsLeft = 1;
         state.stepIndex = 2;
-        const outBed = leaves === 50 ? 'BULL' : 'D' + (leaves / 2);
-        elScoreBig.textContent = String(leaves);
-        elPromptTask.textContent = `Dart 3 for ${it.score} — finish on ${outBed}!`;
+        ch.dart2Code = bed.code;
+        clearGroup(overlayGroup);
+
+        const fdi = ch.activeFdi;
+        const usedFdiTreble = !!(fdi && bed.code === fdi.treble);
+        ch.usedFdiTreble = usedFdiTreble;
+
+        if (usedFdiTreble) {
+          // NO CHALKBOARD PEEK! Keep score on the 2-dart FDI (e.g. 87 / 74 / 69) so player uses 25/30/35!
+          elScoreBig.textContent = String(ch.afterDart1Score);
+          const compTip = fdi.comp10 !== undefined ? ` (or 10-${ch.afterDart1Score % 10}=${fdi.comp10})` : '';
+          elPromptTask.textContent = tier === 1
+            ? `${bed.code} hits! Solve ${fdi.tNum} + D(?) = ${fdi.sum}`
+            : `${bed.code} hits! Finish ${it.score} (Rule of ${fdi.sum} — no peek!)`;
+          renderChalkboard({
+            header: `RULE OF ${fdi.sum} FINISH`, big: ch.afterDart1Score,
+            sub: `${ch.openedWith} -> ${bed.code} embedded`,
+            lines: tier === 1
+              ? [`${fdi.tNum} + D(?) = ${fdi.sum}${compTip}`, 'No division peek — hit the double!']
+              : [`${it.score} on the wire!`, `Use Rule of ${fdi.sum} for Dart 3!`],
+          });
+          setFeedback(tier === 1
+            ? `${bed.code} hits! Solve ${fdi.tNum} + D(?) = ${fdi.sum}${compTip}`
+            : `${bed.code} hits! Hit Dart 3 using Rule of ${fdi.sum} (no peek!)`, 'cue');
+        } else {
+          // Non-FDI or alternate Dart 2 (e.g. Two-T19 or staying on T20) — still don't hand away the double name!
+          elScoreBig.textContent = String(leaves);
+          elPromptTask.textContent = `Dart 3 for ${it.score} — finish ${leaves} on the double!`;
+          renderChalkboard({
+            header: 'TON-PLUS DART 3', big: leaves, sub: `${ch.openedWith} + ${bed.code}`,
+            lines: [fdi ? `Alt route! (FDI bridge was ${fdi.treble} + D(?) = ${fdi.sum})` : 'Finish on the double!'],
+          });
+        }
         updateHudStats();
-        renderChalkboard({ header: 'TON-PLUS', big: leaves, sub: `Finish on ${outBed}`, lines: [it.cue] });
       } else {
         throwDartTo(x, y, { kind: bed.ring, wireTink: true });
         completeChallenge(false, `${bed.code} leaves ${leaves} (not a 1-dart out!). Try a Golden 44 finish on ${rem}!`);
@@ -2682,10 +3420,26 @@ function handleBoardClick(bed, rawXY) {
         throwDartTo(x, y, { kind: outBed === 'BULL' ? 'BULL' : 'D' });
         state.dartsLeft = 0;
         audio.playApplause();
-        completeChallenge(true, `TON-PLUS ${it.score} CHECKOUT! ${it.cue}`, [{ text: `${it.score} OUT!`, kind: 'ok' }, it.cue]);
+        const fdi = ch.activeFdi;
+        if (ch.usedFdiTreble && fdi) {
+          if (!state.ghostMode) { mastery.data.xp = (mastery.data.xp || 0) + 10; mastery.save(); }
+          const sumEq = `${fdi.treble} + ${fdi.dbl} = ${fdi.sum} ✓`;
+          const bridgeSummary = `${it.score} -> ${ch.openedWith} = ${ch.afterDart1Score} -> ${sumEq}`;
+          completeChallenge(true, `TON-PLUS ${it.score}! ${sumEq} (+10 FDI Bridge Bonus!)`,
+            [{ text: `${it.score} CHECKED OUT!`, kind: 'ok' }, { text: bridgeSummary, kind: 'ok' }, '+10 FDI Bridge Bonus XP!']);
+        } else if (fdi) {
+          completeChallenge(true, `TON-PLUS ${it.score}! (Tip: ${ch.afterDart1Score} also has Rule of ${fdi.sum}: ${fdi.treble} + ${fdi.dbl} = ${fdi.sum})`,
+            [{ text: `${it.score} OUT (${ch.openedWith} ${ch.dart2Code} ${outBed})`, kind: 'ok' }, `FDI Bridge alt: ${fdi.treble} + ${fdi.dbl} = ${fdi.sum}`]);
+        } else {
+          completeChallenge(true, `TON-PLUS ${it.score} CHECKOUT! ${it.cue}`, [{ text: `${it.score} OUT!`, kind: 'ok' }, it.cue]);
+        }
       } else {
         throwDartTo(x, y, { kind: bed.ring, wireTink: true });
-        completeChallenge(false, `Need ${outBed} (${state.remainingScore}) to take out ${it.score}!`);
+        const fdi = ch.activeFdi;
+        const tip = ch.usedFdiTreble && fdi
+          ? `Solve ${fdi.tNum} + D(?) = ${fdi.sum}! (Tap Cue [H] for help)`
+          : `Need ${outBed} (${state.remainingScore}) to take out ${it.score}!`;
+        completeChallenge(false, `Not ${bed.code}! ${tip}`);
       }
     }
     return;
@@ -2780,8 +3534,8 @@ function tickGhost(dt) {
   state.ghostTimer += dt;
   const ch = state.challenge;
 
-  // Give viewers ~1.5s to read the slate & board before Ghost acts
-  if (state.ghostTimer < 1.55) return;
+  // Pace Ghost Demo speed smoothly with chosen Difficulty profile
+  if (state.ghostTimer < currentProfile().ghostStepSec) return;
   state.ghostTimer = 0;
 
   if (ch.kind === 'double_find' || ch.kind === 'treble_find' || ch.kind === 'halving') {
@@ -2824,18 +3578,24 @@ function tickGhost(dt) {
 
 function claimPlayerControl() {
   state.lastPlayerInputAt = performance.now();
+  dismissWelcome();
   if (state.ghostMode) {
     state.ghostMode = false;
+    state.challengeStartMs = performance.now();
+    state.bellChimed = false;
     updateHudStats();
-    setFeedback('You have the darts! Click the 3D board or type scores.', 'cue');
+    setFeedback(state.isTouch
+      ? 'You have the darts! Touch & slide on the board to aim, then lift to throw.'
+      : 'You have the darts! Click any bed on the 3D board or type scores.', 'cue');
   }
 }
 
 /* ============================================================================
-   11. RAYCASTING, INPUTS & CHALKBOARD DRAWER (STAGES + MASTERY LEDGER)
+   11. RAYCASTING, TOUCH PRESS-SLIDE-RELEASE AIMING & CHALKBOARD DRAWER
    ============================================================================ */
 const raycaster = new THREE.Raycaster();
 const pointerNDC = new THREE.Vector2();
+const touchAim = { active: false, pointerId: null, hit: null };
 
 function raycastBoard(clientX, clientY) {
   const rect = canvas.getBoundingClientRect();
@@ -2849,12 +3609,58 @@ function raycastBoard(clientX, clientY) {
   return bed ? { bed, pt } : null;
 }
 
+function updateTouchAimPill(clientX, clientY, hit) {
+  const x = Math.max(76, Math.min(window.innerWidth - 76, clientX));
+  const y = Math.max(82, clientY - 58);
+  elTouchAim.style.left = `${x}px`;
+  elTouchAim.style.top = `${y}px`;
+  elTouchAim.style.display = 'block';
+  if (hit && hit.bed) {
+    elTouchAim.classList.remove('cancel');
+    elTouchAim.innerHTML = `${bedPretty(hit.bed.code)}<span class="sub">Lift finger to throw</span>`;
+  } else {
+    elTouchAim.classList.add('cancel');
+    elTouchAim.innerHTML = `Outside board<span class="sub">Release to cancel</span>`;
+  }
+}
+
+function hideTouchAimPill() {
+  elTouchAim.style.display = 'none';
+  touchAim.active = false;
+  touchAim.pointerId = null;
+  touchAim.hit = null;
+  updateHoverBed(null);
+}
+
 canvas.addEventListener('pointermove', (e) => {
+  if (e.pointerType === 'touch') {
+    if (!touchAim.active || e.pointerId !== touchAim.pointerId) return;
+    e.preventDefault();
+    const hit = raycastBoard(e.clientX, e.clientY);
+    touchAim.hit = hit;
+    updateHoverBed(hit ? hit.bed : null);
+    updateTouchAimPill(e.clientX, e.clientY, hit);
+    return;
+  }
   const hit = raycastBoard(e.clientX, e.clientY);
   updateHoverBed(hit ? hit.bed : null);
 });
 
 canvas.addEventListener('pointerdown', (e) => {
+  if (e.pointerType === 'touch') {
+    state.isTouch = true;
+    e.preventDefault();
+    if (!audio.ctx) { audio.unlock(); elSoundPill.textContent = 'Sound: On'; elSoundPill.classList.add('on'); }
+    claimPlayerControl();
+    touchAim.active = true;
+    touchAim.pointerId = e.pointerId;
+    try { canvas.setPointerCapture(e.pointerId); } catch (_) {}
+    const hit = raycastBoard(e.clientX, e.clientY);
+    touchAim.hit = hit;
+    updateHoverBed(hit ? hit.bed : null);
+    updateTouchAimPill(e.clientX, e.clientY, hit);
+    return;
+  }
   if (e.button !== 0) return;
   const hit = raycastBoard(e.clientX, e.clientY);
   if (!hit) return;
@@ -2862,9 +3668,24 @@ canvas.addEventListener('pointerdown', (e) => {
   handleBoardClick(hit.bed, hit.pt);
 });
 
+canvas.addEventListener('pointerup', (e) => {
+  if (e.pointerType !== 'touch' || !touchAim.active || e.pointerId !== touchAim.pointerId) return;
+  e.preventDefault();
+  const finalHit = raycastBoard(e.clientX, e.clientY) || touchAim.hit;
+  hideTouchAimPill();
+  if (finalHit && finalHit.bed) {
+    handleBoardClick(finalHit.bed, finalHit.pt);
+  }
+});
+
+canvas.addEventListener('pointercancel', () => {
+  if (touchAim.active) hideTouchAimPill();
+});
+
 // Keyboard support (Digits, Enter, Backspace, H=Cue, N=Next, L=Ledger)
 window.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') { closeDrawer(); return; }
+  if (e.key === 'Escape') { closeDrawer(); closeStageBriefing(); return; }
+  if (state.briefingOpen) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); closeStageBriefing(); } return; }
   if (elDrawerBg.classList.contains('open')) return;
   if (e.key >= '0' && e.key <= '9') {
     if (elNumpad.classList.contains('visible')) {
@@ -2881,8 +3702,12 @@ window.addEventListener('keydown', (e) => {
     claimPlayerControl(); applyChallengeHint(false);
   } else if (e.key.toLowerCase() === 'n') {
     claimPlayerControl(); loadChallenge(nextChallengeForStage(state.stage));
+  } else if (e.key.toLowerCase() === 'r') {
+    claimPlayerControl(); openStageBriefing(state.stage);
   } else if (e.key.toLowerCase() === 'l') {
     openDrawer('ledger');
+  } else if (e.key === '?') {
+    openDrawer('howto');
   }
 });
 
@@ -2898,10 +3723,25 @@ document.querySelectorAll('.np-key').forEach(btn => {
   });
 });
 
+document.getElementById('pace-btn').addEventListener('click', () => {
+  claimPlayerControl();
+  const next = DIFFICULTY_ORDER[(DIFFICULTY_ORDER.indexOf(state.difficulty) + 1) % DIFFICULTY_ORDER.length];
+  setDifficulty(next, true);
+});
+document.getElementById('rules-btn').addEventListener('click', () => { claimPlayerControl(); openStageBriefing(state.stage); });
+document.getElementById('briefing-start').addEventListener('click', closeStageBriefing);
+document.getElementById('briefing-x').addEventListener('click', closeStageBriefing);
+elBriefBg.addEventListener('click', (e) => { if (e.target === elBriefBg) closeStageBriefing(); });
 document.getElementById('hint-btn').addEventListener('click', () => { claimPlayerControl(); applyChallengeHint(false); });
 document.getElementById('skip-btn').addEventListener('click', () => { claimPlayerControl(); loadChallenge(nextChallengeForStage(state.stage)); });
 document.getElementById('open-stages-btn').addEventListener('click', () => openDrawer('stages'));
 document.getElementById('ledger-btn').addEventListener('click', () => openDrawer('ledger'));
+document.getElementById('help-btn').addEventListener('click', () => openDrawer('howto'));
+document.getElementById('welcome-close').addEventListener('click', dismissWelcome);
+document.getElementById('levelup-close').addEventListener('click', () => elLevelUp.classList.remove('show'));
+document.getElementById('w-start-0a').addEventListener('click', () => selectStage('STAGE_0A', true));
+document.getElementById('w-calib').addEventListener('click', () => selectStage('CALIBRATION', true));
+document.getElementById('w-howto').addEventListener('click', () => { dismissWelcome(); openDrawer('howto'); });
 elGhostPill.title = 'Click to toggle Ghost Demo / Your Throw';
 elGhostPill.addEventListener('click', () => {
   state.ghostMode = !state.ghostMode;
@@ -2958,13 +3798,32 @@ function stageProgressPct(stageId) {
 
 function renderDrawer() {
   if (drawerTab === 'stages') {
+    const prof = currentProfile();
     elDrawerBody.innerHTML = `
+      <div class="setting-row">
+        <div>
+          <div><strong>Countdown Difficulty</strong></div>
+          <div style="font-size:11px;color:var(--chalk-dim);margin-top:2px">${prof.desc}</div>
+        </div>
+        <div class="seg-group">
+          <button class="seg-btn ${state.difficulty === 'relaxed' ? 'active' : ''}" data-diff="relaxed">Relaxed</button>
+          <button class="seg-btn ${state.difficulty === 'league' ? 'active' : ''}" data-diff="league">Pub League</button>
+          <button class="seg-btn ${state.difficulty === 'pro' ? 'active' : ''}" data-diff="pro">Pro Oche</button>
+        </div>
+      </div>
       <div class="setting-row">
         <span>Chalk Scaffolding</span>
         <div class="seg-group">
           <button class="seg-btn ${state.hintMode === 'auto' ? 'active' : ''}" data-hint="auto">Auto-Fade</button>
           <button class="seg-btn ${state.hintMode === 'always' ? 'active' : ''}" data-hint="always">Guided</button>
           <button class="seg-btn ${state.hintMode === 'blind' ? 'active' : ''}" data-hint="blind">Match Blind</button>
+        </div>
+      </div>
+      <div class="setting-row">
+        <span>Stage 4 Big-Finish Focus</span>
+        <div class="seg-group">
+          <button class="seg-btn ${!state.fdiBridgesOnly ? 'active' : ''}" data-fdi="0">All 101–170</button>
+          <button class="seg-btn ${state.fdiBridgesOnly ? 'active' : ''}" data-fdi="1">25/30/35 Bridges</button>
         </div>
       </div>
       <div class="setting-row">
@@ -2988,23 +3847,70 @@ function renderDrawer() {
         `;
       }).join('')}
     `;
+    elDrawerBody.querySelectorAll('[data-diff]').forEach(b => b.addEventListener('click', () => {
+      setDifficulty(b.dataset.diff, true); renderDrawer();
+    }));
     elDrawerBody.querySelectorAll('[data-hint]').forEach(b => b.addEventListener('click', () => {
       state.hintMode = b.dataset.hint; renderDrawer(); loadChallenge(nextChallengeForStage(state.stage));
+    }));
+    elDrawerBody.querySelectorAll('[data-fdi]').forEach(b => b.addEventListener('click', () => {
+      state.fdiBridgesOnly = b.dataset.fdi === '1'; renderDrawer();
+      if (state.stage === 'STAGE_4') loadChallenge(nextChallengeForStage('STAGE_4'));
     }));
     elDrawerBody.querySelectorAll('[data-rival]').forEach(b => b.addEventListener('click', () => {
       state.rivalPressure = b.dataset.rival === '1'; renderDrawer();
     }));
     elDrawerBody.querySelectorAll('[data-stage]').forEach(card => card.addEventListener('click', () => {
-      claimPlayerControl();
-      state.stage = card.dataset.stage;
-      if (state.stage === 'CALIBRATION') { state.calibQueue = []; state.calibIndex = 0; }
       closeDrawer();
-      loadChallenge(nextChallengeForStage(state.stage));
+      selectStage(card.dataset.stage, true);
     }));
+  } else if (drawerTab === 'howto') {
+    elDrawerBody.innerHTML = `
+      <div class="howto-card">
+        <h4>1. How to Play (Desktop &amp; Phone)</h4>
+        <ul>
+          <li><strong>Oche Ghost Demo:</strong> The game plays itself on load so you can watch worked examples. Interact anytime to take over (tap the <strong>Ghost Demo / Your Throw</strong> pill to toggle manually).</li>
+          <li><strong>Desktop / Mouse:</strong> Hover any segment on the 3D dartboard to preview it (e.g., <em>T14 · 42</em>), then click to throw.</li>
+          <li><strong>Phone / Touch:</strong> <strong>Press and slide your finger</strong> across the dartboard — a floating badge above your fingertip shows the exact treble/double under your thumb. <strong>Lift to throw</strong> (or slide outside the board to cancel).</li>
+          <li><strong>Value &amp; Marking Calls:</strong> Type numbers on your keyboard + <strong>Enter</strong>, or tap the slate numpad + <strong>CALL</strong>.</li>
+        </ul>
+      </div>
+      <div class="howto-card">
+        <h4>2. Recommended Learning Path</h4>
+        <ul>
+          <li><strong>Not sure where to start?</strong> Run the <strong>60s Placement Check</strong> — it samples every skill and drops you right into your weakest stage.</li>
+          <li><strong>Complete beginner?</strong> Start at <strong>Stage 0A (Doubles &amp; Halving)</strong> &rarr; <strong>Stage 0B (10 Essential Trebles)</strong> &rarr; <strong>Stage 1 (Below 60)</strong> &rarr; <strong>Stage 2 (Golden 44)</strong> &rarr; <strong>Stage 3 (Sod's Law)</strong> &rarr; <strong>Stage 4 (Ton-Plus)</strong> &rarr; <strong>Stage 5 (Bogey Dodger)</strong>, mixing in <strong>Stage 6 (Croupier's Chalk)</strong> anytime after Stage 0B.</li>
+        </ul>
+      </div>
+      <div class="howto-card">
+        <h4>3. Difficulty Pace &amp; How You Level Up</h4>
+        <ul>
+          <li><strong>Countdown Pace (Relaxed / Pub League / Pro Oche):</strong> Slows down (2.1&times;) or speeds up (0.72&times;) the countdown clock, hint pause delay, and speed thresholds.</li>
+          <li><strong>Auto-Fading Scaffolding:</strong> Each number moves automatically from <strong>Guided</strong> (formulas &amp; glowing beds shown) &rarr; <strong>Hint on Pause</strong> (clean board until you hesitate) &rarr; <strong>Match Speed</strong> (zero hints).</li>
+          <li><strong>Spaced Repetition:</strong> Missed items return in 2 turns; slow items return in 3 turns; mastered items cool down.</li>
+          <li><strong>Stage-Ups &amp; Pub Ranks:</strong> Hit <strong>75%+</strong> on a stage to unlock a Stage-Cleared promotion to the next stage, and earn XP to climb from <em>Oche Rookie</em> to <em>Oche Legend</em>.</li>
+        </ul>
+      </div>
+      <div class="howto-card">
+        <h4>4. Shortcuts</h4>
+        <ul>
+          <li><strong>H</strong> = Show Cue / Board Link &nbsp;·&nbsp; <strong>N</strong> = Next Throw &nbsp;·&nbsp; <strong>L</strong> = Mastery Ledger &nbsp;·&nbsp; <strong>?</strong> = How to Play</li>
+        </ul>
+      </div>
+      <div class="banner-actions">
+        <button id="ht-start-0a" class="chip-btn">Start Stage 0A (Doubles)</button>
+        <button id="ht-calib" class="chip-btn">Run 60s Placement Check</button>
+      </div>
+    `;
+    document.getElementById('ht-start-0a').addEventListener('click', () => { closeDrawer(); selectStage('STAGE_0A', true); });
+    document.getElementById('ht-calib').addEventListener('click', () => { closeDrawer(); selectStage('CALIBRATION', true); });
   } else {
     // Mastery Ledger
     const acc = mastery.data.totalAttempts ? Math.round((mastery.data.totalCorrect / mastery.data.totalAttempts) * 100) : 0;
     const avg = mastery.avgMs();
+    const rk = mastery.getRank();
+    const xp = mastery.data.xp || 0;
+    const rkPct = rk.next ? Math.min(100, Math.round(((xp - rk.cur.xp) / (rk.next.xp - rk.cur.xp)) * 100)) : 100;
     const cell = (id, label, sub, speedMs = 2800) => {
       const cls = mastery.badge(id, speedMs);
       const st = mastery.get(id);
@@ -3013,9 +3919,11 @@ function renderDrawer() {
     };
     elDrawerBody.innerHTML = `
       <div class="summary-banner">
-        <strong>Session & Rolodex Stats:</strong> ${mastery.data.totalCorrect}/${mastery.data.totalAttempts} hits (${acc}%) ·
+        <strong>Rank: ${rk.cur.title}</strong> (${xp} XP${rk.next ? ` · ${rk.next.xp - xp} XP to ${rk.next.title}` : ' · MAX RANK'})
+        <div class="sc-bar" style="margin:5px 0 7px"><div class="sc-fill" style="width:${rkPct}%"></div></div>
+        <strong>Stats:</strong> ${mastery.data.totalCorrect}/${mastery.data.totalAttempts} hits (${acc}%) ·
         Best Flow: <strong>${mastery.data.bestStreak}</strong> · Avg Speed: <strong>${avg ? (avg/1000).toFixed(2)+'s' : '—'}</strong><br/>
-        <span style="opacity:0.75">Dim Chalk = Unseen · Warm Amber = Learning · Burnished Brass = Mastered (&lt;2.8s)</span>
+        <span style="opacity:0.75">Dim Chalk = Unseen · Warm Amber = Learning · Burnished Brass = Mastered</span>
       </div>
       <div class="ledger-section-title"><span>10 Essential Trebles</span><span>Target &lt;2.0s</span></div>
       <div class="ledger-grid">${ESSENTIAL_TREBLES.map(n => cell('T' + n, 'T' + n, String(n * 3), 2100)).join('')}</div>
@@ -3049,12 +3957,20 @@ const curLookAt = BASE_LOOK.clone();
 function onResize() {
   const w = window.innerWidth, h = window.innerHeight;
   camera.aspect = w / h;
-  // Frame full board (with 20 completely clear below HUD) + entire right 3D slate chalkboard cleanly
-  const aspectPad = Math.max(0, 1.55 - camera.aspect) * 3.2;
-  const wide = camera.aspect >= 1.15;
-  BASE_CAM.set(wide ? 0.92 : 0.22, 0.44, 10.65 + aspectPad);
-  BASE_LOOK.set(wide ? 0.86 : 0.14, 0.22, 0);
+  if (camera.aspect < 0.95) {
+    // Portrait phone: center tightly on the dartboard so treble & double rings fill ~92% width for easy thumb aiming!
+    const zPortrait = Math.max(10.8, Math.min(20.5, 8.25 / Math.max(0.41, camera.aspect)));
+    BASE_CAM.set(0.0, 0.25, zPortrait);
+    BASE_LOOK.set(0.0, 0.14, 0);
+  } else {
+    // Landscape / Desktop: frame full board (with 20 clear below HUD) + entire right 3D slate chalkboard cleanly
+    const aspectPad = Math.max(0, 1.55 - camera.aspect) * 3.2;
+    const wide = camera.aspect >= 1.15;
+    BASE_CAM.set(wide ? 0.92 : 0.22, 0.44, 10.65 + aspectPad);
+    BASE_LOOK.set(wide ? 0.86 : 0.14, 0.22, 0);
+  }
   camera.updateProjectionMatrix();
+  postMat.uniforms.uFar.value = camera.far;
   renderer.setSize(w, h);
   if (postRT) postRT.dispose();
   postRT = createPostTarget(w, h);
@@ -3064,6 +3980,9 @@ function onResize() {
 }
 window.addEventListener('resize', onResize);
 onResize();
+
+// Show non-blocking Quick-Start welcome banner on first visit (never blocks frame-1 Ghost Demo!)
+if (!mastery.data.welcomed) elWelcome.classList.add('show');
 
 // Start immediately with Oche Ghost demonstrating a live Golden 44 / Ton-Plus / Marking showcase!
 const GHOST_ROTATION = ['STAGE_4', 'STAGE_2', 'STAGE_6', 'STAGE_3', 'STAGE_5', 'STAGE_1'];
@@ -3077,32 +3996,47 @@ function animate(now) {
   lastTime = now;
   clockSec += dt;
 
-  // Return seamlessly to Oche Ghost after 14s of player inactivity (when drawer closed)
-  if (!state.ghostMode && !elDrawerBg.classList.contains('open') && now - state.lastPlayerInputAt > 14000) {
+  // Pause inactivity return, hint-on-pause, and countdown clock cleanly while Pre-Stage Briefing or Drawer is open!
+  const pausedByOverlay = state.briefingOpen || elDrawerBg.classList.contains('open');
+
+  // Return seamlessly to Oche Ghost after 18s of player inactivity (when overlays closed & not touching)
+  if (!state.ghostMode && !touchAim.active && !pausedByOverlay && now - state.lastPlayerInputAt > 18000) {
     state.ghostMode = true;
     ghostRotIdx = (ghostRotIdx + 1) % GHOST_ROTATION.length;
     state.stage = GHOST_ROTATION[ghostRotIdx];
     updateHudStats();
-    setFeedback('Oche Ghost resumed — click any 3D bed anytime to take over.', 'cue');
+    setFeedback('Oche Ghost resumed — click or tap any 3D bed anytime to take over.', 'cue');
     loadChallenge(nextChallengeForStage(state.stage));
   }
 
-  // Auto-fade Hint-on-Hesitation (Tier 2): gently reveal rescue cue after 3.4s pause!
-  if (!state.ghostMode && !state.busy && state.challenge && !state.hintShown && state.hintMode === 'auto') {
+  // Auto-fade Hint-on-Hesitation (Tier 2): scales smoothly with Difficulty Pace!
+  const prof = currentProfile();
+  if (!state.ghostMode && !pausedByOverlay && !state.busy && state.challenge && !state.hintShown && state.hintMode === 'auto') {
     const id = challengeItemId(state.challenge);
     const tier = mastery.tier(id, state.challenge.speedMs || 3000);
-    if (tier === 2 && now - state.challengeStartMs > 3400) {
+    if (tier === 2 && now - state.challengeStartMs > prof.hintPauseMs) {
       applyChallengeHint(true);
     }
   }
 
-  // Speed/Flow bar update
-  if (state.challenge && !state.busy) {
-    const targetMs = (state.challenge.speedMs || 3200) * (state.ghostMode ? 2.2 : 1.4);
+  // Live Difficulty-Scaled Countdown Timer & Brass Bell Gate
+  if (state.challenge && !state.busy && !pausedByOverlay) {
+    const baseMs = state.challenge.speedMs || 3200;
+    const targetMs = baseMs * prof.timerMult * (state.ghostMode ? 1.55 : 1.0);
     const elapsed = now - state.challengeStartMs;
-    const pct = Math.max(0, 1 - elapsed / targetMs);
+    const remMs = Math.max(0, targetMs - elapsed);
+    const pct = remMs / targetMs;
     elTimerFill.style.transform = `scaleX(${pct})`;
     elTimerFill.className = 'timer-fill' + (pct < 0.25 ? ' urgent' : pct < 0.5 ? ' warn' : '');
+    elTimerSec.textContent = (remMs / 1000).toFixed(1) + 's';
+    elTimerSec.className = 'timer-sec' + (pct < 0.25 ? ' urgent' : '');
+    if (!state.ghostMode && remMs <= 0 && !state.bellChimed) {
+      state.bellChimed = true;
+      audio.playBell('timeout');
+      setFeedback('Bell! Pace clock expired — finish the shot (slow items resurface soon).', 'warn');
+    }
+  } else if (pausedByOverlay) {
+    state.challengeStartMs = now;
   }
 
   // Subtle organic tungsten lamp warmth + Oche Flow boost (balanced, even illumination!)
@@ -3126,12 +4060,14 @@ function animate(now) {
   const targetCam = BASE_CAM.clone();
   targetCam.x += Math.sin(clockSec * 0.42) * 0.07;
   targetCam.y += Math.cos(clockSec * 0.55) * 0.045 - cameraKick;
-  // Slightly lean toward right slate chalkboard during Marking mode
-  if (state.challenge && state.challenge.kind === 'marking') {
+  // Slightly lean toward right slate chalkboard during Marking mode on wide screens
+  if (camera.aspect >= 0.95 && state.challenge && state.challenge.kind === 'marking') {
     targetCam.x += 0.22;
     targetCam.z -= 0.18;
   }
-  curCamPos.lerp(targetCam, 1 - Math.exp(-dt * 3.5));
+  const camAlpha = 1 - Math.exp(-dt * 4.5);
+  curCamPos.lerp(targetCam, camAlpha);
+  curLookAt.lerp(BASE_LOOK, camAlpha);
   camera.position.copy(curCamPos);
   camera.lookAt(curLookAt);
   postMat.uniforms.uFocusDepth.value = camera.position.z;
