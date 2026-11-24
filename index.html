@@ -275,6 +275,75 @@
   .np-key.enter { background: rgba(60, 140, 88, 0.35); border-color: rgba(60,140,88,0.75); color: #d1f2dc; }
   .np-key.del { background: rgba(184, 66, 57, 0.22); border-color: rgba(184,66,57,0.55); color: #f2b7b1; }
 
+  /* 3-Dart Skill Aiming & Brass Accuracy Gauge (Levels 4 & 7) */
+  .aim-gauge-panel {
+    position: fixed; left: 50%; bottom: 66px; transform: translateX(-50%);
+    z-index: 26; width: min(390px, calc(100vw - 24px));
+    padding: 9px 13px 10px; display: none; flex-direction: column; gap: 7px;
+    border-color: rgba(232, 198, 130, 0.68);
+    box-shadow: 0 12px 34px rgba(0,0,0,0.82), inset 0 1px 0 rgba(255,240,200,0.16);
+  }
+  .aim-gauge-panel.visible { display: flex; }
+  .aim-top {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+    font-size: 11px; letter-spacing: 0.7px; text-transform: uppercase; color: var(--brass-bright);
+  }
+  .aim-live-bed {
+    padding: 1px 7px; border-radius: 3px; font-weight: 700; font-size: 11px;
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(201,161,90,0.4); color: var(--chalk);
+  }
+  .aim-live-bed.zone-green { background: rgba(46, 134, 78, 0.42); border-color: #7ae09f; color: #dcfce7; }
+  .aim-live-bed.zone-amber { background: rgba(196, 134, 34, 0.38); border-color: #f2c46d; color: #fff0c7; }
+  .aim-live-bed.zone-red   { background: rgba(176, 54, 46, 0.42); border-color: #f08a82; color: #ffd9d6; }
+  .aim-track-row {
+    display: flex; align-items: center; gap: 8px;
+  }
+  .aim-edge-lbl {
+    font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+    font-size: 11px; font-weight: 700; color: #f0a8a2; min-width: 30px; text-align: center;
+    background: rgba(140, 34, 28, 0.28); border: 1px solid rgba(184, 66, 57, 0.45);
+    border-radius: 4px; padding: 2px 4px;
+  }
+  .aim-track {
+    position: relative; flex: 1; height: 22px; border-radius: 11px; overflow: hidden;
+    background: rgba(10, 14, 20, 0.92);
+    border: 1.5px solid rgba(201, 161, 90, 0.52);
+    box-shadow: inset 0 2px 6px rgba(0,0,0,0.75);
+  }
+  .aim-zone { position: absolute; top: 0; bottom: 0; }
+  .aim-zone.red { inset: 0; background: linear-gradient(90deg, rgba(168,46,38,0.68), rgba(168,46,38,0.28) 25%, rgba(168,46,38,0.28) 75%, rgba(168,46,38,0.68)); }
+  .aim-zone.amber { background: rgba(214, 152, 48, 0.48); border-left: 1px solid rgba(242,196,109,0.5); border-right: 1px solid rgba(242,196,109,0.5); }
+  .aim-zone.green { background: linear-gradient(90deg, rgba(54,158,92,0.58), rgba(102,216,142,0.88), rgba(54,158,92,0.58)); border-left: 1px solid #b4f8cc; border-right: 1px solid #b4f8cc; }
+  .aim-center-tick {
+    position: absolute; left: 50%; top: 0; bottom: 0; width: 2px;
+    transform: translateX(-50%); background: rgba(255, 248, 224, 0.72);
+  }
+  .aim-needle {
+    position: absolute; top: -2px; bottom: -2px; width: 6px; left: 50%;
+    transform: translateX(-50%); border-radius: 3px;
+    background: linear-gradient(180deg, #fff9e6 0%, #f3cc7d 50%, #c4882a 100%);
+    box-shadow: 0 0 10px rgba(255, 226, 150, 0.95), 0 0 2px #000;
+    will-change: left;
+  }
+  .aim-actions {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  }
+  .aim-throw-btn {
+    flex: 1; padding: 7px 14px; border-radius: 5px; cursor: pointer;
+    background: linear-gradient(135deg, rgba(212,164,74,0.38), rgba(145,100,32,0.52));
+    border: 1.5px solid var(--brass-bright); color: #fff7e0;
+    font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+    font-size: 12px; font-weight: 700; letter-spacing: 0.9px; text-transform: uppercase;
+  }
+  .aim-throw-btn:hover { filter: brightness(1.16); }
+  .aim-cancel-btn {
+    padding: 7px 10px; border-radius: 5px; cursor: pointer;
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(201,161,90,0.34);
+    color: var(--chalk-dim); font-family: ui-monospace, monospace; font-size: 11px;
+  }
+  .aim-cancel-btn:hover { color: var(--chalk); border-color: var(--brass); }
+
   /* Slide-Over Chalkboard Drawer (Stages & Mastery Ledger) */
   .drawer-backdrop {
     position: fixed; inset: 0; background: rgba(5, 8, 12, 0.62);
@@ -698,7 +767,9 @@
     .numpad-grid { grid-template-columns: repeat(6, 1fr); gap: 5px; }
     .np-key { padding: 8px 0; font-size: 14px; }
     .np-key.enter { font-size: 11px; letter-spacing: 0.4px; }
-    body.numpad-open .trev-dock { opacity: 0; pointer-events: none; }
+    .aim-gauge-panel { bottom: 68px; width: calc(100vw - 16px); padding: 7px 10px 8px; gap: 6px; }
+    .aim-throw-btn { padding: 9px 12px; font-size: 12px; }
+    body.numpad-open .trev-dock, body.aim-open .trev-dock { opacity: 0; pointer-events: none; }
     .toast-stack { bottom: 50px; }
     .trev-dock {
       left: 6px; right: 6px; bottom: 48px;
@@ -869,6 +940,29 @@
   </div>
 </div>
 
+<!-- 3-Dart Skill Aiming & Brass Accuracy Gauge (Levels 4 & 7) -->
+<div id="aim-gauge-panel" class="plate aim-gauge-panel">
+  <div class="aim-top">
+    <span id="aim-target-lbl">AIMING T20 · DART 1/3</span>
+    <span id="aim-live-bed" class="aim-live-bed zone-green">T20 (60)</span>
+  </div>
+  <div class="aim-track-row">
+    <span id="aim-left-lbl" class="aim-edge-lbl">5</span>
+    <div class="aim-track">
+      <div class="aim-zone red"></div>
+      <div id="aim-zone-amber" class="aim-zone amber" style="left:22%;width:56%"></div>
+      <div id="aim-zone-green" class="aim-zone green" style="left:40%;width:20%"></div>
+      <div class="aim-center-tick"></div>
+      <div id="aim-needle" class="aim-needle"></div>
+    </div>
+    <span id="aim-right-lbl" class="aim-edge-lbl">1</span>
+  </div>
+  <div class="aim-actions">
+    <button id="aim-throw-btn" class="aim-throw-btn">Throw Dart [Click / Space]</button>
+    <button id="aim-cancel-btn" class="aim-cancel-btn" title="Pick another target (Esc)">Re-aim</button>
+  </div>
+</div>
+
 <!-- Compact Slate Numpad (Numeric modes: Doubles/Trebles values, Miss Rule check, Croupier Marking) -->
 <div id="numpad-panel" class="plate numpad-panel">
   <div id="numpad-display" class="numpad-display placeholder">Type score…</div>
@@ -946,6 +1040,7 @@ function getNeighborSectors(sec) {
 }
 
 function bedValue(code) {
+  if (code === 'MISS' || !code) return 0;
   if (code === 'BULL') return 50;
   if (code === '25') return 25;
   const r = code[0], n = parseInt(code.slice(1), 10);
@@ -955,6 +1050,7 @@ function bedValue(code) {
 }
 
 function bedPretty(code) {
+  if (code === 'MISS' || !code) return 'Miss (0)';
   if (code === 'BULL') return 'Bull (50)';
   if (code === '25') return '25';
   return `${code} (${bedValue(code)})`;
@@ -2732,6 +2828,33 @@ const hoverGroup = new THREE.Group();
 hoverGroup.position.z = 0.022;
 scene.add(hoverGroup);
 
+// 3D Skill Aiming Reticle (Stationary target ring + live swaying crosshair on dartboard!)
+const aimGroup = new THREE.Group();
+aimGroup.position.z = 0.032;
+aimGroup.visible = false;
+scene.add(aimGroup);
+
+const aimAnchorRing = new THREE.Mesh(
+  new THREE.RingGeometry(0.115, 0.135, 32),
+  new THREE.MeshBasicMaterial({ color: 0xf3cc7d, transparent: true, opacity: 0.52, side: THREE.DoubleSide, depthWrite: false })
+);
+aimGroup.add(aimAnchorRing);
+
+const aimCrosshair = new THREE.Group();
+const aimCrossMat = new THREE.MeshBasicMaterial({ color: 0x7ae09f, transparent: true, opacity: 0.94, side: THREE.DoubleSide, depthWrite: false });
+const aimOuterRing = new THREE.Mesh(new THREE.RingGeometry(0.068, 0.088, 28), aimCrossMat);
+const aimCenterDot = new THREE.Mesh(new THREE.CircleGeometry(0.022, 16), aimCrossMat);
+aimCrosshair.add(aimOuterRing, aimCenterDot);
+[
+  [0, 0.118, 0.014, 0.064], [0, -0.118, 0.014, 0.064],
+  [0.118, 0, 0.064, 0.014], [-0.118, 0, 0.064, 0.014],
+].forEach(([tx, ty, tw, th]) => {
+  const tick = new THREE.Mesh(new THREE.PlaneGeometry(tw, th), aimCrossMat);
+  tick.position.set(tx, ty, 0);
+  aimCrosshair.add(tick);
+});
+aimGroup.add(aimCrosshair);
+
 function makeBedShapeMesh(code, colorHex, opacity = 0.44, extra = {}) {
   let geo;
   if (code === 'BULL') {
@@ -3381,6 +3504,7 @@ const state = {
   difficulty: mastery.data.difficulty || 'league',
   fdiBridgesOnly: false,
   rivalPressure: false,
+  useAimGauge: true,
   isTouch: ('ontouchstart' in window) || (navigator.maxTouchPoints > 0),
   lastPlayerInputAt: 0,
   ghostTimer: 0,
@@ -3732,10 +3856,204 @@ const elBriefTag     = document.getElementById('briefing-tag');
 const elBriefTitle   = document.getElementById('briefing-title');
 const elBriefGoal    = document.getElementById('briefing-goal');
 const elBriefBody    = document.getElementById('briefing-body');
+const elAimPanel     = document.getElementById('aim-gauge-panel');
+const elAimTarget    = document.getElementById('aim-target-lbl');
+const elAimLive      = document.getElementById('aim-live-bed');
+const elAimLeft      = document.getElementById('aim-left-lbl');
+const elAimRight     = document.getElementById('aim-right-lbl');
+const elAimAmber     = document.getElementById('aim-zone-amber');
+const elAimGreen     = document.getElementById('aim-zone-green');
+const elAimNeedle    = document.getElementById('aim-needle');
+
+/* ---------- 3-Dart Skill Aiming & Brass Accuracy Gauge Engine ---------- */
+const aimGauge = {
+  active: false,
+  mode: null, // '301' | '501'
+  aimedBed: null,
+  aimXY: null,
+  startedAt: 0,
+  phase: 0,
+  vPhase: 0,
+  curDrop: null,
+};
+
+function aimConfigForDifficulty(diff = state.difficulty) {
+  if (diff === 'relaxed') return { speed: 2.05, sweet: 0.28, amber: 0.62 };
+  if (diff === 'pro')     return { speed: 3.75, sweet: 0.14, amber: 0.50 };
+  return { speed: 2.85, sweet: 0.20, amber: 0.56 };
+}
+
+function getScreenSideNeighbors(bed, xy) {
+  if (!bed || bed.code === 'BULL' || bed.code === '25') return { left: '25', right: '25', dirSign: 1 };
+  const idx = SECTOR_INDEX[bed.sector];
+  const ccw = SECTORS[(idx + 19) % 20];
+  const cw = SECTORS[(idx + 1) % 20];
+  const dirSign = (xy && xy.y < -0.01) ? -1 : 1;
+  return dirSign === 1 ? { left: String(ccw), right: String(cw), dirSign } : { left: String(cw), right: String(ccw), dirSign };
+}
+
+// Physically maps gauge needle u in [-1, 1] + subtle vertical breath v in [-1, 1] to exact 3D board coords & true bed!
+function computeAimDrop(aimBed, aimXY, u, v, cfg, allowOutsideMiss = false) {
+  const au = Math.abs(u);
+  const su = u < 0 ? -1 : 1;
+  let zone = 'green';
+  let x, y;
+
+  if (aimBed.code === 'BULL' || aimBed.code === '25') {
+    const baseAng = (aimXY && Math.hypot(aimXY.x, aimXY.y) > 0.02) ? Math.atan2(aimXY.x, aimXY.y) : 0;
+    if (au <= cfg.sweet) {
+      zone = 'green';
+      const r = aimBed.code === 'BULL' ? (au / cfg.sweet) * (R_INNER_BULL * 0.62) : (R_INNER_BULL + R_OUTER_BULL) * 0.52;
+      const a = aimBed.code === 'BULL' ? (u * 2.2) : (baseAng + u * 0.9);
+      x = Math.sin(a) * r; y = Math.cos(a) * r;
+    } else if (au <= cfg.amber) {
+      zone = 'amber';
+      const t = (au - cfg.sweet) / (cfg.amber - cfg.sweet);
+      const r = aimBed.code === 'BULL' ? (R_INNER_BULL + 0.03 + t * 0.075) : (R_OUTER_BULL + 0.03 + t * 0.14);
+      const a = (u < 0 ? -Math.PI / 2 : Math.PI / 2) + v * 0.55;
+      x = Math.sin(a) * r; y = Math.cos(a) * r;
+    } else {
+      zone = 'red';
+      const t = (au - cfg.amber) / (1 - cfg.amber);
+      const r = 0.34 + t * 0.34;
+      const a = (u < 0 ? -Math.PI / 2 : Math.PI / 2) + v * 0.72;
+      x = Math.sin(a) * r; y = Math.cos(a) * r;
+    }
+  } else {
+    const idx = SECTOR_INDEX[aimBed.sector];
+    const secCenterAng = idx * (Math.PI / 10);
+    const dirSign = (aimXY && aimXY.y < -0.01) ? -1 : 1;
+    const rawR = aimXY ? Math.hypot(aimXY.x, aimXY.y) : 1.01;
+    const baseR = aimBed.ring === 'T' ? (R_TREBLE_IN + R_TREBLE_OUT) * 0.5
+      : aimBed.ring === 'D' ? (R_DOUBLE_IN + R_DOUBLE_OUT) * 0.5
+      : Math.max(0.38, Math.min(1.42, rawR));
+    let ang = secCenterAng;
+    let r = baseR;
+
+    if (au <= cfg.sweet) {
+      zone = 'green';
+      ang = secCenterAng + (u / cfg.sweet) * dirSign * 0.048;
+      r = baseR + v * 0.024;
+    } else if (au <= cfg.amber) {
+      zone = 'amber';
+      const t = (au - cfg.sweet) / (cfg.amber - cfg.sweet);
+      ang = secCenterAng + su * dirSign * (0.048 + t * 0.082);
+      if (aimBed.ring === 'T') {
+        // Slipped high or low off the narrow treble wire into big single of the same sector!
+        r = baseR + (v >= 0 ? 1 : -1) * (0.105 + t * 0.17);
+      } else if (aimBed.ring === 'D') {
+        if (allowOutsideMiss && t > 0.86 && v > 0.35) r = R_DOUBLE_OUT + 0.09;
+        else r = R_DOUBLE_IN - (0.05 + t * 0.22);
+      } else {
+        r = Math.max(0.30, Math.min(1.48, baseR + v * 0.20));
+      }
+    } else {
+      zone = 'red';
+      const t = (au - cfg.amber) / (1 - cfg.amber);
+      // Crossed the spider wire (0.157 rad) cleanly into the neighboring sector!
+      ang = secCenterAng + su * dirSign * (0.175 + t * 0.165);
+      if (aimBed.ring === 'T') {
+        // Usually drops into neighboring Single (e.g. S5/S1/S7/S3), or flat wire-pull hits neighboring Treble (T5/T1)!
+        r = baseR + (Math.abs(v) < 0.22 ? v * 0.08 : (v >= 0 ? 1 : -1) * (0.115 + t * 0.19));
+      } else if (aimBed.ring === 'D') {
+        if (allowOutsideMiss && t > 0.42 && v > 0.08) r = R_DOUBLE_OUT + 0.12;
+        else r = Math.abs(v) < 0.22 ? baseR : (R_DOUBLE_IN - 0.12 - t * 0.18);
+      } else {
+        r = Math.max(0.34, Math.min(1.46, baseR + v * 0.16));
+      }
+    }
+    if (!allowOutsideMiss) r = Math.min(r, R_DOUBLE_OUT - 0.02);
+    x = Math.sin(ang) * r;
+    y = Math.cos(ang) * r;
+  }
+
+  const landed = xyToBed(x, y) || { code: 'MISS', ring: 'MISS', sector: 0, value: 0, sub: 'MISS' };
+  return { x, y, bed: landed, zone };
+}
+
+function startAimGauge(mode, bed, rawXY) {
+  const pt = rawXY ? { x: rawXY.x, y: rawXY.y } : bedToXY(bed.code);
+  const cfg = aimConfigForDifficulty();
+  const sides = getScreenSideNeighbors(bed, pt);
+  aimGauge.active = true;
+  aimGauge.mode = mode;
+  aimGauge.aimedBed = bed;
+  aimGauge.aimXY = pt;
+  aimGauge.startedAt = performance.now();
+  // Start sweeping from left or right edge so needle moves smoothly INTO the sweet spot!
+  aimGauge.phase = (Math.random() < 0.5 ? -1 : 1) * (0.85 + Math.random() * 0.35);
+  aimGauge.vPhase = Math.random() * Math.PI * 2;
+
+  const dartNum = (state.challenge && state.challenge.darts ? state.challenge.darts.length : 0) + 1;
+  elAimTarget.textContent = `AIMING ${bed.code} · DART ${dartNum}/3`;
+  elAimLeft.textContent = sides.left;
+  elAimRight.textContent = sides.right;
+  elAimAmber.style.left = `${50 - cfg.amber * 50}%`;
+  elAimAmber.style.width = `${cfg.amber * 100}%`;
+  elAimGreen.style.left = `${50 - cfg.sweet * 50}%`;
+  elAimGreen.style.width = `${cfg.sweet * 100}%`;
+  elAimPanel.classList.add('visible');
+  document.body.classList.add('aim-open');
+
+  aimAnchorRing.position.set(pt.x, pt.y, 0);
+  aimGroup.visible = true;
+  updateHoverBed(null);
+  updateAimGauge(0);
+  setFeedback(`Locked on ${bed.code}! Click board or press Space when the needle hits GREEN!`, 'cue');
+}
+
+function cancelAimGauge() {
+  if (!aimGauge.active) return;
+  aimGauge.active = false;
+  aimGauge.mode = null;
+  aimGauge.aimedBed = null;
+  aimGauge.aimXY = null;
+  aimGauge.curDrop = null;
+  aimGroup.visible = false;
+  elAimPanel.classList.remove('visible');
+  document.body.classList.remove('aim-open');
+}
+
+function updateAimGauge(dt) {
+  if (!aimGauge.active) return;
+  const cfg = aimConfigForDifficulty();
+  aimGauge.phase += dt * cfg.speed;
+  aimGauge.vPhase += dt * (cfg.speed * 0.73);
+  const u = Math.sin(aimGauge.phase);
+  const v = Math.sin(aimGauge.vPhase);
+  const allowMiss = aimGauge.mode === '501';
+  const drop = computeAimDrop(aimGauge.aimedBed, aimGauge.aimXY, u, v, cfg, allowMiss);
+  aimGauge.curDrop = drop;
+
+  elAimNeedle.style.left = `${(u + 1) * 50}%`;
+  elAimLive.textContent = bedPretty(drop.bed.code);
+  elAimLive.className = 'aim-live-bed zone-' + drop.zone;
+
+  aimCrosshair.position.set(drop.x, drop.y, 0);
+  aimCrossMat.color.setHex(drop.zone === 'green' ? 0x7ae09f : drop.zone === 'amber' ? 0xf3cc7d : 0xf0685e);
+}
+
+function releaseAimGauge() {
+  if (!aimGauge.active) return;
+  // Ignore accidental double-click within 110ms of locking the target
+  if (performance.now() - aimGauge.startedAt < 110) return;
+  const mode = aimGauge.mode;
+  const aimedBed = aimGauge.aimedBed;
+  const drop = aimGauge.curDrop || computeAimDrop(aimedBed, aimGauge.aimXY, 0, 0, aimConfigForDifficulty(), mode === '501');
+  cancelAimGauge();
+  state.lastPlayerInputAt = performance.now();
+
+  if (mode === '301') {
+    commit301Dart(aimedBed, drop.bed, { x: drop.x, y: drop.y }, drop.zone);
+  } else if (mode === '501') {
+    commit501Dart(aimedBed, drop.bed, { x: drop.x, y: drop.y }, drop.zone);
+  }
+}
 
 function openStageBriefing(stageId) {
   const card = STAGE_BRIEFING_CARDS[stageId];
   if (!card) return;
+  cancelAimGauge();
   state.briefingOpen = true;
   state.seenBriefings.add(stageId);
   elBriefTag.textContent = card.tag;
@@ -3930,6 +4248,7 @@ function finishLevelTrial(passed) {
 }
 
 function selectStage(stageId, startAsPlayer = true, forceBriefing = false) {
+  cancelAimGauge();
   if (startAsPlayer) claimPlayerControl();
   dismissWelcome();
   elLevelUp.classList.remove('show');
@@ -4173,6 +4492,7 @@ function challengeItemId(ch) {
 
 function loadChallenge(ch) {
   if (state.advanceTimerId) { clearTimeout(state.advanceTimerId); state.advanceTimerId = null; }
+  cancelAimGauge();
   clearDarts();
   clearGroup(overlayGroup);
   state.challenge = ch;
@@ -4266,7 +4586,7 @@ function loadChallenge(ch) {
       elPromptTask.textContent = `${V} 3 darts on the board — then chalk & subtract!`;
       showNumpad(false);
       renderChalkboard({
-        header: '301 · YOUR THROW', big: ch.startScore, sub: 'Throw 3 darts (pub scatter live)',
+        header: '301 · YOUR THROW', big: ch.startScore, sub: state.useAimGauge ? 'Lock bed -> release on GREEN!' : 'Throw 3 darts (auto scatter)',
         lines: ['Aim T20, T19, Bull or any bed', 'Then chalk visit & subtract!'],
       });
     } else {
@@ -4393,7 +4713,7 @@ function loadChallenge(ch) {
     showNumpad(false);
     renderChalkboard({
       header: 'CHAMPIONSHIP 501', big: ch.startScore, sub: `YOU ${m.playerScore} · DAVE ${m.rivalScore}`,
-      lines: [m.lastDaveNote || 'Double Out · Board IQ Live!', ch.startScore <= 189 ? 'Tight checkout aim · Auditor active!' : 'Open scoring · Pub scatter live!'],
+      lines: [m.lastDaveNote || 'Double Out · Board IQ Live!', state.useAimGauge ? 'Click bed to lock aim -> release on GREEN!' : 'Instant throw · Auditor active!'],
     });
   }
 
@@ -4782,6 +5102,174 @@ function completeChallenge(correct, customMsg = null, customCueLines = null) {
 }
 
 /* ---------- Player & Ghost Interaction Handlers ---------- */
+function commit301Dart(aimedBed, landedBed, pt, zone = null) {
+  const ch = state.challenge;
+  if (!ch || ch.kind !== 'countdown301' || ch.phase !== 'throw') return;
+  const maxAllowed = Math.max(1, ch.startScore - ch.visitTotal - 32);
+  let landed = landedBed;
+  let dartPt = pt;
+  if (landed.value > maxAllowed) {
+    const safeSec = Math.max(1, Math.min(20, Math.floor(maxAllowed)));
+    const safeCode = 'S' + safeSec;
+    landed = { code: safeCode, ring: 'S', sector: safeSec, value: safeSec, sub: 'OS' };
+    dartPt = bedToXY(safeCode, { jitter: 0.06 });
+  }
+  throwDartTo(dartPt.x, dartPt.y, { kind: landed.ring, accent: 0x8f231e });
+  ch.darts.push(landed.code);
+  ch.dartCoords.push({ code: landed.code, x: dartPt.x, y: dartPt.y });
+  ch.visitTotal += landed.value;
+  state.dartsLeft = Math.max(0, 3 - ch.darts.length);
+  const liveAfter = ch.startScore - ch.visitTotal;
+  updateHudStats();
+
+  const pulled = landed.code !== aimedBed.code;
+  const zoneTag = zone === 'green' ? 'DEAD ON! ' : zone === 'amber' ? 'SLIPPED OFF WIRE! ' : zone === 'red' ? 'PULLED NEIGHBOUR! ' : '';
+  const driftNote = pulled
+    ? `${zoneTag}Aimed ${aimedBed.code} -> landed ${bedPretty(landed.code)}`
+    : `${zoneTag}Nailed ${bedPretty(landed.code)}!`;
+  renderChalkboard({
+    header: '301 · YOUR THROW', big: ch.startScore, sub: `${ch.darts.length}/3 darts thrown`,
+    lines: [ch.darts.map(d => `${d}(${bedValue(d)})`).join(' + '), state.dartsLeft ? `${state.dartsLeft} dart(s) left` : 'Now chalk the visit!'],
+  });
+  setFeedback(driftNote, !pulled ? 'ok' : zone === 'red' ? 'warn' : 'cue');
+
+  if (!state.ghostMode && zone === 'red' && pulled && landed.sector !== aimedBed.sector) {
+    trev.say(`Oooh, pulled it across the wire into ${landed.code}, mate — proper pub dart! Chalk it up!`, { mood: 'wince', holdMs: 1800, speak: true });
+  } else if (state.dartsLeft === 1 && liveAfter >= 179 && liveAfter <= 189) {
+    trev.say(`Oi, Bogey Watch on ${liveAfter}! Watch yer don't leave 169, 168, 166, 165, 163, 162 or 159!`, { mood: 'toast', holdMs: 2200, speak: true });
+  }
+
+  if (ch.darts.length >= 3) {
+    ch.expectedRem = ch.startScore - ch.visitTotal;
+    state.busy = true;
+    state.advanceTimerId = setTimeout(() => {
+      state.advanceTimerId = null;
+      state.busy = false;
+      ch.phase = 'chalk_visit';
+      state.challengeStartMs = performance.now();
+      state.bellChimed = false;
+      elPromptSub.textContent = `${state.inTrial ? 'Pub Trial' : 'Level 4'} · Step 1: Chalk Visit`;
+      elPromptTask.textContent = 'Add your 3 darts in the board & CALL the visit total!';
+      showNumpad(true);
+      renderChalkboard({
+        header: 'STEP 1 · VISIT TOTAL', big: ch.startScore, sub: 'Add the 3 darts in the board',
+        lines: ['Type the 3-dart visit & press CALL!', '(Press Cue [H] for grouping help)'],
+      });
+    }, 420);
+  }
+}
+
+function commit501Dart(aimedBed, landedBed, pt, zone = null) {
+  const ch = state.challenge;
+  if (!ch || ch.kind !== 'match501' || ch.phase !== 'throw') return;
+  const m = state.match501;
+  const remBefore = ch.liveRem;
+  const isCheckoutZone = remBefore <= 189;
+  const audit = isCheckoutZone ? audit501Decision(remBefore, state.dartsLeft, aimedBed, m.rivalScore) : null;
+
+  if (audit) {
+    m.auditTotal++;
+    if (audit.grade === 'great') m.auditGood++;
+    else m.auditNotes.push(audit.msg);
+  }
+
+  let landed = landedBed;
+  let dartPt = pt;
+  // When playing without the Skill Gauge (Instant mode), still demonstrate real trap drift on known splash traps!
+  if (!zone && isCheckoutZone && audit && audit.trapDrift && Math.random() < 0.72) {
+    const dc = audit.trapDrift;
+    landed = { code: dc, ring: dc === 'BULL' ? 'BULL' : dc === '25' ? '25' : dc[0], value: bedValue(dc), sector: parseInt(dc.slice(1), 10) || 25 };
+    dartPt = bedToXY(dc, { jitter: 0.06 });
+  }
+
+  const newRem = remBefore - landed.value;
+  m.dartsThrown++;
+
+  const isWin = newRem === 0 && (landed.ring === 'D' || landed.ring === 'BULL');
+  const isBust = newRem < 0 || newRem === 1 || (newRem === 0 && !isWin);
+
+  if (isBust) {
+    throwDartTo(dartPt.x, dartPt.y, { kind: landed.ring === 'MISS' ? 'S' : landed.ring, wireTink: true });
+    state.dartsLeft = 0;
+    setFeedback(`BUST! ${bedPretty(landed.code)} on ${remBefore} — score stays ${ch.startScore}!`, 'warn');
+    trev.say(`Ooh, BUST! Score goes right back to ${ch.startScore}, mate — Big Dave's steppin' up!`, { mood: 'wince', holdMs: 2400, speak: true });
+    renderChalkboard({
+      header: 'BUST!', big: ch.startScore, sub: `${landed.code} busted from ${remBefore}`,
+      lines: [{ text: `Score reverts to ${ch.startScore}`, kind: 'warn' }, "Big Dave's turn next..."],
+    });
+    state.busy = true;
+    state.advanceTimerId = setTimeout(() => { state.advanceTimerId = null; runBigDaveTurn(); }, 1250);
+    return;
+  }
+
+  throwDartTo(dartPt.x, dartPt.y, { kind: landed.ring === 'MISS' ? 'S' : landed.ring, accent: 0x8f231e });
+  ch.darts.push(landed.code);
+  ch.dartCoords.push({ code: landed.code, x: dartPt.x, y: dartPt.y });
+  ch.visitTotal += landed.value;
+  ch.liveRem = newRem;
+  state.remainingScore = newRem;
+  state.dartsLeft = Math.max(0, 3 - ch.darts.length);
+
+  if (isWin) {
+    m.totalScored += ch.visitTotal;
+    m.playerScore = 0;
+    updateHudStats();
+    finish501Leg(true);
+    return;
+  }
+
+  const pulled = landed.code !== aimedBed.code;
+  if (audit) {
+    const landTag = pulled ? ` (landed ${landed.code})` : '';
+    setFeedback(`[${audit.tag}] ${audit.msg}${landTag}`, audit.grade === 'great' ? 'ok' : 'warn');
+    if (audit.grade === 'bad') {
+      trev.say(`Oi, Board Management check! ${audit.msg}`, { mood: 'wince', holdMs: 2600, speak: true });
+    } else if (audit.tag === 'BOGEY COVER' || audit.tag === '1-DART SWITCH' || audit.tag === 'FDI BRIDGE' || audit.tag === 'RIVAL PRESSURE') {
+      trev.say(`Lovely jubbly — proper match brain! ${audit.msg}`, { mood: 'cheer', holdMs: 2000, speak: true });
+    }
+  } else {
+    const zoneTag = zone === 'green' ? 'DEAD ON! ' : zone === 'red' ? 'WIRE PULL! ' : '';
+    const driftNote = pulled
+      ? `${zoneTag}Aimed ${aimedBed.code} -> ${bedPretty(landed.code)}`
+      : `${zoneTag}${bedPretty(landed.code)}`;
+    setFeedback(`${driftNote} · ${state.dartsLeft} dart(s) left`, !pulled ? 'ok' : zone === 'red' ? 'warn' : 'cue');
+    if (!state.ghostMode && zone === 'red' && pulled) {
+      trev.say(landed.code === 'MISS' ? "Oooh, just outside the wire for zero, mate! Breathe an' steady yer arm!" : `Pulled across the wire into ${landed.code}! Happens to the best of us — adapt an' carry on!`, { mood: 'wince', holdMs: 1800, speak: true });
+    }
+  }
+
+  if (newRem <= 189) {
+    elScoreBig.textContent = String(newRem);
+    setBridgeBadge(newRem <= 90 ? getFdiRule(newRem) : null);
+  }
+  renderChalkboard({
+    header: 'CHAMPIONSHIP 501', big: newRem <= 189 ? newRem : ch.startScore,
+    sub: `YOU ${ch.startScore} · DAVE ${m.rivalScore}`,
+    lines: [ch.darts.map(d => `${d}(${bedValue(d)})`).join(' + '), audit ? `${audit.tag}: ${audit.grade === 'great' ? 'Smart ✓' : 'Check!'}` : `${state.dartsLeft} dart(s) left`],
+  });
+  updateHudStats();
+
+  if (ch.darts.length >= 3) {
+    ch.expectedRem = ch.startScore - ch.visitTotal;
+    state.busy = true;
+    state.advanceTimerId = setTimeout(() => {
+      state.advanceTimerId = null;
+      state.busy = false;
+      ch.phase = 'chalk_visit';
+      state.challengeStartMs = performance.now();
+      state.bellChimed = false;
+      elScoreBig.textContent = String(ch.startScore);
+      elPromptSub.textContent = `Level 7 · Chalk Visit #${m.visitNum}`;
+      elPromptTask.textContent = 'Step 1: Add your 3 darts & CALL the visit total!';
+      showNumpad(true);
+      renderChalkboard({
+        header: 'CHALK YOUR VISIT', big: ch.startScore, sub: `YOU ${ch.startScore} · DAVE ${m.rivalScore}`,
+        lines: ['Step 1: Call your 3-dart visit total!', 'Step 2: Take it off the chalkboard!'],
+      });
+    }, 450);
+  }
+}
+
 function handleBoardClick(bed, rawXY) {
   if (!bed || state.busy || !state.challenge) return;
   if (!audio.ctx) {
@@ -4800,156 +5288,29 @@ function handleBoardClick(bed, rawXY) {
   const x = rawXY ? rawXY.x : bedToXY(bed.code).x;
   const y = rawXY ? rawXY.y : bedToXY(bed.code).y;
 
-  // 0A. Level 4 — 301 / 260 Chalk & Countdown (Player Throw Phase!)
+  // 0A. Level 4 — 301 / 260 Chalk & Countdown (Skill Aim Gauge or Instant Auto Scatter)
   if (ch.kind === 'countdown301' && ch.phase === 'throw') {
+    if (state.useAimGauge && !state.ghostMode) {
+      startAimGauge('301', bed, { x, y });
+      return;
+    }
     const maxAllowed = Math.max(1, ch.startScore - ch.visitTotal - 32);
     const landed = applyPubScatter(bed, { maxVal: maxAllowed, tight: false });
     const pt = landed.scattered ? bedToXY(landed.code, { jitter: 0.08 }) : { x, y };
-    throwDartTo(pt.x, pt.y, { kind: landed.ring, accent: 0x8f231e });
-    ch.darts.push(landed.code);
-    ch.dartCoords.push({ code: landed.code, x: pt.x, y: pt.y });
-    ch.visitTotal += landed.value;
-    state.dartsLeft = Math.max(0, 3 - ch.darts.length);
-    const liveAfter = ch.startScore - ch.visitTotal;
-    updateHudStats();
-
-    const driftNote = landed.scattered ? `Aimed ${bed.code} -> drifted to ${landed.code} (${landed.value})` : `Hit ${landed.code} (${landed.value})!`;
-    renderChalkboard({
-      header: '301 · YOUR THROW', big: ch.startScore, sub: `${ch.darts.length}/3 darts thrown`,
-      lines: [ch.darts.map(d => `${d}(${bedValue(d)})`).join(' + '), state.dartsLeft ? `${state.dartsLeft} dart(s) left` : 'Now chalk the visit!'],
-    });
-    setFeedback(driftNote, landed.scattered ? 'cue' : 'ok');
-
-    if (state.dartsLeft === 1 && liveAfter >= 179 && liveAfter <= 189) {
-      trev.say(`Oi, Bogey Watch on ${liveAfter}! Watch yer don't leave 169, 168, 166, 165, 163, 162 or 159!`, { mood: 'toast', holdMs: 2200, speak: true });
-    }
-
-    if (ch.darts.length >= 3) {
-      ch.expectedRem = ch.startScore - ch.visitTotal;
-      state.busy = true;
-      state.advanceTimerId = setTimeout(() => {
-        state.advanceTimerId = null;
-        state.busy = false;
-        ch.phase = 'chalk_visit';
-        state.challengeStartMs = performance.now();
-        state.bellChimed = false;
-        elPromptSub.textContent = `${state.inTrial ? 'Pub Trial' : 'Level 4'} · Step 1: Chalk Visit`;
-        elPromptTask.textContent = 'Add your 3 darts in the board & CALL the visit total!';
-        showNumpad(true);
-        renderChalkboard({
-          header: 'STEP 1 · VISIT TOTAL', big: ch.startScore, sub: 'Add the 3 darts in the board',
-          lines: ['Type the 3-dart visit & press CALL!', '(Press Cue [H] for grouping help)'],
-        });
-      }, 420);
-    }
+    commit301Dart(bed, landed, pt, null);
     return;
   }
 
-  // 0B. Level 7 — Championship 501 vs. Big Dave (Throw + Live Board-Management Auditor!)
+  // 0B. Level 7 — Championship 501 vs. Big Dave (Skill Aim Gauge + Live Board-Management Auditor!)
   if (ch.kind === 'match501' && ch.phase === 'throw') {
-    const m = state.match501;
-    const remBefore = ch.liveRem;
-    const isCheckoutZone = remBefore <= 189;
-    const audit = isCheckoutZone ? audit501Decision(remBefore, state.dartsLeft, bed, m.rivalScore) : null;
-
-    if (audit) {
-      m.auditTotal++;
-      if (audit.grade === 'great') {
-        m.auditGood++;
-      } else {
-        m.auditNotes.push(audit.msg);
-      }
+    if (state.useAimGauge && !state.ghostMode) {
+      startAimGauge('501', bed, { x, y });
+      return;
     }
-
-    let landed;
-    if (!isCheckoutZone) {
-      landed = applyPubScatter(bed, { maxVal: 180, tight: false });
-    } else if (audit && audit.trapDrift && Math.random() < 0.72) {
-      const dc = audit.trapDrift;
-      landed = { code: dc, ring: dc === 'BULL' ? 'BULL' : dc === '25' ? '25' : dc[0], value: bedValue(dc), scattered: true };
-    } else {
-      landed = { code: bed.code, ring: bed.ring, value: bed.value, scattered: false };
-    }
-
+    const isCheckoutZone = ch.liveRem <= 189;
+    const landed = isCheckoutZone ? bed : applyPubScatter(bed, { maxVal: 180, tight: false });
     const pt = landed.scattered ? bedToXY(landed.code, { jitter: 0.06 }) : { x, y };
-    const newRem = remBefore - landed.value;
-    m.dartsThrown++;
-
-    const isWin = newRem === 0 && (landed.ring === 'D' || landed.ring === 'BULL');
-    const isBust = newRem < 0 || newRem === 1 || (newRem === 0 && !isWin);
-
-    if (isBust) {
-      throwDartTo(pt.x, pt.y, { kind: landed.ring, wireTink: true });
-      state.dartsLeft = 0;
-      setFeedback(`BUST! ${landed.code} (${landed.value}) on ${remBefore} — score stays ${ch.startScore}!`, 'warn');
-      trev.say(`Ooh, BUST! Score goes right back to ${ch.startScore}, mate — Big Dave's steppin' up!`, { mood: 'wince', holdMs: 2400, speak: true });
-      renderChalkboard({
-        header: 'BUST!', big: ch.startScore, sub: `${landed.code} busted from ${remBefore}`,
-        lines: [{ text: `Score reverts to ${ch.startScore}`, kind: 'warn' }, "Big Dave's turn next..."],
-      });
-      state.busy = true;
-      state.advanceTimerId = setTimeout(() => { state.advanceTimerId = null; runBigDaveTurn(); }, 1250);
-      return;
-    }
-
-    throwDartTo(pt.x, pt.y, { kind: landed.ring, accent: 0x8f231e });
-    ch.darts.push(landed.code);
-    ch.dartCoords.push({ code: landed.code, x: pt.x, y: pt.y });
-    ch.visitTotal += landed.value;
-    ch.liveRem = newRem;
-    state.remainingScore = newRem;
-    state.dartsLeft = Math.max(0, 3 - ch.darts.length);
-
-    if (isWin) {
-      m.totalScored += ch.visitTotal;
-      m.playerScore = 0;
-      updateHudStats();
-      finish501Leg(true);
-      return;
-    }
-
-    if (audit) {
-      setFeedback(`[${audit.tag}] ${audit.msg}`, audit.grade === 'great' ? 'ok' : 'warn');
-      if (audit.grade === 'bad') {
-        trev.say(`Oi, Board Management check! ${audit.msg}`, { mood: 'wince', holdMs: 2600, speak: true });
-      } else if (audit.tag === 'BOGEY COVER' || audit.tag === '1-DART SWITCH' || audit.tag === 'FDI BRIDGE' || audit.tag === 'RIVAL PRESSURE') {
-        trev.say(`Lovely jubbly — proper match brain! ${audit.msg}`, { mood: 'cheer', holdMs: 2000, speak: true });
-      }
-    } else {
-      const driftNote = landed.scattered ? `Aimed ${bed.code} -> ${landed.code} (${landed.value})` : `${landed.code} (${landed.value})`;
-      setFeedback(`${driftNote} · ${state.dartsLeft} dart(s) left`, 'cue');
-    }
-
-    if (newRem <= 189) {
-      elScoreBig.textContent = String(newRem);
-      setBridgeBadge(newRem <= 90 ? getFdiRule(newRem) : null);
-    }
-    renderChalkboard({
-      header: 'CHAMPIONSHIP 501', big: newRem <= 189 ? newRem : ch.startScore,
-      sub: `YOU ${ch.startScore} · DAVE ${m.rivalScore}`,
-      lines: [ch.darts.map(d => `${d}(${bedValue(d)})`).join(' + '), audit ? `${audit.tag}: ${audit.grade === 'great' ? 'Smart ✓' : 'Check!'}` : `${state.dartsLeft} dart(s) left`],
-    });
-    updateHudStats();
-
-    if (ch.darts.length >= 3) {
-      ch.expectedRem = ch.startScore - ch.visitTotal;
-      state.busy = true;
-      state.advanceTimerId = setTimeout(() => {
-        state.advanceTimerId = null;
-        state.busy = false;
-        ch.phase = 'chalk_visit';
-        state.challengeStartMs = performance.now();
-        state.bellChimed = false;
-        elScoreBig.textContent = String(ch.startScore);
-        elPromptSub.textContent = `Level 7 · Chalk Visit #${m.visitNum}`;
-        elPromptTask.textContent = 'Step 1: Add your 3 darts & CALL the visit total!';
-        showNumpad(true);
-        renderChalkboard({
-          header: 'CHALK YOUR VISIT', big: ch.startScore, sub: `YOU ${ch.startScore} · DAVE ${m.rivalScore}`,
-          lines: ['Step 1: Call your 3-dart visit total!', 'Step 2: Take it off the chalkboard!'],
-        });
-      }, 450);
-    }
+    commit501Dart(bed, landed, pt, null);
     return;
   }
 
@@ -5567,7 +5928,8 @@ function updateTouchAimPill(clientX, clientY, hit) {
   elTouchAim.style.display = 'block';
   if (hit && hit.bed) {
     elTouchAim.classList.remove('cancel');
-    elTouchAim.innerHTML = `${bedPretty(hit.bed.code)}<span class="sub">Lift finger to throw</span>`;
+    const willLockAim = state.useAimGauge && state.challenge && (state.challenge.kind === 'countdown301' || state.challenge.kind === 'match501') && state.challenge.phase === 'throw';
+    elTouchAim.innerHTML = `${bedPretty(hit.bed.code)}<span class="sub">${willLockAim ? 'Lift finger to lock aim' : 'Lift finger to throw'}</span>`;
   } else {
     elTouchAim.classList.add('cancel');
     elTouchAim.innerHTML = `Outside board<span class="sub">Release to cancel</span>`;
@@ -5583,6 +5945,7 @@ function hideTouchAimPill() {
 }
 
 canvas.addEventListener('pointermove', (e) => {
+  if (aimGauge.active) return;
   if (e.pointerType === 'touch') {
     if (!touchAim.active || e.pointerId !== touchAim.pointerId) return;
     e.preventDefault();
@@ -5597,6 +5960,11 @@ canvas.addEventListener('pointermove', (e) => {
 });
 
 canvas.addEventListener('pointerdown', (e) => {
+  if (aimGauge.active) {
+    e.preventDefault();
+    releaseAimGauge();
+    return;
+  }
   if (e.pointerType === 'touch') {
     state.isTouch = true;
     e.preventDefault();
@@ -5634,9 +6002,14 @@ canvas.addEventListener('pointercancel', () => {
 
 // Keyboard support (Digits, Enter, Backspace, H=Cue, N=Next, L=Ledger)
 window.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') { closeDrawer(); closeStageBriefing(); return; }
+  if (e.key === 'Escape') { cancelAimGauge(); closeDrawer(); closeStageBriefing(); return; }
   if (state.briefingOpen) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); closeStageBriefing(); } return; }
   if (elDrawerBg.classList.contains('open')) return;
+  if (aimGauge.active && (e.key === ' ' || e.key === 'Enter')) {
+    e.preventDefault();
+    releaseAimGauge();
+    return;
+  }
   if (e.key >= '0' && e.key <= '9') {
     if (elNumpad.classList.contains('visible')) {
       claimPlayerControl();
@@ -5701,6 +6074,11 @@ document.getElementById('levelup-close').addEventListener('click', () => {
 document.getElementById('w-start-0a').addEventListener('click', () => selectStage('LEVEL_1', true));
 document.getElementById('w-calib').addEventListener('click', () => selectStage('CALIBRATION', true));
 document.getElementById('w-howto').addEventListener('click', () => { dismissWelcome(); openDrawer('howto'); });
+document.getElementById('aim-throw-btn').addEventListener('click', () => releaseAimGauge());
+document.getElementById('aim-cancel-btn').addEventListener('click', () => {
+  cancelAimGauge();
+  setFeedback('Aim cancelled — pick any bed on the 3D board to re-aim.', 'cue');
+});
 elTrialBtn.addEventListener('click', () => startLevelTrial(state.stage));
 elGhostPill.title = 'Click to toggle Ghost Demo / Your Throw';
 elGhostPill.addEventListener('click', () => {
@@ -5739,6 +6117,7 @@ document.querySelectorAll('.dtab').forEach(tab => {
 });
 
 function openDrawer(tab = 'stages') {
+  cancelAimGauge();
   drawerTab = tab;
   document.querySelectorAll('.dtab').forEach(t => t.classList.toggle('active', t.dataset.tab === drawerTab));
   elDrawerBg.classList.add('open');
@@ -5791,6 +6170,13 @@ function renderDrawer() {
         </div>
       </div>
       <div class="setting-row">
+        <span>3-Dart Throw Aim (Levels 4 &amp; 7)</span>
+        <div class="seg-group">
+          <button class="seg-btn ${state.useAimGauge ? 'active' : ''}" data-aimgauge="1">Accuracy Gauge</button>
+          <button class="seg-btn ${!state.useAimGauge ? 'active' : ''}" data-aimgauge="0">Instant Scatter</button>
+        </div>
+      </div>
+      <div class="setting-row">
         <span>Match-Night Rival Pressure</span>
         <div class="seg-group">
           <button class="seg-btn ${state.rivalPressure ? 'active' : ''}" data-rival="1">Rival on D16</button>
@@ -5827,6 +6213,11 @@ function renderDrawer() {
       state.fdiBridgesOnly = b.dataset.fdi === '1'; renderDrawer();
       if (state.stage === 'LEVEL_6') loadChallenge(nextChallengeForStage('LEVEL_6'));
     }));
+    elDrawerBody.querySelectorAll('[data-aimgauge]').forEach(b => b.addEventListener('click', () => {
+      state.useAimGauge = b.dataset.aimgauge === '1';
+      if (!state.useAimGauge) cancelAimGauge();
+      renderDrawer();
+    }));
     elDrawerBody.querySelectorAll('[data-rival]').forEach(b => b.addEventListener('click', () => {
       state.rivalPressure = b.dataset.rival === '1'; renderDrawer();
     }));
@@ -5842,6 +6233,7 @@ function renderDrawer() {
           <li><strong>Oche Ghost Demo:</strong> Plays automatically on load so you can watch worked shots. Click or tap the board anytime to grab the darts!</li>
           <li><strong>Desktop / Mouse:</strong> Hover any segment on the 3D dartboard to preview it (e.g., <em>T14 · 42</em>), then click to throw.</li>
           <li><strong>Phone / Touch:</strong> <strong>Press and slide your finger</strong> across the dartboard — a floating fingertip badge previews the exact bed. <strong>Lift to throw</strong> (slide off board to cancel).</li>
+          <li><strong>3-Dart Accuracy Gauge (Levels 4 &amp; 7):</strong> Click/tap a bed to lock your aim, then click/tap (or press <strong>Space</strong>) when the swaying brass needle hits the <strong>green sweet spot</strong>! Slip into <strong>amber</strong> to drop into the single, or pull into <strong>crimson</strong> to drift into a neighbouring sector (like <code>5</code> or <code>1</code> next to <code>20</code>)!</li>
           <li><strong>Chalk &amp; Value Calls:</strong> Type numbers on your keyboard + <strong>Enter</strong>, or tap the slate numpad + <strong>CALL</strong>.</li>
         </ul>
       </div>
@@ -5974,8 +6366,8 @@ function animate(now) {
   // Pause inactivity return, hint-on-pause, and countdown clock cleanly while Briefing, Drawer or Level-Up Banner is open!
   const pausedByOverlay = state.briefingOpen || elDrawerBg.classList.contains('open') || elLevelUp.classList.contains('show');
 
-  // Return seamlessly to Oche Ghost after 18s of player inactivity (never interrupt an active 501 match or Pub Trial!)
-  if (!state.ghostMode && !state.inTrial && state.stage !== 'LEVEL_7' && !touchAim.active && !pausedByOverlay && now - state.lastPlayerInputAt > 18000) {
+  // Return seamlessly to Oche Ghost after 18s of player inactivity (never interrupt an active 501 match, Pub Trial, or live Aim Gauge!)
+  if (!state.ghostMode && !state.inTrial && !aimGauge.active && state.stage !== 'LEVEL_7' && !touchAim.active && !pausedByOverlay && now - state.lastPlayerInputAt > 18000) {
     state.ghostMode = true;
     ghostRotIdx = (ghostRotIdx + 1) % GHOST_ROTATION.length;
     state.stage = GHOST_ROTATION[ghostRotIdx];
@@ -5994,8 +6386,8 @@ function animate(now) {
     }
   }
 
-  // Live Difficulty-Scaled Countdown Timer & Brass Bell Gate
-  if (state.challenge && !state.busy && !pausedByOverlay) {
+  // Live Difficulty-Scaled Countdown Timer & Brass Bell Gate (pauses cleanly while aiming the Accuracy Gauge!)
+  if (state.challenge && !state.busy && !pausedByOverlay && !aimGauge.active) {
     const baseMs = state.challenge.speedMs || 3200;
     const targetMs = baseMs * prof.timerMult * (state.ghostMode ? 1.55 : 1.0);
     const elapsed = now - state.challengeStartMs;
@@ -6011,7 +6403,7 @@ function animate(now) {
       setFeedback('Bell! Pace clock expired — finish the shot (slow items resurface soon).', 'warn');
       trev.onBellTimeout();
     }
-  } else if (pausedByOverlay) {
+  } else if (pausedByOverlay || aimGauge.active) {
     state.challengeStartMs = now;
   }
 
@@ -6046,8 +6438,8 @@ function animate(now) {
     targetCam.x += 0.22;
     targetCam.z -= 0.18;
   }
-  // On portrait phones when the compact Slate Numpad is visible, gently raise the board above the keypad so all 3 darts remain unobstructed!
-  if (camera.aspect < 0.95 && elNumpad.classList.contains('visible')) {
+  // On portrait phones when the compact Slate Numpad or Aim Gauge is visible, gently raise the board above it so all 3 darts & crosshair remain unobstructed!
+  if (camera.aspect < 0.95 && (elNumpad.classList.contains('visible') || aimGauge.active)) {
     targetCam.y -= 0.38;
     targetLook.y -= 0.52;
     targetCam.z += 1.35;
@@ -6091,6 +6483,7 @@ function animate(now) {
     b.pts.material.opacity = 0.85 * (1 - b.age / b.life);
   }
 
+  updateAimGauge(dt);
   updateDarts(dt);
   tickGhost(dt);
 
