@@ -5141,19 +5141,21 @@ function commit301Dart(aimedBed, landedBed, pt, zone = null) {
 
   if (ch.darts.length >= 3) {
     ch.expectedRem = ch.startScore - ch.visitTotal;
+    const dartList = ch.darts.join(' + ');
     state.busy = true;
     state.advanceTimerId = setTimeout(() => {
       state.advanceTimerId = null;
       state.busy = false;
       ch.phase = 'chalk_visit';
+      state.hintShown = false;
       state.challengeStartMs = performance.now();
       state.bellChimed = false;
       elPromptSub.textContent = `${state.inTrial ? 'Pub Trial' : 'Level 4'} · Step 1: Chalk Visit`;
-      elPromptTask.textContent = 'Add your 3 darts in the board & CALL the visit total!';
+      elPromptTask.textContent = `Darts: ${dartList} — add them & press CALL!`;
       showNumpad(true);
       renderChalkboard({
-        header: 'STEP 1 · VISIT TOTAL', big: ch.startScore, sub: 'Add the 3 darts in the board',
-        lines: ['Type the 3-dart visit & press CALL!', '(Press Cue [H] for grouping help)'],
+        header: 'STEP 1 · VISIT TOTAL', big: ch.startScore, sub: `Darts: ${dartList}`,
+        lines: ['Add your 3 darts & press CALL!', '(Press Cue [H] for grouping help)'],
       });
     }, 420);
   }
@@ -5251,20 +5253,22 @@ function commit501Dart(aimedBed, landedBed, pt, zone = null) {
 
   if (ch.darts.length >= 3) {
     ch.expectedRem = ch.startScore - ch.visitTotal;
+    const dartList = ch.darts.join(' + ');
     state.busy = true;
     state.advanceTimerId = setTimeout(() => {
       state.advanceTimerId = null;
       state.busy = false;
       ch.phase = 'chalk_visit';
+      state.hintShown = false;
       state.challengeStartMs = performance.now();
       state.bellChimed = false;
       elScoreBig.textContent = String(ch.startScore);
       elPromptSub.textContent = `Level 7 · Chalk Visit #${m.visitNum}`;
-      elPromptTask.textContent = 'Step 1: Add your 3 darts & CALL the visit total!';
+      elPromptTask.textContent = `Darts: ${dartList} — add them & press CALL!`;
       showNumpad(true);
       renderChalkboard({
-        header: 'CHALK YOUR VISIT', big: ch.startScore, sub: `YOU ${ch.startScore} · DAVE ${m.rivalScore}`,
-        lines: ['Step 1: Call your 3-dart visit total!', 'Step 2: Take it off the chalkboard!'],
+        header: 'CHALK YOUR VISIT', big: ch.startScore, sub: `Darts: ${dartList}`,
+        lines: [`YOU ${ch.startScore} · DAVE ${m.rivalScore}`, 'Step 1: Add your 3 darts & CALL!'],
       });
     }, 450);
   }
@@ -5738,7 +5742,9 @@ function submitNumericAnswer(rawStr) {
       } else {
         if (!state.inTrial) applyChallengeHint(false);
         state.numInput = ''; renderNumpadDisplay();
-        completeChallenge(false, `Visit isn't ${val}! ${ch.darts.map(d => `${d}(${bedValue(d)})`).join(' + ')}`);
+        const breakdown = ch.darts.map(d => `${d}(${bedValue(d)})`).join(' + ');
+        elPromptTask.textContent = `Try again: ${breakdown} — enter total & CALL!`;
+        completeChallenge(false, `Visit isn't ${val}! Add: ${breakdown}`);
       }
       return;
     }
@@ -5790,7 +5796,9 @@ function submitNumericAnswer(rawStr) {
         audio.playWireTink(false);
         applyChallengeHint(false);
         state.numInput = ''; renderNumpadDisplay();
-        setFeedback(`Check your addition — ${ch.darts.map(d => `${d}(${bedValue(d)})`).join(' + ')}`, 'warn');
+        const breakdown = ch.darts.map(d => `${d}(${bedValue(d)})`).join(' + ');
+        elPromptTask.textContent = `Try again: ${breakdown} — enter total & CALL!`;
+        setFeedback(`Check your addition — ${breakdown} (press Cue [H] for grouping!)`, 'warn');
       }
       return;
     }
@@ -6012,13 +6020,16 @@ window.addEventListener('keydown', (e) => {
   }
   if (e.key >= '0' && e.key <= '9') {
     if (elNumpad.classList.contains('visible')) {
+      e.preventDefault();
       claimPlayerControl();
       if (state.numInput.length < 3) { state.numInput += e.key; renderNumpadDisplay(); }
     }
   } else if (e.key === 'Backspace' && elNumpad.classList.contains('visible')) {
+    e.preventDefault();
     claimPlayerControl();
     state.numInput = state.numInput.slice(0, -1); renderNumpadDisplay();
   } else if (e.key === 'Enter' && elNumpad.classList.contains('visible')) {
+    e.preventDefault();
     claimPlayerControl();
     submitNumericAnswer(state.numInput);
   } else if (e.key.toLowerCase() === 'h') {
@@ -6324,11 +6335,13 @@ const curLookAt = BASE_LOOK.clone();
 function onResize() {
   const w = window.innerWidth, h = window.innerHeight;
   camera.aspect = w / h;
-  if (camera.aspect < 0.95) {
-    // Portrait phone: center tightly on the dartboard so treble & double rings fill ~92% width for easy thumb aiming!
-    const zPortrait = Math.max(10.8, Math.min(20.5, 8.25 / Math.max(0.41, camera.aspect)));
-    BASE_CAM.set(0.0, 0.25, zPortrait);
-    BASE_LOOK.set(0.0, 0.14, 0);
+  if (w <= 780 || camera.aspect < 0.95) {
+    // Portrait / stacked-HUD viewport: fit board cleanly inside the vertical gap between top HUD & bottom controls!
+    const zByWidth = 8.25 / Math.max(0.41, camera.aspect);
+    const zMinVert = w <= 780 ? 12.8 : 11.4;
+    const zPortrait = Math.max(zMinVert, Math.min(20.5, zByWidth));
+    BASE_CAM.set(0.0, 0.42, zPortrait);
+    BASE_LOOK.set(0.0, 0.30, 0);
   } else {
     // Landscape / Desktop: frame full board (with 20 clear below HUD) + entire right 3D slate chalkboard cleanly
     const aspectPad = Math.max(0, 1.55 - camera.aspect) * 3.2;
@@ -6400,7 +6413,9 @@ function animate(now) {
     if (!state.ghostMode && remMs <= 0 && !state.bellChimed) {
       state.bellChimed = true;
       audio.playBell('timeout');
-      setFeedback('Bell! Pace clock expired — finish the shot (slow items resurface soon).', 'warn');
+      if (!state.hintShown) {
+        setFeedback('Bell! Pace clock expired — finish the shot (press Cue [H] for help).', 'warn');
+      }
       trev.onBellTimeout();
     }
   } else if (pausedByOverlay || aimGauge.active) {
@@ -6438,11 +6453,12 @@ function animate(now) {
     targetCam.x += 0.22;
     targetCam.z -= 0.18;
   }
-  // On portrait phones when the compact Slate Numpad or Aim Gauge is visible, gently raise the board above it so all 3 darts & crosshair remain unobstructed!
-  if (camera.aspect < 0.95 && (elNumpad.classList.contains('visible') || aimGauge.active)) {
-    targetCam.y -= 0.38;
-    targetLook.y -= 0.52;
-    targetCam.z += 1.35;
+  // On stacked/portrait viewports when the compact Slate Numpad or Aim Gauge is visible, gently zoom & lift so the entire dartboard sits cleanly between top HUD and bottom keypad!
+  if ((window.innerWidth <= 780 || camera.aspect < 0.95) && (elNumpad.classList.contains('visible') || aimGauge.active)) {
+    const isNarrowPhone = camera.aspect < 0.72;
+    targetCam.y -= isNarrowPhone ? 0.30 : 0.08;
+    targetLook.y -= isNarrowPhone ? 0.42 : 0.14;
+    targetCam.z += isNarrowPhone ? 1.45 : 1.95;
   }
   const camAlpha = 1 - Math.exp(-dt * 4.5);
   curCamPos.lerp(targetCam, camAlpha);
