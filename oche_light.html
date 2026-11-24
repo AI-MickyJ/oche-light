@@ -92,11 +92,11 @@
     border: 1px solid rgba(201,161,90,0.45); background: rgba(255,255,255,0.05);
     transition: all 0.25s ease;
   }
-  .pip-dot.lit {
+  .pip-dot.lit, .pip-dot.filled {
     background: var(--brass-bright); border-color: #fff2ce;
     box-shadow: 0 0 7px rgba(232,198,130,0.65);
   }
-  .pip-dot.trial-ok { background: #64d18b; border-color: #c8f9d8; box-shadow: 0 0 7px rgba(100,209,139,0.7); }
+  .pip-dot.trial-ok, .pip-dot.trial { background: #64d18b; border-color: #c8f9d8; box-shadow: 0 0 7px rgba(100,209,139,0.7); }
   .trial-cta {
     background: linear-gradient(135deg, rgba(212,164,74,0.34), rgba(140,96,26,0.45));
     border: 1px solid var(--brass-bright); color: #fff4d2;
@@ -480,8 +480,10 @@
   .trev-dock {
     position: fixed; left: 12px; bottom: 52px; z-index: 16;
     display: flex; flex-direction: column; align-items: flex-start; gap: 16px;
-    pointer-events: none;
+    pointer-events: none; transition: gap 0.28s ease, opacity 0.2s ease;
   }
+  .trev-dock:has(.mood-pint) { gap: 58px; }
+  .trev-dock:has(.mood-crown) { gap: 34px; }
   .trev-bubble {
     pointer-events: auto; position: relative;
     max-width: 226px; min-width: 180px;
@@ -688,10 +690,15 @@
     .sound-pill { padding: 5px 8px; font-size: 10px; white-space: nowrap; }
     .hover-bed { display: none; }
     .numpad-panel {
-      left: 50%; right: auto; transform: translateX(-50%);
-      bottom: 146px; width: min(280px, calc(100vw - 24px)); padding: 9px;
+      left: 8px; right: 8px; transform: none;
+      bottom: 70px; width: auto; padding: 6px 8px; gap: 5px;
     }
-    .np-key { padding: 11px 0; font-size: 16px; }
+    .numpad-display { min-height: 30px; padding: 3px 9px; font-size: 18px; }
+    .numpad-display.placeholder { font-size: 12px; line-height: 22px; }
+    .numpad-grid { grid-template-columns: repeat(6, 1fr); gap: 5px; }
+    .np-key { padding: 8px 0; font-size: 14px; }
+    .np-key.enter { font-size: 11px; letter-spacing: 0.4px; }
+    body.numpad-open .trev-dock { opacity: 0; pointer-events: none; }
     .toast-stack { bottom: 50px; }
     .trev-dock {
       left: 6px; right: 6px; bottom: 48px;
@@ -3229,6 +3236,8 @@ class CoachTrev {
       line = `Clipped the wire, mate! Don't divide — ${r.replace('Not ', 'skip ')} Use yer 25, 30, 35 sum!`;
     } else if (ch && ch.kind === 'marking') {
       line = "Don't go all Pete Tong addin' one by one, sunshine! Snap the two amber darts together first, then round the odd one to the nearest ten!";
+    } else if (ch && (ch.kind === 'countdown301' || ch.kind === 'match501') && ch.phase !== 'throw') {
+      line = `Easy on the chalk, me old china! ${r}`;
     } else {
       const quips = [
         `Clang! Clipped the spider wire, mate — ${r}`,
@@ -3553,9 +3562,9 @@ function applyPubScatter(aimedBed, { maxVal = 180, tight = false } = {}) {
   }
   let val = bedValue(code);
   if (val > maxVal) {
-    code = aimedBed.sector ? 'S' + aimedBed.sector : 'S1';
+    const safeSec = Math.max(1, Math.min(20, Math.floor(maxVal)));
+    code = (aimedBed.sector && aimedBed.sector <= maxVal) ? ('S' + aimedBed.sector) : ('S' + safeSec);
     val = bedValue(code);
-    if (val > maxVal) { code = aimedBed.code; val = aimedBed.value; }
   }
   const ring = code === 'BULL' ? 'BULL' : code === '25' ? '25' : code[0];
   return { code, ring, value: val, scattered: code !== aimedBed.code };
@@ -3602,6 +3611,10 @@ function audit501Decision(rem, dartsLeft, aimedBed, rivalScore) {
     if (tp) {
       return { grade: 'bad', tag: 'ROUTE LEAK',
         msg: `${aimedBed.code} on ${rem} leaves ${leaves} — open with ${tp.open.join(' or ')}!` };
+    }
+    if (!twoDartOk) {
+      return { grade: 'bad', tag: 'ROUTE LEAK',
+        msg: `3 darts on ${rem}: ${aimedBed.code} leaves ${leaves} (not a 2-dart out!) — open on T20/T19/T18!` };
     }
     return null;
   }
@@ -3901,7 +3914,7 @@ function finishLevelTrial(passed) {
       const faster = state.difficulty === 'relaxed' ? 'league' : 'pro';
       acts.push({ label: `Try ${DIFFICULTY_PROFILES[faster].label} for ${starsForDifficulty(faster)}★`, onClick: () => { setDifficulty(faster, false); startLevelTrial(lvlId); } });
     }
-    acts.push({ label: 'Keep Practicing Here', ghost: true });
+    acts.push({ label: 'Keep Practicing Here', ghost: true, onClick: () => loadChallenge(nextChallengeForStage(lvlId)) });
     showLevelUpBanner(
       `${curSt.short} Trial Passed! ${formatStars(earned)}`,
       `Smashing darts! You earned ${formatStars(earned)} on ${currentProfile().label} (+60 XP).${nextSt ? ` Ready to step up to ${nextSt.short}?` : ''}`,
@@ -3987,6 +4000,7 @@ function updateHudStats() {
 
 function showNumpad(show) {
   elNumpad.classList.toggle('visible', show);
+  document.body.classList.toggle('numpad-open', show);
   state.numInput = '';
   renderNumpadDisplay();
 }
@@ -4195,7 +4209,7 @@ function loadChallenge(ch) {
     elPromptTask.textContent = `Enter the value of ${ch.target} & press CALL`;
     showNumpad(true);
     showBoardOverlays({ highlights: [{ code: ch.target, color: 0xf3cc7d, opacity: 0.56 }] });
-    renderChalkboard({ header: 'LEVEL 1 · DOUBLES', big: ch.target, sub: 'Type total & press CALL', lines: tier === 1 ? [ch.cue] : ['2 × sector number (<2s)'] });
+    renderChalkboard({ header: 'LEVEL 1 · DOUBLES', big: ch.target, sub: 'Type total & press CALL', lines: ['2 × sector number (press Cue [H] if stuck)'] });
   } else if (ch.kind === 'halving') {
     state.dartsLeft = 2;
     elPromptSub.textContent = `${modeTag || 'Level 1'} · Halving Escape`;
@@ -4221,7 +4235,7 @@ function loadChallenge(ch) {
     elPromptTask.textContent = `Enter the value of ${ch.target} & press CALL`;
     showNumpad(true);
     showBoardOverlays({ highlights: [{ code: ch.target, color: 0xf3cc7d, opacity: 0.62 }] });
-    renderChalkboard({ header: 'LEVEL 2 · TREBLES', big: ch.target, sub: 'Type value (<2s)', lines: [tier === 1 ? ch.cue : '3 × sector number'] });
+    renderChalkboard({ header: 'LEVEL 2 · TREBLES', big: ch.target, sub: 'Type value (<2s)', lines: ['3 × sector number (press Cue [H] if stuck)'] });
   } else if (ch.kind === 'marking') {
     const it = ch.item;
     state.dartsLeft = 0;
@@ -4714,8 +4728,8 @@ function completeChallenge(correct, customMsg = null, customCueLines = null) {
       state.trialStep++;
       updateHudStats();
       if (state.trialStep >= state.trialTotal) {
+        state.busy = true;
         finishLevelTrial(true);
-        advanceAfter(2600);
         return;
       }
       setFeedback(`Pub Trial ${state.trialStep}/${state.trialTotal} CLEAN! ${(customMsg || '')}`, 'ok');
@@ -4906,12 +4920,12 @@ function handleBoardClick(bed, rawXY) {
       setFeedback(`${driftNote} · ${state.dartsLeft} dart(s) left`, 'cue');
     }
 
-    if (ch.startScore <= 189) {
+    if (newRem <= 189) {
       elScoreBig.textContent = String(newRem);
       setBridgeBadge(newRem <= 90 ? getFdiRule(newRem) : null);
     }
     renderChalkboard({
-      header: 'CHAMPIONSHIP 501', big: ch.startScore <= 189 ? newRem : ch.startScore,
+      header: 'CHAMPIONSHIP 501', big: newRem <= 189 ? newRem : ch.startScore,
       sub: `YOU ${ch.startScore} · DAVE ${m.rivalScore}`,
       lines: [ch.darts.map(d => `${d}(${bedValue(d)})`).join(' + '), audit ? `${audit.tag}: ${audit.grade === 'great' ? 'Smart ✓' : 'Check!'}` : `${state.dartsLeft} dart(s) left`],
     });
@@ -5637,7 +5651,9 @@ window.addEventListener('keydown', (e) => {
   } else if (e.key.toLowerCase() === 'h') {
     claimPlayerControl(); applyChallengeHint(false);
   } else if (e.key.toLowerCase() === 'n') {
-    claimPlayerControl(); loadChallenge(nextChallengeForStage(state.stage));
+    claimPlayerControl();
+    if (state.inTrial) { setFeedback("No skipping in a Pub Trial — finish the shot, sunshine!", 'warn'); return; }
+    loadChallenge(nextChallengeForStage(state.stage));
   } else if (e.key.toLowerCase() === 'r') {
     claimPlayerControl(); openStageBriefing(state.stage);
   } else if (e.key.toLowerCase() === 'l') {
@@ -5669,12 +5685,19 @@ document.getElementById('briefing-start').addEventListener('click', closeStageBr
 document.getElementById('briefing-x').addEventListener('click', closeStageBriefing);
 elBriefBg.addEventListener('click', (e) => { if (e.target === elBriefBg) closeStageBriefing(); });
 document.getElementById('hint-btn').addEventListener('click', () => { claimPlayerControl(); applyChallengeHint(false); });
-document.getElementById('skip-btn').addEventListener('click', () => { claimPlayerControl(); loadChallenge(nextChallengeForStage(state.stage)); });
+document.getElementById('skip-btn').addEventListener('click', () => {
+  claimPlayerControl();
+  if (state.inTrial) { setFeedback("No skipping in a Pub Trial — finish the shot, sunshine!", 'warn'); return; }
+  loadChallenge(nextChallengeForStage(state.stage));
+});
 document.getElementById('open-stages-btn').addEventListener('click', () => openDrawer('stages'));
 document.getElementById('ledger-btn').addEventListener('click', () => openDrawer('ledger'));
 document.getElementById('help-btn').addEventListener('click', () => openDrawer('howto'));
 document.getElementById('welcome-close').addEventListener('click', dismissWelcome);
-document.getElementById('levelup-close').addEventListener('click', () => elLevelUp.classList.remove('show'));
+document.getElementById('levelup-close').addEventListener('click', () => {
+  elLevelUp.classList.remove('show');
+  if (state.busy && !state.advanceTimerId) loadChallenge(nextChallengeForStage(state.stage));
+});
 document.getElementById('w-start-0a').addEventListener('click', () => selectStage('LEVEL_1', true));
 document.getElementById('w-calib').addEventListener('click', () => selectStage('CALIBRATION', true));
 document.getElementById('w-howto').addEventListener('click', () => { dismissWelcome(); openDrawer('howto'); });
@@ -5948,8 +5971,8 @@ function animate(now) {
   lastTime = now;
   clockSec += dt;
 
-  // Pause inactivity return, hint-on-pause, and countdown clock cleanly while Pre-Stage Briefing or Drawer is open!
-  const pausedByOverlay = state.briefingOpen || elDrawerBg.classList.contains('open');
+  // Pause inactivity return, hint-on-pause, and countdown clock cleanly while Briefing, Drawer or Level-Up Banner is open!
+  const pausedByOverlay = state.briefingOpen || elDrawerBg.classList.contains('open') || elLevelUp.classList.contains('show');
 
   // Return seamlessly to Oche Ghost after 18s of player inactivity (never interrupt an active 501 match or Pub Trial!)
   if (!state.ghostMode && !state.inTrial && state.stage !== 'LEVEL_7' && !touchAim.active && !pausedByOverlay && now - state.lastPlayerInputAt > 18000) {
@@ -6011,6 +6034,7 @@ function animate(now) {
   // Gentle oche camera breathing & subtle dart-impact kick
   cameraKick *= Math.exp(-dt * 12);
   const targetCam = BASE_CAM.clone();
+  const targetLook = BASE_LOOK.clone();
   targetCam.x += Math.sin(clockSec * 0.42) * 0.07;
   targetCam.y += Math.cos(clockSec * 0.55) * 0.045 - cameraKick;
   // Slightly lean toward right slate chalkboard during Marking / Chalking phases on wide screens
@@ -6022,9 +6046,15 @@ function animate(now) {
     targetCam.x += 0.22;
     targetCam.z -= 0.18;
   }
+  // On portrait phones when the compact Slate Numpad is visible, gently raise the board above the keypad so all 3 darts remain unobstructed!
+  if (camera.aspect < 0.95 && elNumpad.classList.contains('visible')) {
+    targetCam.y -= 0.38;
+    targetLook.y -= 0.52;
+    targetCam.z += 1.35;
+  }
   const camAlpha = 1 - Math.exp(-dt * 4.5);
   curCamPos.lerp(targetCam, camAlpha);
-  curLookAt.lerp(BASE_LOOK, camAlpha);
+  curLookAt.lerp(targetLook, camAlpha);
   camera.position.copy(curCamPos);
   camera.lookAt(curLookAt);
   postMat.uniforms.uFocusDepth.value = camera.position.z;
