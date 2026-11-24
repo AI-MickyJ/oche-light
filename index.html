@@ -1405,18 +1405,48 @@ class PubAudio {
       snap.start(t); snap.stop(t + 0.065);
     }
   }
-  playWireTink() {
+  playWireTink(withFloorClatter = false) {
     if (!this.enabled || !this.ctx) return;
     const ctx = this.ctx, t = ctx.currentTime;
-    [2480, 3920, 5610].forEach((f, idx) => {
+    // 1. Sharp tungsten-on-steel spider-wire impact transient (bright metallic snap)
+    const cLen = Math.floor(ctx.sampleRate * 0.018);
+    const cBuf = ctx.createBuffer(1, cLen, ctx.sampleRate);
+    const cd = cBuf.getChannelData(0);
+    for (let i = 0; i < cLen; i++) cd[i] = (Math.random() * 2 - 1) * Math.exp(-i / (cLen * 0.22));
+    const cs = ctx.createBufferSource(); cs.buffer = cBuf;
+    const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 3600;
+    const cg = ctx.createGain(); cg.gain.value = 0.28;
+    cs.connect(hp).connect(cg).connect(ctx.destination);
+    cs.start(t);
+
+    // 2. Ringing inharmonic steel-wire "CLINK / TING!" harmonics
+    [2740, 4490, 6820, 9120].forEach((f, idx) => {
       const o = ctx.createOscillator();
       const g = ctx.createGain();
-      o.type = 'sine'; o.frequency.setValueAtTime(f, t);
-      g.gain.setValueAtTime(0.07 / (idx + 1), t);
-      g.gain.exponentialRampToValueAtTime(0.0008, t + 0.16);
+      o.type = idx === 0 ? 'triangle' : 'sine';
+      o.frequency.setValueAtTime(f * (0.98 + Math.random() * 0.04), t);
+      o.frequency.exponentialRampToValueAtTime(f * 0.96, t + 0.19);
+      g.gain.setValueAtTime(0.11 / (idx + 1), t);
+      g.gain.exponentialRampToValueAtTime(0.0007, t + 0.21 - idx * 0.025);
       o.connect(g).connect(ctx.destination);
-      o.start(t); o.stop(t + 0.18);
+      o.start(t); o.stop(t + 0.23);
     });
+
+    // 3. Soft pub-floor double-tap clatter as the bounced dart hits the floor below the board
+    if (withFloorClatter) {
+      [0.36, 0.50].forEach((offset, bIdx) => {
+        const bt = t + offset;
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = 'triangle';
+        o.frequency.setValueAtTime(bIdx === 0 ? 220 : 175, bt);
+        o.frequency.exponentialRampToValueAtTime(72, bt + 0.045);
+        g.gain.setValueAtTime(bIdx === 0 ? 0.12 : 0.065, bt);
+        g.gain.exponentialRampToValueAtTime(0.001, bt + 0.055);
+        o.connect(g).connect(ctx.destination);
+        o.start(bt); o.stop(bt + 0.06);
+      });
+    }
   }
   playChalk() {
     if (!this.enabled || !this.ctx) return;
@@ -2385,11 +2415,17 @@ function throwDartTo(x, y, { kind = 'S', accent = 0x8f231e, delay = 0, onLand = 
   const entryYaw = (Math.random() - 0.5) * 0.07;
 
   const dart = {
-    mesh, start, end, t: -delay, duration: 0.28,
+    mesh, start, end, t: -delay, duration: 0.26,
     landed: false, wobbleT: 0, entryPitch, entryYaw,
     kind, wireTink, onLand,
     ephemeral: isEphemeral,
     pullAge: 0,
+    bVx: (Math.random() - 0.5) * 2.6 + (x >= 0 ? 0.45 : -0.45),
+    bVy: 1.55 + Math.random() * 0.85,
+    bVz: 3.1 + Math.random() * 1.0,
+    bRx: 7.5 + Math.random() * 4.5,
+    bRy: (Math.random() - 0.5) * 6.5,
+    bRz: (Math.random() - 0.5) * 8.0,
   };
   activeDarts.push(dart);
   return dart;
@@ -2415,11 +2451,32 @@ function updateDarts(dt) {
         d.landed = true;
         d.mesh.position.copy(d.end);
         d.mesh.rotation.set(d.entryPitch, d.entryYaw, Math.random() * Math.PI);
-        audio.playThud(d.kind);
-        if (d.wireTink) audio.playWireTink();
-        spawnBurst(d.end.x, d.end.y, d.wireTink ? 'spark' : 'chalk');
-        cameraKick = 0.032;
+        if (d.wireTink) {
+          // Real spider-wire bounce-out: sharp steel CLINK + sparks + instant ricochet!
+          audio.playWireTink(true);
+          spawnBurst(d.end.x, d.end.y, 'spark');
+          cameraKick = 0.042;
+        } else {
+          audio.playThud(d.kind);
+          spawnBurst(d.end.x, d.end.y, 'chalk');
+          cameraKick = 0.032;
+        }
         if (d.onLand) d.onLand();
+      }
+    } else if (d.wireTink) {
+      // Instant live spider-wire ricochet & tumble down to the pub floor!
+      d.pullAge += dt;
+      d.bVy -= 13.8 * dt;
+      d.mesh.position.x += d.bVx * dt;
+      d.mesh.position.y += d.bVy * dt;
+      d.mesh.position.z += d.bVz * dt;
+      d.mesh.rotation.x += d.bRx * dt;
+      d.mesh.rotation.y += d.bRy * dt;
+      d.mesh.rotation.z += d.bRz * dt;
+      if (d.pullAge > 0.78 || d.mesh.position.y < -4.6) {
+        dartPoolGroup.remove(d.mesh);
+        disposeDartMesh(d.mesh);
+        activeDarts.splice(i, 1);
       }
     } else {
       if (d.wobbleT < 0.45) {
@@ -2428,19 +2485,12 @@ function updateDarts(dt) {
         d.mesh.rotation.x = d.entryPitch + damp;
         d.mesh.rotation.y = d.entryYaw + damp * 0.6;
       }
-      // Wrong/trap darts cleanly bounce out & fall away after 0.65s so they never clutter the board!
       if (d.ephemeral) {
         d.pullAge += dt;
         if (d.pullAge > 0.65) {
-          const dropT = d.pullAge - 0.65;
-          d.mesh.position.z += 2.6 * dt;
-          d.mesh.position.y -= (1.8 + dropT * 9.0) * dt;
-          d.mesh.rotation.x += 2.8 * dt;
-          if (d.pullAge > 1.15) {
-            dartPoolGroup.remove(d.mesh);
-            disposeDartMesh(d.mesh);
-            activeDarts.splice(i, 1);
-          }
+          dartPoolGroup.remove(d.mesh);
+          disposeDartMesh(d.mesh);
+          activeDarts.splice(i, 1);
         }
       }
     }
@@ -3098,7 +3148,9 @@ function completeChallenge(correct, customMsg = null, customCueLines = null) {
     checkStagePromotion(rec.rankedUp);
     advanceAfter(state.ghostMode ? 1250 : 1050);
   } else {
-    audio.playWireTink();
+    // Only play an immediate tink on numeric wrong answers (board throws sync the wire-clip sound right at dart impact!)
+    const isNumeric = ch.kind === 'double_val' || ch.kind === 'treble_val' || ch.kind === 'marking' || ch.missPrompt;
+    if (isNumeric) audio.playWireTink(false);
     setFeedback(customMsg || 'Try again — check the chalk cue!', 'warn');
   }
 }
