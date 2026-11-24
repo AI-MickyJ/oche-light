@@ -2960,25 +2960,68 @@ class CoachTrev {
   }
   initVoice() {
     if (!('speechSynthesis' in window)) return;
-    const pick = () => {
+    this.pickVoice = () => {
       const voices = window.speechSynthesis.getVoices() || [];
+      if (!voices.length) return;
       // Prefer authentic British male voices (Daniel on macOS, Arthur, Google UK English Male, George, Ryan)
       this.ukVoice =
-        voices.find(v => /en[-_]GB/i.test(v.lang) && /(Daniel|Arthur|George|Ryan|Malcolm|Oliver|Google UK English Male)/i.test(v.name)) ||
+        voices.find(v => /en[-_]GB/i.test(v.lang) && /(Google UK English Male|Daniel|Arthur|George|Ryan|Malcolm|Oliver)/i.test(v.name)) ||
         voices.find(v => /en[-_]GB/i.test(v.lang)) ||
         voices.find(v => /en[-_]AU|en[-_]IE/i.test(v.lang)) ||
+        voices.find(v => /^en/i.test(v.lang)) ||
         null;
     };
-    pick();
-    window.speechSynthesis.onvoiceschanged = pick;
+    this.pickVoice();
+    window.speechSynthesis.onvoiceschanged = this.pickVoice;
+  }
+  toSpokenText(raw) {
+    return String(raw || '')
+      .replace(/->/g, ' leaves ')
+      .replace(/\bT(\d+)\b/g, 'treble $1')
+      .replace(/\bD(\d+)\b/g, 'double $1')
+      .replace(/\bS(\d+)\b/g, 'single $1')
+      .replace(/\bFDI(s?)\b/g, 'first dart indicator$1')
+      .replace(/\ban'\b/gi, 'and')
+      .replace(/\bav'\b/gi, 'have')
+      .replace(/\byer\b/gi, 'your')
+      .replace(/\bme\b/g, 'my');
+  }
+  speakNow(text) {
+    if (!this.voiceOn || !audio.enabled || !('speechSynthesis' in window)) return;
+    try {
+      if (!this.ukVoice && this.pickVoice) this.pickVoice();
+      const synth = window.speechSynthesis;
+      const wasActive = synth.speaking || synth.pending;
+      if (wasActive) synth.cancel();
+      const runSpeak = () => {
+        try {
+          if (synth.paused) synth.resume();
+          const u = new SpeechSynthesisUtterance(this.toSpokenText(text));
+          if (this.ukVoice) u.voice = this.ukVoice;
+          u.lang = (this.ukVoice && this.ukVoice.lang) || 'en-GB';
+          u.rate = 1.02;
+          u.pitch = 0.85; // warm gruff East End bloke timbre
+          u.volume = 0.96;
+          this._activeUtterance = u; // prevent Chrome GC cutting off onend!
+          u.onstart = () => { audio.duckAmbience(true); this.elStage.classList.add('talking'); };
+          u.onend = u.onerror = () => { audio.duckAmbience(false); this.elStage.classList.remove('talking'); };
+          synth.speak(u);
+        } catch (_) {}
+      };
+      // Chromium/macOS workaround: brief 40ms gap after cancel() prevents speak() from being swallowed
+      if (wasActive) setTimeout(runSpeak, 45);
+      else runSpeak();
+    } catch (_) {}
   }
   bindUI() {
     this.elVoiceBtn.addEventListener('click', (e) => {
       e.stopPropagation();
+      if (!audio.ctx) { audio.unlock(); elSoundPill.textContent = 'Sound: On'; elSoundPill.classList.add('on'); }
       this.voiceOn = !this.voiceOn;
       this.elVoiceBtn.textContent = this.voiceOn ? '🔊' : '🔇';
       this.elVoiceBtn.classList.toggle('on', this.voiceOn);
       if (!this.voiceOn && 'speechSynthesis' in window) window.speechSynthesis.cancel();
+      else if (this.voiceOn) this.say("Alright mate, Trev's voice is loud an' clear!", { mood: 'cheer', holdMs: 1200, speak: true, allowInGhost: true });
     });
     this.elHideBtn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -3006,7 +3049,7 @@ class CoachTrev {
       }
     }
   }
-  say(text, { mood = '', holdMs = 0, actions = [], speak = true, forceOpen = false } = {}) {
+  say(text, { mood = '', holdMs = 0, actions = [], speak = true, forceOpen = false, allowInGhost = false } = {}) {
     if (forceOpen) this.bubbleHidden = false;
     if (!this.bubbleHidden) this.elBubble.classList.remove('hidden');
     this.elText.textContent = text;
@@ -3024,19 +3067,8 @@ class CoachTrev {
     if (mood) this.setMood(mood, holdMs);
     this.pulseTalk(Math.min(3400, Math.max(1100, text.length * 32)));
 
-    if (speak && this.voiceOn && audio.enabled && 'speechSynthesis' in window && !state.ghostMode) {
-      try {
-        window.speechSynthesis.cancel();
-        const u = new SpeechSynthesisUtterance(text.replace(/->/g, ' leaves '));
-        if (this.ukVoice) u.voice = this.ukVoice;
-        u.lang = 'en-GB';
-        u.rate = 1.03;
-        u.pitch = 0.86; // warm gruff East End bloke timbre
-        u.volume = 0.92;
-        u.onstart = () => { audio.duckAmbience(true); this.elStage.classList.add('talking'); };
-        u.onend = u.onerror = () => { audio.duckAmbience(false); this.elStage.classList.remove('talking'); };
-        window.speechSynthesis.speak(u);
-      } catch (_) {}
+    if (speak && (!state.ghostMode || allowInGhost)) {
+      this.speakNow(text);
     }
   }
   pulseTalk(ms = 1400) {
@@ -3060,7 +3092,7 @@ class CoachTrev {
     const ch = state.challenge;
     // If the player is already on a solid streak (3+) or taps for a laugh every 4th tap, show off the Pint gag!
     if (mastery.data.streak >= 4 || (this.clickCount % 4 === 0 && mastery.data.totalCorrect >= 2)) {
-      this.say(TREV_PINT_LINE, { mood: 'pint', holdMs: 8500, forceOpen: true });
+      this.say(TREV_PINT_LINE, { mood: 'pint', holdMs: 8500, forceOpen: true, speak: true, allowInGhost: true });
       return;
     }
     if (ch) {
@@ -3085,7 +3117,7 @@ class CoachTrev {
       } else if (ch.kind === 'sods') {
         tip = `Track how many arrows are left in yer mitt! Down to one dart on 62 to 70? Bin the FDI an' go T10!`;
       }
-      this.say(tip, { mood: 'toast', holdMs: 2600, forceOpen: true });
+      this.say(tip, { mood: 'toast', holdMs: 2600, forceOpen: true, speak: true, allowInGhost: true });
     }
   }
 
@@ -3179,7 +3211,7 @@ class CoachTrev {
       return;
     }
 
-    // 6. Regular snappy Cockney praise (don't talk over every single dart — chime in warmly every ~2nd hit or on FDI bridges!)
+    // 6. Regular snappy Cockney praise
     if (streak <= 2 || streak % 2 === 1) {
       const praise = [
         "Lovely jubbly! Right in the lipstick, mate!",
@@ -3187,7 +3219,7 @@ class CoachTrev {
         "Nice one, me old china! Keep that rhythm tickin'!",
         "Bang on the money! You've got that wired into the old loaf now!",
       ];
-      this.say(this.pick(praise), { mood: 'cheer', holdMs: 1400, speak: false });
+      this.say(this.pick(praise), { mood: 'cheer', holdMs: 1400, speak: true });
     }
   }
 
@@ -4564,7 +4596,7 @@ elSoundPill.addEventListener('click', () => {
   elSoundPill.classList.toggle('on', on);
   if (on) {
     audio.playBell('ok');
-    trev.say("Wahey, sound's up! Hear the regulars chattin' an' the 80s jukebox in the corner? Right proper pub, this!", { mood: 'toast', holdMs: 2600, speak: true });
+    trev.say("Wahey, sound's up! Hear the regulars chattin' an' the 80s jukebox in the corner? Right proper pub, this!", { mood: 'toast', holdMs: 2600, speak: true, allowInGhost: true });
   } else if ('speechSynthesis' in window) {
     window.speechSynthesis.cancel();
   }
