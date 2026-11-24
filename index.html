@@ -1,0 +1,3186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>OCHE LIGHT — 3D Pub Dartboard & Darts-Maths Trainer</title>
+<style>
+  :root {
+    --slate-bg: #0c1016;
+    --panel-bg: rgba(13, 17, 23, 0.84);
+    --panel-solid: #11161e;
+    --brass: #c9a15a;
+    --brass-dim: #7f6537;
+    --brass-bright: #e8c682;
+    --chalk: #e8e1cf;
+    --chalk-dim: #9e9786;
+    --crimson: #b84239;
+    --forest: #3c8c58;
+    --ice: #7ba3c4;
+  }
+  * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
+  html, body {
+    margin: 0; padding: 0; width: 100%; height: 100%;
+    overflow: hidden; background: var(--slate-bg);
+    font-family: 'Georgia', 'Palatino Linotype', 'Times New Roman', serif;
+    color: var(--chalk);
+  }
+  #stage-canvas {
+    position: fixed; inset: 0; width: 100%; height: 100%;
+    display: block; cursor: crosshair;
+  }
+
+  /* Minimal Pub-Authentic HUD */
+  .hud-layer {
+    position: fixed; inset: 0; pointer-events: none; z-index: 10;
+    display: flex; flex-direction: column; justify-content: space-between;
+    padding: 14px 18px;
+  }
+  .hud-top {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 12px; width: 100%;
+  }
+  .plate {
+    pointer-events: auto;
+    background: var(--panel-bg);
+    border: 1px solid rgba(201, 161, 90, 0.34);
+    box-shadow: 0 6px 24px rgba(0,0,0,0.55), inset 0 1px 0 rgba(232,198,130,0.12);
+    border-radius: 6px;
+    backdrop-filter: blur(4px);
+  }
+  .brand-plate {
+    padding: 8px 13px; display: flex; flex-direction: column; gap: 5px;
+    min-width: 205px;
+  }
+  .brand-row { display: flex; align-items: center; gap: 9px; }
+  .brand-title {
+    font-size: 15px; letter-spacing: 2.6px; color: var(--brass-bright);
+    font-weight: 700; text-transform: uppercase;
+  }
+  .ghost-pill {
+    font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+    font-size: 10px; letter-spacing: 0.9px; text-transform: uppercase;
+    padding: 2px 7px; border-radius: 99px; cursor: pointer;
+    border: 1px solid rgba(123, 163, 196, 0.45);
+    color: #b7d5ee; background: rgba(34, 52, 70, 0.55);
+    transition: all 0.25s ease;
+  }
+  .ghost-pill:hover { filter: brightness(1.18); }
+  .ghost-pill.active-player {
+    border-color: rgba(201, 161, 90, 0.65);
+    color: var(--brass-bright); background: rgba(94, 67, 25, 0.45);
+  }
+  .stage-btn {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(201, 161, 90, 0.28);
+    color: var(--chalk); border-radius: 4px;
+    padding: 5px 9px; font-family: inherit; font-size: 12px;
+    text-align: left; cursor: pointer; display: flex; align-items: center;
+    justify-content: space-between; gap: 8px;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .stage-btn:hover { border-color: var(--brass); background: rgba(201,161,90,0.12); }
+  .stage-btn .caret { color: var(--brass); font-size: 10px; }
+
+  /* Center Score & Prompt Plaque */
+  .prompt-plate {
+    padding: 6px 16px 7px; text-align: center; min-width: 280px; max-width: 480px;
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+  }
+  .prompt-meta {
+    display: flex; align-items: center; gap: 10px; width: 100%;
+    justify-content: center;
+    font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+    font-size: 10.5px; letter-spacing: 1px; color: var(--chalk-dim);
+    text-transform: uppercase;
+  }
+  .dart-icons { display: inline-flex; gap: 5px; align-items: center; }
+  .dart-pip {
+    width: 16px; height: 5px; border-radius: 2px 5px 5px 2px;
+    background: linear-gradient(90deg, var(--crimson) 0 38%, var(--brass-bright) 38% 85%, #d9d9d9 85%);
+    box-shadow: 0 0 6px rgba(232,198,130,0.35);
+    transition: opacity 0.25s, transform 0.25s;
+  }
+  .dart-pip.spent { opacity: 0.18; transform: scaleX(0.8); box-shadow: none; }
+  .rival-tag {
+    padding: 1px 6px; border-radius: 3px; font-size: 10px;
+    border: 1px solid rgba(184, 66, 57, 0.55); color: #f0a8a2;
+    background: rgba(120, 32, 26, 0.35);
+  }
+  .rival-tag.safe {
+    border-color: rgba(60, 140, 88, 0.45); color: #9fdcb4;
+    background: rgba(26, 75, 44, 0.35);
+  }
+  .prompt-main {
+    display: flex; align-items: baseline; justify-content: center; gap: 11px;
+    line-height: 1.08;
+  }
+  .score-big {
+    font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+    font-size: 28px; font-weight: 700; color: var(--chalk);
+    text-shadow: 0 2px 10px rgba(201,161,90,0.22);
+    letter-spacing: 1px;
+  }
+  .prompt-task {
+    font-size: 13.5px; color: var(--brass-bright); letter-spacing: 0.25px;
+    max-width: 330px;
+  }
+  .timer-track {
+    width: 100%; height: 4px; background: rgba(255,255,255,0.08);
+    border-radius: 99px; overflow: hidden; margin-top: 3px;
+  }
+  .timer-fill {
+    height: 100%; width: 100%;
+    background: linear-gradient(90deg, var(--brass-dim), var(--brass-bright));
+    transform-origin: left center; transition: background 0.2s;
+  }
+  .timer-fill.warn { background: linear-gradient(90deg, #b85b2c, #e5934c); }
+  .timer-fill.urgent { background: linear-gradient(90deg, #9c2b23, #de5347); }
+
+  /* Right Controls */
+  .right-stack { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+  .controls-row { display: flex; gap: 7px; align-items: center; }
+  .hud-btn {
+    pointer-events: auto;
+    background: var(--panel-bg);
+    border: 1px solid rgba(201, 161, 90, 0.36);
+    color: var(--chalk); border-radius: 5px;
+    padding: 7px 11px; font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+    font-size: 11px; letter-spacing: 0.8px; text-transform: uppercase;
+    cursor: pointer; backdrop-filter: blur(4px);
+    transition: all 0.18s ease;
+  }
+  .hud-btn:hover { border-color: var(--brass-bright); color: var(--brass-bright); background: rgba(34,28,18,0.88); }
+  .hud-btn.active { border-color: var(--brass-bright); background: rgba(112, 82, 32, 0.45); color: var(--brass-bright); }
+  .flow-plate {
+    padding: 6px 12px; display: flex; align-items: center; gap: 12px;
+    font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace; font-size: 11px;
+  }
+  .flow-val { color: var(--brass-bright); font-weight: 700; font-size: 13px; }
+  .tier-badge {
+    padding: 2px 6px; border-radius: 3px; font-size: 10px;
+    border: 1px solid rgba(201,161,90,0.35); color: var(--chalk-dim);
+  }
+  .tier-badge.t1 { color: #b7d5ee; border-color: rgba(123,163,196,0.45); }
+  .tier-badge.t2 { color: var(--brass-bright); border-color: rgba(201,161,90,0.6); }
+  .tier-badge.t3 { color: #a7e4ba; border-color: rgba(60,140,88,0.6); }
+
+  /* Bottom Status & Cue Strip */
+  .hud-bottom {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    gap: 12px; width: 100%;
+  }
+  .sound-pill {
+    pointer-events: auto;
+    background: rgba(15, 19, 25, 0.78);
+    border: 1px solid rgba(201,161,90,0.38);
+    color: var(--chalk-dim); border-radius: 99px;
+    padding: 5px 12px; font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+    font-size: 11px; letter-spacing: 0.6px; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .sound-pill:hover { color: var(--brass-bright); border-color: var(--brass-bright); }
+  .sound-pill.on { color: var(--brass-bright); border-color: rgba(201,161,90,0.65); }
+
+  .feedback-strip {
+    flex: 1; max-width: 640px; margin: 0 auto;
+    padding: 8px 16px; text-align: center;
+    font-size: 14px; line-height: 1.35; color: var(--chalk);
+    min-height: 38px; display: flex; align-items: center; justify-content: center;
+    gap: 10px; transition: border-color 0.25s, background 0.25s;
+  }
+  .feedback-strip.ok { border-color: rgba(60, 140, 88, 0.75); background: rgba(16, 35, 24, 0.88); color: #cdebd7; }
+  .feedback-strip.warn { border-color: rgba(184, 66, 57, 0.8); background: rgba(42, 16, 15, 0.9); color: #f5cbc7; }
+  .feedback-strip.cue { border-color: rgba(201, 161, 90, 0.55); background: rgba(24, 21, 15, 0.88); color: #efe3c8; }
+  .hover-bed {
+    pointer-events: none;
+    padding: 6px 11px; min-width: 116px; text-align: right;
+    font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+    font-size: 12px; color: var(--brass-bright);
+  }
+  .hover-bed span { color: var(--chalk-dim); font-size: 10px; display: block; text-transform: uppercase; }
+
+  /* Compact Slate Numpad (shown only for numeric input modes) */
+  .numpad-panel {
+    position: fixed; right: 20px; bottom: 64px; z-index: 15;
+    width: 208px; padding: 11px; display: none; flex-direction: column; gap: 8px;
+  }
+  .numpad-panel.visible { display: flex; }
+  .numpad-display {
+    background: rgba(6, 9, 12, 0.85);
+    border: 1px solid rgba(201, 161, 90, 0.36);
+    border-radius: 4px; padding: 7px 10px;
+    font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+    font-size: 24px; text-align: right; color: var(--chalk);
+    letter-spacing: 2px; min-height: 44px;
+  }
+  .numpad-display.placeholder { color: rgba(232, 225, 207, 0.28); font-size: 14px; line-height: 28px; letter-spacing: 0.5px; }
+  .numpad-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;
+  }
+  .np-key {
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(201,161,90,0.28);
+    color: var(--chalk); border-radius: 4px; padding: 9px 0;
+    font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+    font-size: 15px; font-weight: 700; cursor: pointer;
+    transition: all 0.12s;
+  }
+  .np-key:hover { background: rgba(201,161,90,0.2); border-color: var(--brass-bright); color: var(--brass-bright); }
+  .np-key.enter { background: rgba(60, 140, 88, 0.35); border-color: rgba(60,140,88,0.75); color: #d1f2dc; }
+  .np-key.del { background: rgba(184, 66, 57, 0.22); border-color: rgba(184,66,57,0.55); color: #f2b7b1; }
+
+  /* Slide-Over Chalkboard Drawer (Stages & Mastery Ledger) */
+  .drawer-backdrop {
+    position: fixed; inset: 0; background: rgba(5, 8, 12, 0.62);
+    z-index: 30; display: none; justify-content: flex-end;
+    backdrop-filter: blur(2px);
+  }
+  .drawer-backdrop.open { display: flex; }
+  .drawer {
+    width: min(500px, 94vw); height: 100%;
+    background: #10151c; border-left: 1px solid rgba(201, 161, 90, 0.42);
+    box-shadow: -12px 0 40px rgba(0,0,0,0.72);
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  .drawer-head {
+    padding: 14px 18px; border-bottom: 1px solid rgba(201,161,90,0.25);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .drawer-tabs { display: flex; gap: 8px; }
+  .dtab {
+    background: transparent; border: 1px solid rgba(201,161,90,0.28);
+    color: var(--chalk-dim); padding: 6px 12px; border-radius: 4px;
+    font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+    font-size: 11px; letter-spacing: 0.8px; text-transform: uppercase; cursor: pointer;
+  }
+  .dtab.active { background: rgba(201,161,90,0.2); color: var(--brass-bright); border-color: var(--brass-bright); }
+  .drawer-close {
+    background: transparent; border: 1px solid rgba(201,161,90,0.3);
+    color: var(--chalk); width: 30px; height: 30px; border-radius: 4px;
+    font-size: 16px; cursor: pointer;
+  }
+  .drawer-body {
+    flex: 1; overflow-y: auto; padding: 16px 18px 24px;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .setting-row {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 10px; padding: 9px 12px;
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(201,161,90,0.2);
+    border-radius: 5px; font-size: 13px;
+  }
+  .seg-group { display: flex; gap: 4px; }
+  .seg-btn {
+    background: transparent; border: 1px solid rgba(201,161,90,0.28);
+    color: var(--chalk-dim); padding: 4px 8px; border-radius: 3px;
+    font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+    font-size: 10px; cursor: pointer;
+  }
+  .seg-btn.active { background: rgba(201,161,90,0.25); color: var(--brass-bright); border-color: var(--brass-bright); }
+
+  .stage-card {
+    padding: 11px 13px; border-radius: 6px; cursor: pointer;
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(201,161,90,0.22);
+    display: flex; flex-direction: column; gap: 4px;
+    transition: all 0.16s;
+  }
+  .stage-card:hover { border-color: var(--brass); background: rgba(201,161,90,0.09); }
+  .stage-card.selected { border-color: var(--brass-bright); background: rgba(201,161,90,0.16); }
+  .sc-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .sc-title { font-size: 14px; font-weight: 700; color: var(--brass-bright); }
+  .sc-tag {
+    font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+    font-size: 10px; color: var(--chalk-dim); padding: 2px 6px;
+    border-radius: 3px; background: rgba(0,0,0,0.35);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  .sc-desc { font-size: 12px; color: var(--chalk-dim); line-height: 1.38; }
+  .sc-bar { height: 3px; background: rgba(255,255,255,0.08); border-radius: 99px; overflow: hidden; margin-top: 4px; }
+  .sc-fill { height: 100%; background: linear-gradient(90deg, var(--brass-dim), var(--brass-bright)); }
+
+  /* Mastery Ledger Cells */
+  .ledger-section-title {
+    font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+    font-size: 11px; letter-spacing: 1px; text-transform: uppercase;
+    color: var(--brass); margin: 4px 0 2px; display: flex; justify-content: space-between;
+  }
+  .ledger-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
+    gap: 5px;
+  }
+  .l-cell {
+    padding: 5px 4px; border-radius: 4px; text-align: center;
+    font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+    font-size: 11px; border: 1px solid rgba(232,225,207,0.14);
+    background: rgba(255,255,255,0.03); color: rgba(232,225,207,0.45);
+  }
+  .l-cell.amber {
+    border-color: rgba(201,161,90,0.58);
+    background: rgba(154, 107, 36, 0.25); color: #f0d399;
+  }
+  .l-cell.brass {
+    border-color: rgba(232, 198, 130, 0.9);
+    background: linear-gradient(145deg, rgba(196,148,64,0.45), rgba(112,78,24,0.38));
+    color: #fff3d2; box-shadow: inset 0 1px 0 rgba(255,243,210,0.3);
+  }
+  .l-sub { font-size: 9px; opacity: 0.78; display: block; margin-top: 1px; }
+  .summary-banner {
+    padding: 10px 12px; border-radius: 5px;
+    background: rgba(201,161,90,0.12); border: 1px solid rgba(201,161,90,0.4);
+    font-size: 12px; line-height: 1.45; color: var(--chalk);
+  }
+
+  @media (max-width: 780px) {
+    .hud-layer { padding: 8px 10px; }
+    .brand-plate { min-width: auto; padding: 6px 9px; }
+    .prompt-plate { min-width: 0; padding: 7px 11px; }
+    .score-big { font-size: 26px; }
+    .prompt-task { font-size: 12px; }
+    .numpad-panel { right: 10px; bottom: 58px; width: 184px; }
+    .hover-bed { display: none; }
+  }
+</style>
+</head>
+<body>
+<canvas id="stage-canvas"></canvas>
+
+<div class="hud-layer">
+  <div class="hud-top">
+    <div class="plate brand-plate">
+      <div class="brand-row">
+        <div class="brand-title">Oche Light</div>
+        <span id="ghost-pill" class="ghost-pill">Ghost Demo</span>
+      </div>
+      <button id="open-stages-btn" class="stage-btn" title="Choose stage or view Mastery Ledger">
+        <span id="stage-label">Stage 2 · The Golden 44</span>
+        <span class="caret">▼</span>
+      </button>
+    </div>
+
+    <div class="plate prompt-plate">
+      <div class="prompt-meta">
+        <span id="prompt-sub">2-Dart Checkout</span>
+        <span class="dart-icons" id="dart-icons">
+          <span class="dart-pip"></span><span class="dart-pip"></span><span class="dart-pip"></span>
+        </span>
+        <span id="rival-tag" class="rival-tag" style="display:none">Rival on D16</span>
+      </div>
+      <div class="prompt-main">
+        <div id="score-big" class="score-big">148</div>
+        <div id="prompt-task" class="prompt-task">Click opening treble on the board</div>
+      </div>
+      <div class="timer-track"><div id="timer-fill" class="timer-fill"></div></div>
+    </div>
+
+    <div class="right-stack">
+      <div class="controls-row">
+        <button id="hint-btn" class="hud-btn" title="Show formula or visual link on board (H)">Cue [H]</button>
+        <button id="skip-btn" class="hud-btn" title="Next throw (N)">Next [N]</button>
+        <button id="ledger-btn" class="hud-btn" title="Stages & Mastery Ledger (L)">Ledger [L]</button>
+      </div>
+      <div class="plate flow-plate">
+        <span>FLOW <span id="flow-val" class="flow-val">0</span></span>
+        <span>AVG <span id="avg-ms" class="flow-val">—</span></span>
+        <span id="tier-badge" class="tier-badge t1">Guided</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="hud-bottom">
+    <button id="sound-pill" class="sound-pill">Click for Sound</button>
+    <div id="feedback-strip" class="plate feedback-strip cue">
+      Oche Ghost playing — click any bed on the 3D dartboard to take over.
+    </div>
+    <div class="plate hover-bed">
+      <span>Aiming At</span>
+      <div id="hover-bed-val">—</div>
+    </div>
+  </div>
+</div>
+
+<!-- Compact Slate Numpad (Numeric modes: Doubles/Trebles values, Miss Rule check, Croupier Marking) -->
+<div id="numpad-panel" class="plate numpad-panel">
+  <div id="numpad-display" class="numpad-display placeholder">Type score…</div>
+  <div class="numpad-grid">
+    <button class="np-key" data-k="7">7</button><button class="np-key" data-k="8">8</button><button class="np-key" data-k="9">9</button>
+    <button class="np-key" data-k="4">4</button><button class="np-key" data-k="5">5</button><button class="np-key" data-k="6">6</button>
+    <button class="np-key" data-k="1">1</button><button class="np-key" data-k="2">2</button><button class="np-key" data-k="3">3</button>
+    <button class="np-key del" data-k="BACK">⌫</button><button class="np-key" data-k="0">0</button><button class="np-key enter" data-k="ENTER">CALL</button>
+  </div>
+</div>
+
+<!-- Slide-Over Chalkboard Drawer -->
+<div id="drawer-backdrop" class="drawer-backdrop">
+  <div class="drawer">
+    <div class="drawer-head">
+      <div class="drawer-tabs">
+        <button class="dtab active" data-tab="stages">Pub Ladder</button>
+        <button class="dtab" data-tab="ledger">Mastery Ledger</button>
+      </div>
+      <button id="drawer-close" class="drawer-close" aria-label="Close">×</button>
+    </div>
+    <div id="drawer-body" class="drawer-body"></div>
+  </div>
+</div>
+
+<script type="module">
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js';
+
+/* ============================================================================
+   1. VERIFIED DARTS GEOMETRY & CURRICULUM DATA (@yourdarts 2025-2026 Latest)
+   ============================================================================ */
+const SECTORS = [20, 1, 18, 4, 13, 6, 10, 15, 2, 17, 3, 19, 7, 16, 8, 11, 14, 9, 12, 5];
+const SECTOR_INDEX = Object.fromEntries(SECTORS.map((s, i) => [s, i]));
+
+const R_INNER_BULL = 0.09;
+const R_OUTER_BULL = 0.21;
+const R_TREBLE_IN  = 0.93;
+const R_TREBLE_OUT = 1.09;
+const R_DOUBLE_IN  = 1.56;
+const R_DOUBLE_OUT = 1.72;
+const R_NUM_RING   = 1.98;
+const R_BOARD_EDGE = 2.26;
+
+const ESSENTIAL_TREBLES = [10, 12, 13, 14, 15, 16, 17, 18, 19, 20];
+const BOGEY_NUMBERS = new Set([159, 162, 163, 165, 166, 168, 169]);
+
+function bedValue(code) {
+  if (code === 'BULL') return 50;
+  if (code === '25') return 25;
+  const r = code[0], n = parseInt(code.slice(1), 10);
+  if (r === 'T') return n * 3;
+  if (r === 'D') return n * 2;
+  return n;
+}
+
+function bedPretty(code) {
+  if (code === 'BULL') return 'Bull (50)';
+  if (code === '25') return '25';
+  return `${code} (${bedValue(code)})`;
+}
+
+function bedToXY(code, opts = {}) {
+  const jitter = opts.jitter ?? 0;
+  const jx = (Math.random() - 0.5) * jitter;
+  const jy = (Math.random() - 0.5) * jitter;
+  if (code === 'BULL') return { x: jx * 0.4, y: jy * 0.4 };
+  if (code === '25') {
+    const a = opts.angle ?? Math.random() * Math.PI * 2;
+    const r = (R_INNER_BULL + R_OUTER_BULL) * 0.52;
+    return { x: Math.sin(a) * r + jx * 0.4, y: Math.cos(a) * r + jy * 0.4 };
+  }
+  const ring = code[0];
+  const sec = parseInt(code.slice(1), 10);
+  const idx = SECTOR_INDEX[sec];
+  let theta = idx * (Math.PI / 10);
+  if (opts.wireShift) theta += opts.wireShift;
+  let r;
+  if (ring === 'D') r = opts.bottomWire ? (R_DOUBLE_IN + 0.03) : (R_DOUBLE_IN + R_DOUBLE_OUT) * 0.5;
+  else if (ring === 'T') r = (R_TREBLE_IN + R_TREBLE_OUT) * 0.5;
+  else r = opts.aimHigh ? 1.38 : (opts.inner ? 0.58 : 1.32);
+  return { x: Math.sin(theta) * r + jx, y: Math.cos(theta) * r + jy };
+}
+
+function xyToBed(x, y) {
+  const r = Math.hypot(x, y);
+  if (r > R_DOUBLE_OUT + 0.05) return null;
+  if (r <= R_INNER_BULL) return { code: 'BULL', ring: 'BULL', sector: 25, value: 50, sub: 'BULL' };
+  if (r <= R_OUTER_BULL) return { code: '25', ring: '25', sector: 25, value: 25, sub: '25' };
+  let cw = Math.atan2(x, y);
+  if (cw < 0) cw += Math.PI * 2;
+  const idx = Math.floor(((cw + Math.PI / 20) % (Math.PI * 2)) / (Math.PI / 10));
+  const sector = SECTORS[idx];
+  if (r >= R_DOUBLE_IN && r <= R_DOUBLE_OUT + 0.05) {
+    return { code: 'D' + sector, ring: 'D', sector, value: sector * 2, sub: 'D' };
+  }
+  if (r >= R_TREBLE_IN && r <= R_TREBLE_OUT) {
+    return { code: 'T' + sector, ring: 'T', sector, value: sector * 3, sub: 'T' };
+  }
+  return { code: 'S' + sector, ring: 'S', sector, value: sector, sub: r > R_TREBLE_OUT ? 'OS' : 'IS' };
+}
+
+// Complete Golden 44 (60-100 excl. 99 + 101, 104, 107, 110) — Latest 2025-2026 @yourdarts routes
+const GOLDEN_44 = [
+  // Green Quick Wins (Tens, Say-60, Bull Staircase, Treble+40/20)
+  { score: 60, group: 'green', route: ['S20', 'D20'], alts: [], miss: 40, aimHigh: true, cue: 'Aim high above T20 -> S20 leaves D20 (40)' },
+  { score: 70, group: 'green', route: ['T20', 'D5'], alts: [['T18','D8'],['T10','D20']], miss: 50, link: ['T20','D5'], cue: 'Zero-ending -> T20 D5 (adjacent 20-5, miss 50)' },
+  { score: 80, group: 'green', route: ['T20', 'D10'], alts: [['T16','D16']], miss: 60, cue: 'Multiple of 10 -> T20 (60) + D10 (20), miss 60' },
+  { score: 90, group: 'green', route: ['T20', 'D15'], alts: [['T18','D18']], miss: 70, cue: 'Multiple of 10 -> T20 (60) + D15 (30) [or T18 D18]' },
+  { score: 100, group: 'green', route: ['T20', 'D20'], alts: [], miss: 80, cue: 'Multiple of 10 -> T20 (60) + D20 (40), miss 80' },
+  { score: 84, group: 'green', route: ['T20', 'D12'], alts: [['T16','D18']], miss: 64, cue: 'Say "60" for T20 -> 24 left = D12 [or T16 D18]' },
+  { score: 88, group: 'green', route: ['T20', 'D14'], alts: [['T16','D20']], miss: 68, cue: 'Say "60" for T20 -> 28 left = D14, miss 68 (<70!)' },
+  { score: 92, group: 'green', route: ['T20', 'D16'], alts: [], miss: 72, cue: 'Say "60" for T20 -> 32 left = D16, miss 72' },
+  { score: 96, group: 'green', route: ['T20', 'D18'], alts: [], miss: 76, cue: 'Say "60" for T20 -> 36 left = D18, miss 76' },
+  { score: 98, group: 'green', route: ['T20', 'D19'], alts: [], miss: 78, link: ['T20','D19'], cue: 'Say "60" -> 38 left = D19 (20 down to 19)' },
+  { score: 101, group: 'green', route: ['T17', 'BULL'], alts: [], miss: 84, cue: 'Bull Staircase: T17 (51) + Bull (50), miss 84' },
+  { score: 104, group: 'green', route: ['T18', 'BULL'], alts: [], miss: 86, cue: 'Bull Staircase (2 darts!): T18 (54) + Bull, miss 86' },
+  { score: 107, group: 'green', route: ['T19', 'BULL'], alts: [], miss: 88, cue: 'Bull Staircase: T19 (57) + Bull, miss 88' },
+  { score: 110, group: 'green', route: ['T20', 'BULL'], alts: [], miss: 90, cue: 'Bull Staircase: T20 (60) + Bull, miss 90' },
+  { score: 82, group: 'green', route: ['T14', 'D20'], alts: [['BULL','D16']], miss: 68, cue: 'Treble + 40: T14 (42) + D20 (40), miss 68' },
+  { score: 91, group: 'green', route: ['T17', 'D20'], alts: [], miss: 74, cue: 'Treble + 40: T17 (51) + D20 (40), miss 74' },
+  { score: 94, group: 'green', route: ['T18', 'D20'], alts: [], miss: 76, cue: 'Treble + 40: T18 (54) + D20 (40), miss 76' },
+  { score: 97, group: 'green', route: ['T19', 'D20'], alts: [], miss: 78, cue: 'Treble + 40: T19 (57) + D20 (40), miss 78' },
+  { score: 71, group: 'green', route: ['T13', 'D16'], alts: [['T17','D10']], miss: 58, cue: 'Not an FDI -> T13 (39) + D16 [or T17 (51) + D10]' },
+  { score: 77, group: 'green', route: ['T19', 'D10'], alts: [['T15','D16']], miss: 58, cue: 'NOT an FDI! T19 (57) + D10 [or T15 (45) + D16]' },
+
+  // Yellow FDIs — 60s (T + D = 25, miss always 50)
+  { score: 61, group: 'yellow60', route: ['T11', 'D14'], alts: [['T15','D8']], miss: 50, link: ['T11','D14'], cue: '60s FDI (T+D=25): T11 D14 (adjacent beds!), miss 50' },
+  { score: 62, group: 'yellow60', route: ['T12', 'D13'], alts: [['T10','D16']], miss: 50, link: ['T12','D13'], cue: '60s FDI (T+D=25): T12 D13 (12 up to 13), miss 50' },
+  { score: 63, group: 'yellow60', route: ['T13', 'D12'], alts: [['T17','D6']], miss: 50, link: ['T13','D12'], cue: '60s FDI (T+D=25): T13 D12 (13 down to 12), miss 50' },
+  { score: 64, group: 'yellow60', route: ['T14', 'D11'], alts: [['T16','D8']], miss: 50, link: ['T14','D11'], cue: '60s FDI (T+D=25): T14 D11 (adjacent beds!), miss 50' },
+  { score: 65, group: 'yellow60', route: ['T15', 'D10'], alts: [['25','D20']], miss: 50, link: ['T15','D10'], cue: '60s FDI (T+D=25): T15 D10 (adjacent 15-10), miss 50' },
+  { score: 66, group: 'yellow60', route: ['T16', 'D9'], alts: [['T10','D18']], miss: 50, link: ['T16','D9'], cue: '60s FDI (T+D=25): T16 D9 (flip 6 upside down -> 9), miss 50' },
+  { score: 67, group: 'yellow60', route: ['T17', 'D8'], alts: [['T9','D20']], miss: 50, link: ['T17','D8'], cue: '60s FDI (T+D=25): T17 D8 (7 up to 8), miss 50' },
+  { score: 68, group: 'yellow60', route: ['T18', 'D7'], alts: [['T20','D4'],['T16','D10']], miss: 50, link: ['T18','D7'], cue: '60s FDI (T+D=25): T18 D7 (opposite ends of wheel spoke!), miss 50' },
+  { score: 69, group: 'yellow60', route: ['T19', 'D6'], alts: [['T15','D12']], miss: 50, link: ['T19','D6'], cue: '60s FDI (T+D=25): T19 D6 (quarter past = D6!), miss 50' },
+
+  // Yellow FDIs — 70s (Rule of 30 / Complement to 10, miss always 60) — Latest Revised Routes!
+  { score: 72, group: 'yellow70', route: ['T12', 'D18'], alts: [['T16','D12']], miss: 60, link: ['T12','D18'], cue: '70s FDI (10-2=8 -> D18): T12 D18 (10-to/10-past mirror), miss 60' },
+  { score: 74, group: 'yellow70', route: ['T14', 'D16'], alts: [['T18','D10']], miss: 60, link: ['T14','D16'], cue: '70s FDI (10-4=6 -> D16): T14 D16 (safer than T18!), miss 60' },
+  { score: 75, group: 'yellow70', route: ['T15', 'D15'], alts: [['T17','D12']], miss: 60, link: ['T15','D15'], cue: '70s FDI (10-5=5 -> D15): "All the 15s" T15 D15, miss 60' },
+  { score: 76, group: 'yellow70', route: ['T16', 'D14'], alts: [['T20','D8'],['D18','D20']], miss: 60, link: ['T16','D14'], cue: '70s FDI (10-6=4 -> D14): T16 D14 (16 down to 14), miss 60' },
+  { score: 78, group: 'yellow70', route: ['T18', 'D12'], alts: [], miss: 60, link: ['T18','D12'], cue: '70s FDI (10-8=2 -> D12): T18 D12 (mirror of 72), miss 60' },
+  { score: 79, group: 'yellow70', route: ['T19', 'D11'], alts: [['T13','D20']], miss: 60, link: ['T19','D11'], cue: '70s FDI (10-9=1 -> D11): T19 D11 (quarter to = D11!), miss 60' },
+
+  // Yellow FDIs — 80s & 95 (T + D = 35, miss 70 / 80)
+  { score: 85, group: 'yellow80', route: ['T15', 'D20'], alts: [], miss: 70, link: ['T15','D20'], cue: '80s FDI (T+D=35): T15 (45) + D20 (40), miss 70' },
+  { score: 87, group: 'yellow80', route: ['T17', 'D18'], alts: [], miss: 70, link: ['T17','D18'], cue: '80s FDI (T+D=35): T17 D18 (17 up to 18), miss 70' },
+  { score: 89, group: 'yellow80', route: ['T19', 'D16'], alts: [], miss: 70, link: ['T19','D16'], cue: '80s FDI (T+D=35): T19 D16 (one bed 7 between 19 & 16), miss 70' },
+  { score: 95, group: 'yellow80', route: ['T15', 'BULL'], alts: [['T19','D19']], miss: 80, link: ['T15','BULL'], cue: 'Promoted FDI (Jan 2026): T15 Bull (miss 80) [or T19 D19]' },
+
+  // Red Outlaws (5 No-Pattern Numbers — drip-fed & interleaved!)
+  { score: 73, group: 'red', route: ['T19', 'D8'], alts: [], miss: 54, cue: 'Red Outlaw: T19 (57) + D8 (16) · Miss S19 -> 54' },
+  { score: 81, group: 'red', route: ['T19', 'D12'], alts: [['T15','D18']], miss: 62, cue: 'Red Outlaw: T19 (57) + D12 (24) · Miss S19 -> 62' },
+  { score: 83, group: 'red', route: ['T17', 'D16'], alts: [], miss: 66, cue: 'Red Outlaw: T17 (51) + D16 (32) · Miss S17 -> 66' },
+  { score: 86, group: 'red', route: ['T18', 'D16'], alts: [], miss: 68, cue: 'Red Outlaw: T18 (54) + D16 (32) · Miss S18 -> 68' },
+  { score: 93, group: 'red', route: ['T19', 'D18'], alts: [], miss: 74, link: ['T19','D18'], cue: 'Red Outlaw: T19 (57) + D18 (36) (19 down to 18) · Miss 74' },
+];
+const G44_BY_SCORE = Object.fromEntries(GOLDEN_44.map(x => [x.score, x]));
+
+// Stage 0A: Halving Chains
+const HALVING_CHAINS = [
+  { id: 'H_D20_D10', start: 'D20', next: 'D10', cue: 'Miss D20 inside (S20) -> 20 left = D10' },
+  { id: 'H_D10_D5',  start: 'D10', next: 'D5',  cue: 'Miss D10 inside (S10) -> 10 left = D5' },
+  { id: 'H_D16_D8',  start: 'D16', next: 'D8',  cue: 'Miss D16 inside (S16) -> 16 left = D8' },
+  { id: 'H_D8_D4',   start: 'D8',  next: 'D4',  cue: 'Miss D8 inside (S8) -> 8 left = D4' },
+  { id: 'H_D4_D2',   start: 'D4',  next: 'D2',  cue: 'Miss D4 inside (S4) -> 4 left = D2' },
+  { id: 'H_D2_D1',   start: 'D2',  next: 'D1',  cue: 'Miss D2 inside (S2) -> 2 left = D1 (Mad House)' },
+  { id: 'H_D18_D9',  start: 'D18', next: 'D9',  cue: 'Miss D18 inside (S18) -> 18 left = D9' },
+  { id: 'H_D12_D6',  start: 'D12', next: 'D6',  cue: 'Miss D12 inside (S12) -> 12 left = D6 (then awkward D3)' },
+];
+
+// Stage 1: Below-60 Double Smiths (Core Three first, then D14/D4/D12 expansion)
+const BELOW_60_ITEMS = [
+  // Core: D16 (-2, cap 52)
+  { id: 'B60_38_D16', score: 38, targetD: 'D16', setup: ['S6'], tier: 'core', cue: 'D16 (-2): 8 - 2 = 6 (lower half) -> S6 D16' },
+  { id: 'B60_41_D16', score: 41, targetD: 'D16', setup: ['S9'], tier: 'core', cue: 'D16 (-2): 1 - 2 wraps to 9 (lower half 33-41) -> S9 D16' },
+  { id: 'B60_45_D16', score: 45, targetD: 'D16', setup: ['S13'], tier: 'core', cue: 'D16 (-2): 5 - 2 = 3 (upper half 42-51) -> S13 D16' },
+  { id: 'B60_49_D16', score: 49, targetD: 'D16', setup: ['S17'], tier: 'core', cue: 'D16 (-2): 9 - 2 = 7 (upper half 42-51) -> S17 D16' },
+  { id: 'B60_51_D16', score: 51, targetD: 'D16', setup: ['S19'], tier: 'core', cue: 'D16 (-2): 1 - 2 wraps to 9 (upper half) -> S19 D16' },
+  { id: 'B60_52_D16', score: 52, targetD: 'D16', setup: ['S20'], tier: 'core', aimHigh: true, cue: 'D16 ceiling (52): Aim high S20 -> D16 (no single for 53+!)' },
+  // Core: D18 (+4, cap 56) & D8 (+4)
+  { id: 'B60_39_D18', score: 39, targetD: 'D18', setup: ['S3'], tier: 'core', cue: 'D18 (+4): 9 + 4 -> 3 (lower half 37-45) -> S3 D18' },
+  { id: 'B60_42_D18', score: 42, targetD: 'D18', setup: ['S6'], tier: 'core', cue: 'D18 (+4): 2 + 4 = 6 (lower half! S6, NOT S16) -> S6 D18' },
+  { id: 'B60_48_D18', score: 48, targetD: 'D18', setup: ['S12'], tier: 'core', cue: 'D18 (+4): 8 + 4 -> 2 (upper half 46-55) -> S12 D18' },
+  { id: 'B60_54_D18', score: 54, targetD: 'D18', setup: ['S18'], tier: 'core', cue: 'D18 (+4): 4 + 4 = 8 (upper half: 3x18=54) -> S18 D18' },
+  { id: 'B60_56_D18', score: 56, targetD: 'D18', setup: ['S20'], tier: 'core', aimHigh: true, cue: 'D18 ceiling (56): Aim high S20 -> D18' },
+  { id: 'B60_25_D8',  score: 25, targetD: 'D8',  setup: ['S9'], tier: 'core', cue: 'All the 8s = +4! 5 + 4 = 9 (lower half 17-25) -> S9 D8' },
+  { id: 'B60_31_D8',  score: 31, targetD: 'D8',  setup: ['S15'], tier: 'core', cue: 'All the 8s = +4! 1 + 4 = 5 (upper half 26-35) -> S15 D8' },
+  { id: 'B60_35_D8',  score: 35, targetD: 'D8',  setup: ['S19'], tier: 'core', cue: 'All the 8s = +4! 5 + 4 = 9 (upper half) -> S19 D8' },
+  // Core: D20 / D10 direct + 50 Playbook + Safe Wedges 46 & 48
+  { id: 'B60_57_D20', score: 57, targetD: 'D20', setup: ['S17'], tier: 'core', cue: 'Read off 40 -> S17 D20 (never throw 25: Bull leaves 7)' },
+  { id: 'B60_53_D20', score: 53, targetD: 'D20', setup: ['S13'], tier: 'core', cue: 'Read off 40 -> S13 D20 (exceeds D16 cap 52!)' },
+  { id: 'B60_31_D10', score: 31, targetD: 'D10', setup: ['S11'], tier: 'core', cue: 'Read off 20 -> S11 D10' },
+  { id: 'B60_50_2D',  score: 50, targetD: 'ANY', setup: ['T10','S18','S14'], darts: 2, aimHigh: true, tier: 'core',
+    cue: '50 Playbook (2-3 darts): T10 D10 (miss S10->40!), S18 D16 (aim high!), or S14 D18' },
+  { id: 'B60_46_WDG', score: 46, targetD: 'ANY', setup: ['S10','S6'], wedge: ['S10','S6'], tier: 'core',
+    cue: '46 "10/6 Slice of Pizza": S10->D18, S6->D20, T10->D8, T6->D14!' },
+  { id: 'B60_48_WDG', score: 48, targetD: 'ANY', setup: ['S8','S16'], wedge: ['S8','S16'], tier: 'core',
+    cue: '48 "16/8 Real Estate": S8->D20, S16->D16, T8->D12 (only T16 busts!)' },
+  // Expansion: D14 (+2), D4 (+2), D12 (+6)
+  { id: 'B60_37_D14', score: 37, targetD: 'D14', setup: ['S9'], tier: 'exp', cue: 'All the 4s = +2! 7 + 2 = 9 (lower half 29-37) -> S9 D14' },
+  { id: 'B60_44_D14', score: 44, targetD: 'D14', setup: ['S16'], tier: 'exp', cue: 'All the 4s = +2! 4 + 2 = 6 (upper half 38-47) -> S16 D14' },
+  { id: 'B60_17_D4',  score: 17, targetD: 'D4',  setup: ['S9'], tier: 'exp', cue: 'All the 4s = +2! 7 + 2 = 9 (lower half 9-17) -> S9 D4' },
+  { id: 'B60_27_D4',  score: 27, targetD: 'D4',  setup: ['S19'], tier: 'exp', cue: 'All the 4s = +2! 7 + 2 = 9 (upper half 18-27) -> S19 D4' },
+  { id: 'B60_31_D12', score: 31, targetD: 'D12', setup: ['S7'], tier: 'exp', cue: 'D12 (+6): 1 + 6 = 7 (lower half 25-33) -> S7 D12' },
+  { id: 'B60_41_D12', score: 41, targetD: 'D12', setup: ['S17'], tier: 'exp', cue: 'D12 (+6): 1 + 6 = 7 (upper half 34-43) -> S17 D12' },
+];
+
+// Stage 3: Sod's Law — Live Miss Rule, 1-Dart Abandonment & Safety Plays
+const SODS_LAW_ITEMS = [
+  { id: 'SL_62_1D', score: 62, darts: 1, valid: ['T10'], trap: { T12: { drift: 'S12', why: '1 dart left! Abandon the FDI — T10 leaves D16 instead of awkward D13!' } },
+    cue: '1 dart on 62: Abandon T12 FDI -> T10 Hub leaves D16 (32)!' },
+  { id: 'SL_66_1D', score: 66, darts: 1, valid: ['T10'], trap: { T16: { drift: 'S16', why: '1 dart left! T10 leaves D18 (36) instead of odd D9!' } },
+    cue: '1 dart on 66: Abandon T16 FDI -> T10 Hub leaves D18 (36)!' },
+  { id: 'SL_70_1D', score: 70, darts: 1, valid: ['T10','T18'], trap: { T20: { drift: 'S20', why: '1 dart left! T20 leaves ugly D5 — throw T10 for D20 (or T18 for D8)!' } },
+    cue: '1 dart on 70: Abandon T20 -> T10 Hub leaves D20 (40)!' },
+  { id: 'SL_64_1D', score: 64, darts: 1, valid: ['T16','T8'], trap: { T14: { drift: 'S14', why: '1 dart left! T14 leaves odd D11 — use T16 (D8) or T8 (D20)!' } },
+    cue: '1 dart on 64: Abandon T14 -> T16 leaves D8 (or T8 leaves D20)!' },
+  { id: 'SL_68_1D', score: 68, darts: 1, valid: ['T16','T20'], trap: { T18: { drift: 'S18', why: '1 dart left! T18 leaves odd D7 — use T16 (D10) or T20 (D4)!' } },
+    cue: '1 dart on 68: Abandon T18 -> T16 leaves D10 (or T20 leaves D4)!' },
+  { id: 'SL_88_1D', score: 88, darts: 1, valid: ['T20'], trap: { T16: { drift: 'S16', why: 'S16 leaves 72 (above 70 -> needs a treble!). T20 leaves 68 (<70)!' } },
+    cue: '1 dart on 88 (<70 rule): T20 (S20->68 < 70) beats T16 (S16->72)!' },
+  { id: 'SL_129_1D', score: 129, darts: 1, valid: ['T20'], trap: { T19: { drift: 'S19', why: 'With 1 dart left, T19 leaves 72 (needs a treble), T20 drops below 70 (69)!' } },
+    cue: '1 dart on 129 (<70 rule): Switch to T20 -> 69 (<70) beats T19 -> 72!' },
+  { id: 'SL_74_SAFE', score: 74, darts: 2, valid: ['T14'], forceMiss: true, trap: { T18: { drift: 'S1', why: 'Stray S1 next to 18 leaves 73 (above 70!). T14 drops below 70 safely!' } },
+    cue: 'Safer 74: T14 D16 avoids S1->73 trap (miss S14 -> 60)!' },
+  { id: 'SL_76_DD', score: 76, darts: 2, valid: ['D18','T16'], bottomWire: true, forceMiss: true,
+    cue: '76 Double-Double: Aim bottom wire of D18 for D20 (inside miss S18->58, stay on 18s!) or T16 D14' },
+  { id: 'SL_64_DD', score: 64, darts: 2, valid: ['D16','T16'], bottomWire: true,
+    cue: '64 Double-Double (2 darts): Aim bottom wire of D16 for D16 (inside miss S16->48 wedge!)' },
+  { id: 'SL_86_MISS', score: 86, darts: 2, valid: ['T18'], forceMiss: true,
+    cue: 'Sod\'s Law on 86: Open T18 — if S18 hits (-20+2 = 68), switch for 1-dart setup!' },
+  { id: 'SL_91_MISS', score: 91, darts: 2, valid: ['T17'], forceMiss: true,
+    cue: 'Sod\'s Law on 91: Open T17 — if S17 hits (-20+3 = 74), set up D16 via T14!' },
+  { id: 'SL_83_MISS', score: 83, darts: 2, valid: ['T17'], forceMiss: true,
+    cue: 'Sod\'s Law on 83: Open T17 — if S17 hits (-20+3 = 66), switch to T10 Hub (D18)!' },
+  { id: 'SL_50_PRESS', score: 50, darts: 1, rivalClose: true, valid: ['BULL'], trap: { S18: { drift: 'S18', why: 'Rival is on D16 with 1 dart in your hand — you MUST fire at Bull!' } },
+    cue: 'Rival on D16, 1 dart on 50: Fire straight at Bullseye!' },
+];
+
+// Stage 4: Ton-Plus Reductions (101-170) & Neighbor/Splash Traps
+const TON_PLUS_ITEMS = [
+  // Rule of 40 (T20: +40)
+  { id: 'TP_170', score: 170, open: ['T20'], next: ['T20','BULL'], cue: 'Rule of 40: 70 + 40 = 110 (T20 Bull) — The Big Fish!' },
+  { id: 'TP_161', score: 161, open: ['T20','T19'], next: ['T17','BULL'], cue: 'Rule of 40: 61 + 40 = 101 (T17 Bull)' },
+  { id: 'TP_160', score: 160, open: ['T20'], next: ['T20','D20'], cue: 'Rule of 40: 60 + 40 = 100 (T20 D20)' },
+  { id: 'TP_156', score: 156, open: ['T20'], next: ['T20','D18'], cue: 'Rule of 40: 56 + 40 = 96 ("Say 60" -> T20 D18)' },
+  { id: 'TP_152', score: 152, open: ['T20'], next: ['T20','D16'], cue: 'Rule of 40: 52 + 40 = 92 ("Say 60" -> T20 D16)' },
+  { id: 'TP_148', score: 148, open: ['T20'], next: ['T20','D14'], cue: 'Rule of 40 (140s double the 4!): 48 + 40 = 88 (T20 D14)' },
+  { id: 'TP_147', score: 147, open: ['T20','T19'], next: ['T17','D18'], cue: 'Rule of 40: 47 + 40 = 87 (80s FDI: T17 D18)' },
+  { id: 'TP_145', score: 145, open: ['T20'], next: ['T15','D20'], cue: 'Rule of 40: 45 + 40 = 85 (80s FDI: T15 D20)' },
+  { id: 'TP_136', score: 136, open: ['T20'], next: ['T20','D8'], cue: 'Rule of 40: 36 + 40 = 76 (stay in groove T20 T20 D8, or T16 D14)' },
+  { id: 'TP_131', score: 131, open: ['T20'], next: ['T13','D16'], cue: 'Rule of 40: 31 + 40 = 71 (T13 D16 or T17 D10)' },
+  { id: 'TP_115', score: 115, open: ['T20','T19'], next: ['S15','D20'], cue: 'Rule of 40: 15+40=55 (S15 D20) · Or 10th T19 start (miss 96 vs 95!)' },
+  // Two-T19 "-14" Sequence (130, 134, 138, 142, 146, 150, 154, 164)
+  { id: 'TP_164', score: 164, open: ['T20','T19'], next: ['T18','BULL'], twoT19: 'BULL', cue: 'Two-T19 (-14): 64 - 14 = 50 (Bull)! Or T20 -> 104 (T18 Bull)' },
+  { id: 'TP_154', score: 154, open: ['T20','T19'], next: ['T18','D20'], twoT19: 'D20', cue: 'Two-T19 (-14): 54 - 14 = 40 (D20)! Or T20 -> 94 (T18 D20)' },
+  { id: 'TP_150', score: 150, open: ['T20','T19'], next: ['T18','D18'], twoT19: 'D18', cue: 'Two-T19 (-14): 50 - 14 = 36 (D18)! Or T20 -> 90' },
+  { id: 'TP_146', score: 146, open: ['T20','T19'], next: ['T18','D16'], twoT19: 'D16', cue: 'Two-T19 (-14): 46 - 14 = 32 (D16)! Or T20 -> 86' },
+  { id: 'TP_138', score: 138, open: ['T20','T19'], next: ['T18','D12'], twoT19: 'D12', cue: 'Two-T19 (-14): 38 - 14 = 24 (D12)! Or T20 -> 78' },
+  { id: 'TP_134', score: 134, open: ['T20','T19'], next: ['T14','D16'], twoT19: 'D10', cue: 'Two-T19 (-14): 34 - 14 = 20 (D10)! Or T20 -> 74' },
+  // Mandatory Board-Management / Splash Traps!
+  { id: 'TP_129', score: 129, open: ['T19'], next: ['T12','D18'],
+    traps: { T20: { drift: 'S20', why: 'Trap! S20 leaves 109 (NO 2-dart out!). Open T19 -> S19 leaves 110, T19 leaves 72 (+43)!' } },
+    cue: 'Rule of 43 (Mandatory T19): S20 leaves 109! T19 leaves 72 (T12 D18), S19 leaves 110' },
+  { id: 'TP_128', score: 128, open: ['T18'], next: ['T18','D10'],
+    traps: {
+      T20: { drift: 'S20', why: 'Trap! S20 leaves 108 (no 2-dart out!). Open T18 -> S18 leaves 110!' },
+      T19: { drift: 'S19', why: 'Trap! S19 leaves 109 (no 2-dart out!). Open T18 -> stays on 18s (T18 T18 D10)!' }
+    },
+    cue: 'Mandatory T18 (2 below 130): S20->108 & S19->109 fail! T18->74 (T18 D10), S18->110' },
+  { id: 'TP_126', score: 126, open: ['T19'], next: ['T19','D6'],
+    traps: { T20: { drift: 'S20', why: 'Trap! S20 leaves 106 (no 2-dart out!). Open T19 -> +43 = 69 (T19 D6), S19->107!' } },
+    cue: 'Rule of 43 (Mandatory T19): 26+40+3 = 69 (T19 D6) · S19 leaves 107!' },
+  { id: 'TP_123', score: 123, open: ['T19'], next: ['T16','D9'],
+    traps: { T20: { drift: 'S20', why: 'Trap! S20 leaves 103 (no 2-dart out!). Open T19 -> +43 = 66 (NOT 69!), S19->104!' } },
+    cue: 'Rule of 43 (Mandatory T19): 23+40+3 = 66 (T16 D9) · S19 leaves 104!' },
+  { id: 'TP_122', score: 122, open: ['T18'], next: ['T18','D7'],
+    traps: {
+      T20: { drift: 'S20', why: 'Trap! S20 leaves 102 (no 2-dart out!). Open T18 -> 68 (T18 D7), S18->104!' },
+      T19: { drift: 'S19', why: 'Trap! S19 leaves 103 (no 2-dart out!). Open T18 -> 68 (T18 D7), S18->104!' }
+    },
+    cue: 'Mandatory T18 (2 above 120): T18 -> 68 (T18 D7), S18 leaves 104!' },
+  { id: 'TP_119', score: 119, open: ['T19'], next: ['T12','D13'],
+    traps: { T20: { drift: 'S20', why: 'Trap! S20 leaves 99 (the ONLY 2-digit 3-dart score!). Open T19 -> 62, S19->100!' } },
+    cue: 'Rule of 43 (Mandatory T19): S20 leaves 99! T19 -> 62, S19 -> 100!' },
+  { id: 'TP_107', score: 107, open: ['T19'], next: ['T10','D10'],
+    traps: { T20: { drift: 'S1', why: 'Splash Trap! Next to 20, S1 leaves 106 and S5 leaves 102! T19 is sole winner!' } },
+    cue: 'Sole Winner T19 (both 2 & 3 darts): S7->100, S3->104 · T20 risks S1->106 / S5->102!' },
+  { id: 'TP_104_3D', score: 104, open: ['T19','T16'], next: ['S15','D16'],
+    traps: {
+      T18: { drift: 'S1', why: 'Revised Rule! With 3 darts, T18 risks S1 -> 103 (no 2-dart out!). T19 & T16 win!' },
+      T20: { drift: 'S5', why: 'Double Danger! T20 risks S1->103 AND S5->99! Open T19 (zero dangers) or T16!' }
+    },
+    cue: '104 with 3 darts: T19 (S3->101, S7->97) or T16 (stays on 16s) — T18 is 2-dart ONLY!' },
+  { id: 'TP_103', score: 103, open: ['T19','T17','T16'], next: ['S10','D18'],
+    traps: {
+      T20: { drift: 'S1', why: 'Splash Trap! Stray S1 leaves 102! T19 leaves 46 (10/6 pizza wedge) + S3->100!' },
+      T18: { drift: 'S4', why: 'Splash Trap! Stray S4 leaves 99! T19 wins (T17/T16 are also safe).' }
+    },
+    cue: '103 with 3 darts: T19 leaves 46 (10/6 safe wedge!) + S3->100, S7->96!' },
+  { id: 'TP_101_3D', score: 101, open: ['T20'], next: ['S9','D16'],
+    traps: { T17: { drift: 'S2', why: '3-Dart Trap! Stray S2 next to 17 leaves 99! Use T20 with 3 darts (T17 Bull is 2-dart only)!' } },
+    cue: '101 with 3 darts: Open T20 (S1->100, S5->96) — avoid T17\'s S2->99 trap!' },
+];
+
+// Stage 5: Bogey Dodger (220s, 260s, 300s Teen Cover Shot + 228/268/308 center trap!)
+const BOGEY_ITEMS = [
+  { id: 'BG_229', score: 229, prior: ['S20','S20'], rem: 189, cover: 'S19', targetLeave: 170, centerOk: true,  cue: '189 left (1 dart): Last digit 9 -> Teen Cover S19 leaves 170!' },
+  { id: 'BG_228', score: 228, prior: ['S20','S20'], rem: 188, cover: 'S18', targetLeave: 170, centerOk: false, cue: '188 left: Cover S18 -> 170! NEVER throw 25 (leaves bogey 163!)' },
+  { id: 'BG_226', score: 226, prior: ['S20','S20'], rem: 186, cover: 'S16', targetLeave: 170, centerOk: true,  cue: '186 left: Last digit 6 -> Teen Cover S16 leaves 170!' },
+  { id: 'BG_225', score: 225, prior: ['S20','S20'], rem: 185, cover: 'S15', targetLeave: 170, centerOk: true,  cue: '185 left: Last digit 5 -> Teen Cover S15 leaves 170!' },
+  { id: 'BG_223', score: 223, prior: ['S20','S20'], rem: 183, cover: 'S13', targetLeave: 170, centerOk: true,  cue: '183 left: Last digit 3 -> Teen Cover S13 leaves 170!' },
+  { id: 'BG_222', score: 222, prior: ['S20','S20'], rem: 182, cover: 'S12', targetLeave: 170, centerOk: true,  cue: '182 left: Last digit 2 -> Teen Cover S12 leaves 170!' },
+  { id: 'BG_219', score: 219, prior: ['S20','S20'], rem: 179, cover: 'S19', targetLeave: 160, centerOk: true,  cue: '179 left (S20 leaves bogey 159!): Cover S19 -> leaves 160!' },
+  { id: 'BG_268', score: 268, prior: ['T20','S20'], rem: 188, cover: 'S18', targetLeave: 170, centerOk: false, cue: '268 -> after T20+S20 (188 left): S18 -> 170! NEVER 25 (-> 163 bogey!)' },
+  { id: 'BG_266', score: 266, prior: ['T20','S20'], rem: 186, cover: 'S16', targetLeave: 170, centerOk: true,  cue: '266 -> 186 left: Teen Cover S16 leaves 170!' },
+  { id: 'BG_265', score: 265, prior: ['T20','S20'], rem: 185, cover: 'S15', targetLeave: 170, centerOk: true,  cue: '265 -> 185 left: Teen Cover S15 leaves 170!' },
+  { id: 'BG_259', score: 259, prior: ['T20','S20'], rem: 179, cover: 'S19', targetLeave: 160, centerOk: true,  cue: '259 -> 179 left: S20 leaves bogey 159 -> S19 leaves 160!' },
+  { id: 'BG_308', score: 308, prior: ['T20','T20'], rem: 188, cover: 'S18', targetLeave: 170, centerOk: false, cue: '308 (after T20+T20): Resist the 180! S18 -> 170 (NEVER 25 -> 163!)' },
+  { id: 'BG_305', score: 305, prior: ['T20','T20'], rem: 185, cover: 'S15', targetLeave: 170, centerOk: true,  cue: '305 (after T20+T20): S20 leaves bogey 165 -> Teen Cover S15 leaves 170!' },
+  { id: 'BG_303', score: 303, prior: ['T20','T20'], rem: 183, cover: 'S13', targetLeave: 170, centerOk: true,  cue: '303 (after T20+T20): S20 leaves bogey 163 -> Teen Cover S13 leaves 170!' },
+];
+
+// Stage 6: Croupier's Chalk — Visual Marking (18 Core Three + 16 Cross-Segment + Big Calculator)
+const MARKING_ITEMS = [
+  // Core Three 4x-9x on 19, 18, 17 (18 shapes; 4x shown with missed/0 or 2-dart shape + 1x where appropriate — pure 3-dart visual shapes!)
+  { id: 'MK_19_4X', darts: ['T19','S19'], groupIdx: [0,1], total: 76, cat: 'core', cue: '4x19 = 76 ("Double your double": 2x38)' },
+  { id: 'MK_18_4X', darts: ['T18','S18'], groupIdx: [0,1], total: 72, cat: 'core', cue: '4x18 = 72 ("Double your double": 2x36)' },
+  { id: 'MK_17_4X', darts: ['T17','S17'], groupIdx: [0,1], total: 68, cat: 'core', cue: '4x17 = 68 ("Double your double": 2x34)' },
+  { id: 'MK_19_5X', darts: ['T19','S19','S19'], groupIdx: [0,1,2], total: 95, cat: 'core', cue: '5x19 = 95 (1 treble + 2 singles in 19s)' },
+  { id: 'MK_18_5X', darts: ['T18','S18','S18'], groupIdx: [0,1,2], total: 90, cat: 'core', cue: '5x18 = 90 (1 treble + 2 singles in 18s)' },
+  { id: 'MK_17_5X', darts: ['T17','S17','S17'], groupIdx: [0,1,2], total: 85, cat: 'core', cue: '5x17 = 85 (1 treble + 2 singles in 17s)' },
+  { id: 'MK_19_6X', darts: ['T19','T19'], groupIdx: [0,1], total: 114, cat: 'core', cue: '6x19 = 114 ("Two treble 19s are 114!")' },
+  { id: 'MK_18_6X', darts: ['T18','T18'], groupIdx: [0,1], total: 108, cat: 'core', cue: '6x18 = 108 (2x54 = Shanghai 18s)' },
+  { id: 'MK_17_6X', darts: ['T17','T17'], groupIdx: [0,1], total: 102, cat: 'core', cue: '6x17 = 102 (2x51 = Shanghai 17s)' },
+  { id: 'MK_19_7X', darts: ['T19','T19','S19'], groupIdx: [0,1,2], total: 133, cat: 'core', cue: '7x19 = 133 (114 + 19)' },
+  { id: 'MK_18_7X', darts: ['T18','T18','S18'], groupIdx: [0,1,2], total: 126, cat: 'core', cue: '7x18 = 126 (108 + 18)' },
+  { id: 'MK_17_7X', darts: ['T17','T17','S17'], groupIdx: [0,1,2], total: 119, cat: 'core', cue: '7x17 = 119 (102 + 17)' },
+  { id: 'MK_19_8X', darts: ['T19','T19','D19'], groupIdx: [0,1,2], total: 152, cat: 'core', cue: '8x19 = 152 (114 + 38)' },
+  { id: 'MK_18_8X', darts: ['T18','T18','D18'], groupIdx: [0,1,2], total: 144, cat: 'core', cue: '8x18 = 144 (108 + 36)' },
+  { id: 'MK_17_8X', darts: ['T17','T17','D17'], groupIdx: [0,1,2], total: 136, cat: 'core', cue: '8x17 = 136 (102 + 34)' },
+  { id: 'MK_19_9X', darts: ['T19','T19','T19'], groupIdx: [0,1,2], total: 171, cat: 'core', cue: '9x19 = 171 (3 treble 19s)' },
+  { id: 'MK_18_9X', darts: ['T18','T18','T18'], groupIdx: [0,1,2], total: 162, cat: 'core', cue: '9x18 = 162 (3 treble 18s)' },
+  { id: 'MK_17_9X', darts: ['T17','T17','T17'], groupIdx: [0,1,2], total: 153, cat: 'core', cue: '9x17 = 153 (3 treble 17s)' },
+  // 16 Common Cross-Segment Shapes
+  { id: 'MK_S57', darts: ['S20','S19','S18'], groupIdx: [0,1,2], total: 57, cat: 'cross', cue: 'Three-Single Anchor: S20+S19+S18 = 57 (same as T19!)' },
+  { id: 'MK_S56', darts: ['S17','S20','S19'], groupIdx: [0,1,2], total: 56, cat: 'cross', cue: 'Pivot from 17: S17+S20+S19 = 56' },
+  { id: 'MK_S55', darts: ['S17','S18','S20'], groupIdx: [0,1,2], total: 55, cat: 'cross', cue: 'Pivot from 17: S17+S18+S20 = 55' },
+  { id: 'MK_S54', darts: ['S17','S19','S18'], groupIdx: [0,1,2], total: 54, cat: 'cross', cue: 'Pivot from 17: S17+S19+S18 = 54' },
+  { id: 'MK_117', darts: ['T20','T19'], groupIdx: [0,1], total: 117, cat: 'cross', cue: 'Steal Last Digit (60+50s = 11_): T20+T19(57) = 117' },
+  { id: 'MK_114', darts: ['T20','T18'], groupIdx: [0,1], total: 114, cat: 'cross', cue: 'Steal Last Digit (60+50s = 11_): T20+T18(54) = 114' },
+  { id: 'MK_111A', darts: ['T20','T17'], groupIdx: [0,1], total: 111, cat: 'cross', cue: 'Steal Last Digit (60+50s = 11_): T20+T17(51) = 111' },
+  { id: 'MK_111B', darts: ['T19','T18'], groupIdx: [0,1], total: 111, cat: 'cross', cue: 'Both in 50s -> Add Last Digits (7+4): T19+T18 = 111' },
+  { id: 'MK_108', darts: ['T19','T17'], groupIdx: [0,1], total: 108, cat: 'cross', cue: 'Both in 50s -> Add Last Digits (7+1): T19+T17 = 108' },
+  { id: 'MK_105', darts: ['T18','T17'], groupIdx: [0,1], total: 105, cat: 'cross', cue: 'Both in 50s -> Add Last Digits (4+1): T18+T17 = 105' },
+  { id: 'MK_97',  darts: ['T20','S19','S18'], groupIdx: [0,1,2], total: 97, cat: 'cross', cue: 'Top-3 Mixed (skip by 2): T20+S19+S18 = 97' },
+  { id: 'MK_95M', darts: ['S20','T19','S18'], groupIdx: [0,1,2], total: 95, cat: 'cross', cue: 'Top-3 Mixed (skip by 2): S20+T19+S18 = 95' },
+  { id: 'MK_93',  darts: ['S20','S19','T18'], groupIdx: [0,1,2], total: 93, cat: 'cross', cue: 'Top-3 Mixed (skip by 2): S20+S19+T18 = 93' },
+  { id: 'MK_135', darts: ['T20','T19','S18'], groupIdx: [0,1], total: 135, cat: 'cross', cue: '2 Trebles + 1 Single (skip by 2): T20+T19(117)+18 = 135' },
+  { id: 'MK_133', darts: ['T20','T18','S19'], groupIdx: [0,1], total: 133, cat: 'cross', cue: '2 Trebles + 1 Single (skip by 2): T20+T18(114)+19 = 133' },
+  { id: 'MK_131', darts: ['T19','T18','S20'], groupIdx: [0,1], total: 131, cat: 'cross', cue: '2 Trebles + 1 Single (skip by 2): T19+T18(111)+20 = 131' },
+  // Big Calculator (Snap 2 known darts first, nearest-10/20 round odd 3rd dart!)
+  { id: 'MK_BC1', darts: ['S20','T19','S19'], groupIdx: [1,2], oddIdx: 0, total: 96, cat: 'big', cue: '"What do I know?" Snap T19+S19 (76) + 20 = 96!' },
+  { id: 'MK_BC2', darts: ['T5','T19','S19'],  groupIdx: [1,2], oddIdx: 0, total: 91, cat: 'big', cue: 'Snap T19+S19 (76) + T5(15): round +20 (96), -5 = 91!' },
+  { id: 'MK_BC3', darts: ['S11','T18','S18'], groupIdx: [1,2], oddIdx: 0, total: 83, cat: 'big', cue: 'Snap T18+S18 (72) + 11: +10 (82), +1 = 83!' },
+  { id: 'MK_BC4', darts: ['T20','T19','S7'],  groupIdx: [0,1], oddIdx: 2, total: 124, cat: 'big', cue: 'Snap T20+T19 (117) + 7 = 124!' },
+  { id: 'MK_BC5', darts: ['T20','T18','T1'],  groupIdx: [0,1], oddIdx: 2, total: 117, cat: 'big', cue: 'Snap T20+T18 (114) + T1(3) = 117!' },
+  { id: 'MK_BC6', darts: ['T17','S17','S19'], groupIdx: [0,1], oddIdx: 2, total: 87, cat: 'big', cue: 'Snap T17+S17 (68) + 19: round +20 (88), -1 = 87!' },
+  { id: 'MK_BC7', darts: ['T19','T19','S18'], groupIdx: [0,1], oddIdx: 2, total: 132, cat: 'big', cue: 'Snap 2xT19 (114) + 18: round +20 (134), -2 = 132!' },
+  { id: 'MK_BC8', darts: ['T20','S20','S19'], groupIdx: [0,1], oddIdx: 2, total: 99, cat: 'big', cue: 'Snap T20+S20 (80) + 19 = 99!' },
+];
+
+const STAGES = [
+  { id: 'CALIBRATION', short: '60s Calibration', title: 'Oche Warm-Up (60s Calibration)', tag: 'Placement',
+    desc: 'Rapid 12-shot diagnostic across doubles, 10 trebles, setups, checkouts and marking. Sets your starting mastery and flags slow beds.' },
+  { id: 'STAGE_0A', short: 'Stage 0A · Doubles & Halving', title: 'Stage 0A · Board Geography, Doubles & Halving', tag: 'Foundation',
+    desc: 'Bidirectional D1–D20 & Bull (50) location/value recall (<2s) plus double-down halving chains (D20->D10->D5, D16->D8->D4->D2->D1).' },
+  { id: 'STAGE_0B', short: 'Stage 0B · 10 Essential Trebles', title: 'Stage 0B · The 10 Essential Trebles (<2s)', tag: 'Foundation',
+    desc: 'Instant bidirectional recall of T10 & T12–T20 (30, 36, 39, 42, 45, 48, 51, 54, 57, 60) — Lesson #1 before checkouts.' },
+  { id: 'STAGE_1', short: 'Stage 1 · Below-60 Smiths', title: 'Stage 1 · Below-60 Double Smiths', tag: 'Core First',
+    desc: 'Core Three first (D20/D10, D16 -2, D18/D8 +4) + 50 Playbook + 46/48 safe wedges, then D14/D4 (+2) & D12 (+6).' },
+  { id: 'STAGE_2', short: 'Stage 2 · The Golden 44', title: 'Stage 2 · The Golden 44 (Motivating Order)', tag: '44 Finishes',
+    desc: 'Green quick wins -> Yellow FDIs (Rule of 30, Complement-to-10, 3D visual links) -> Red Outlaws drip-fed 1–2 at a time with Miss Rules.' },
+  { id: 'STAGE_3', short: 'Stage 3 · Sod\'s Law', title: 'Stage 3 · Sod\'s Law (Miss Rule & Darts-in-Hand)', tag: 'Live Misses',
+    desc: 'Realistic single-misses forcing -20+add-back math, 1-dart FDI abandonment (T10 hub), <70 choices, Aim High & bottom-wire double-doubles.' },
+  { id: 'STAGE_4', short: 'Stage 4 · Ton-Plus 101–170', title: 'Stage 4 · Ton-Plus Reductions & Splash Traps', tag: '101–170',
+    desc: 'Rule of 40 (+40), Rule of 43 (+40, +3), Two-T19 (-14) & diagnostic neighbor-trap saves (129, 128, 126, 123, 122, 119, 107, 104, 103, 101).' },
+  { id: 'STAGE_5', short: 'Stage 5 · Bogey Dodger', title: 'Stage 5 · Bogey Dodger (220s / 260s / 300s)', tag: 'Middle Game',
+    desc: 'Master the 7 bogeys (147 snooker trick) and Dart-3 Teen Cover Shots S(10+d) -> 170/160 while avoiding the 228/268/308 center-board trap.' },
+  { id: 'STAGE_6', short: 'Stage 6 · Croupier\'s Chalk', title: 'Parallel Stage 6 · Croupier\'s Chalk (Marking)', tag: 'Parallel',
+    desc: '3 darts thud into the board at once (18 Core Three 4x–9x, 16 Cross-Segment & Big Calculator shapes). Call the total before the brass bell!' },
+];
+
+/* ============================================================================
+   2. SPACED REPETITION, MASTERY LEDGER & LOCAL STORAGE ENGINE
+   ============================================================================ */
+const STORAGE_KEY = 'oche_light_mastery_v1';
+
+class MasteryEngine {
+  constructor() {
+    this.data = this.load();
+    this.turn = 0;
+    this.recentRt = [];
+  }
+  load() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (_) {}
+    return { items: {}, streak: 0, bestStreak: 0, totalCorrect: 0, totalAttempts: 0 };
+  }
+  save() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(this.data)); } catch (_) {}
+  }
+  reset() {
+    this.data = { items: {}, streak: 0, bestStreak: 0, totalCorrect: 0, totalAttempts: 0 };
+    this.recentRt = [];
+    this.save();
+  }
+  get(id) {
+    return this.data.items[id] || { ok: 0, miss: 0, streak: 0, bestMs: 99999, lastMs: 0, dueTurn: 0 };
+  }
+  // Tier 1 = Guided, Tier 2 = Hint-on-Hesitation, Tier 3 = Match-Speed Rolodex
+  tier(id, speedTargetMs = 3000) {
+    const s = this.get(id);
+    if (s.streak >= 3 && s.bestMs <= speedTargetMs) return 3;
+    if (s.ok >= 1 && s.streak >= 1) return 2;
+    return 1;
+  }
+  // Visual ledger status: 'dim' | 'amber' | 'brass'
+  badge(id, speedTargetMs = 2800) {
+    const s = this.get(id);
+    if (s.streak >= 2 && s.bestMs <= speedTargetMs) return 'brass';
+    if (s.ok >= 1) return 'amber';
+    return 'dim';
+  }
+  record(id, correct, ms, usedHint = false, speedTargetMs = 3000) {
+    this.turn++;
+    const s = this.get(id);
+    this.data.totalAttempts++;
+    if (correct) {
+      this.data.totalCorrect++;
+      this.data.streak++;
+      if (this.data.streak > this.data.bestStreak) this.data.bestStreak = this.data.streak;
+      s.ok++;
+      s.lastMs = Math.round(ms);
+      if (!usedHint && ms < s.bestMs) s.bestMs = Math.round(ms);
+      if (usedHint || ms > speedTargetMs * 1.2) {
+        s.streak = Math.max(1, s.streak);
+        s.dueTurn = this.turn + 3; // resurface soon if slow or hinted
+      } else {
+        s.streak++;
+        s.dueTurn = this.turn + Math.min(20, 4 + s.streak * 4);
+      }
+      this.recentRt.push(ms);
+      if (this.recentRt.length > 12) this.recentRt.shift();
+    } else {
+      this.data.streak = 0;
+      s.miss++;
+      s.streak = 0;
+      s.dueTurn = this.turn + 2; // Leitner: return in 2 turns!
+    }
+    this.data.items[id] = s;
+    this.save();
+  }
+  pickNext(pool, idFn, avoidId = null) {
+    if (!pool.length) return null;
+    const candidates = pool.filter(p => idFn(p) !== avoidId);
+    const list = candidates.length ? candidates : pool;
+    // Prioritize overdue misses/slow items, then unseen, then weighted random
+    let bestScore = -Infinity;
+    let best = list[0];
+    for (const item of list) {
+      const id = idFn(item);
+      const st = this.get(id);
+      let priority = Math.random() * 2.5;
+      if (st.miss > 0 && st.dueTurn <= this.turn) priority += 12;
+      else if (st.dueTurn > 0 && st.dueTurn <= this.turn) priority += 7;
+      else if (st.ok === 0 && st.miss === 0) priority += 5;
+      else if (st.streak >= 3 && st.bestMs <= 2600) priority -= 3.5; // cool down mastered
+      if (priority > bestScore) { bestScore = priority; best = item; }
+    }
+    return best;
+  }
+  avgMs() {
+    if (!this.recentRt.length) return null;
+    return Math.round(this.recentRt.reduce((a, b) => a + b, 0) / this.recentRt.length);
+  }
+}
+
+const mastery = new MasteryEngine();
+
+/* ============================================================================
+   3. PROCEDURAL WEB AUDIO PUB FOLEY (Zero External Assets!)
+   ============================================================================ */
+class PubAudio {
+  constructor() {
+    this.ctx = null;
+    this.enabled = false;
+    this.ambientGain = null;
+  }
+  unlock() {
+    if (!this.ctx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return false;
+      this.ctx = new AC();
+      this.startAmbience();
+    }
+    if (this.ctx.state === 'suspended') this.ctx.resume();
+    this.enabled = true;
+    return true;
+  }
+  toggle() {
+    if (!this.ctx) return this.unlock();
+    this.enabled = !this.enabled;
+    if (this.ambientGain) {
+      this.ambientGain.gain.setTargetAtTime(this.enabled ? 0.028 : 0.0, this.ctx.currentTime, 0.25);
+    }
+    return this.enabled;
+  }
+  startAmbience() {
+    const ctx = this.ctx;
+    const len = ctx.sampleRate * 3;
+    const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    let last = 0;
+    for (let i = 0; i < len; i++) {
+      last = (last + 0.03 * (Math.random() * 2 - 1)) / 1.03;
+      data[i] = last * 2.2;
+    }
+    const src = ctx.createBufferSource();
+    src.buffer = buf; src.loop = true;
+    const lp = ctx.createBiquadFilter();
+    lp.type = 'lowpass'; lp.frequency.value = 210;
+    const gain = ctx.createGain();
+    gain.gain.value = 0.028;
+    src.connect(lp).connect(gain).connect(ctx.destination);
+    src.start();
+    this.ambientGain = gain;
+  }
+  playThud(kind = 'S') {
+    if (!this.enabled || !this.ctx) return;
+    const ctx = this.ctx, t = ctx.currentTime;
+    // Deep hollow sisal body
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    const baseF = kind === 'BULL' ? 92 : kind === 'T' ? 142 : kind === 'D' ? 130 : 112;
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(baseF * 1.45, t);
+    osc.frequency.exponentialRampToValueAtTime(Math.max(42, baseF * 0.42), t + 0.095);
+    g.gain.setValueAtTime(0.32, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.11);
+    osc.connect(g).connect(ctx.destination);
+    osc.start(t); osc.stop(t + 0.12);
+
+    // Sisal fiber impact transient
+    const nLen = Math.floor(ctx.sampleRate * 0.045);
+    const nBuf = ctx.createBuffer(1, nLen, ctx.sampleRate);
+    const d = nBuf.getChannelData(0);
+    for (let i = 0; i < nLen; i++) d[i] = (Math.random() * 2 - 1) * Math.exp(-i / (nLen * 0.28));
+    const ns = ctx.createBufferSource(); ns.buffer = nBuf;
+    const bp = ctx.createBiquadFilter();
+    bp.type = 'bandpass'; bp.frequency.value = kind === 'T' ? 1350 : 900; bp.Q.value = 1.4;
+    const ng = ctx.createGain(); ng.gain.value = 0.24;
+    ns.connect(bp).connect(ng).connect(ctx.destination);
+    ns.start(t);
+
+    if (kind === 'T' || kind === 'BULL') {
+      // Crisp dart-flight snap overtone
+      const snap = ctx.createOscillator();
+      const sg = ctx.createGain();
+      snap.type = 'sine';
+      snap.frequency.setValueAtTime(kind === 'BULL' ? 520 : 760, t);
+      snap.frequency.exponentialRampToValueAtTime(240, t + 0.055);
+      sg.gain.setValueAtTime(0.09, t);
+      sg.gain.exponentialRampToValueAtTime(0.001, t + 0.06);
+      snap.connect(sg).connect(ctx.destination);
+      snap.start(t); snap.stop(t + 0.065);
+    }
+  }
+  playWireTink() {
+    if (!this.enabled || !this.ctx) return;
+    const ctx = this.ctx, t = ctx.currentTime;
+    [2480, 3920, 5610].forEach((f, idx) => {
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = 'sine'; o.frequency.setValueAtTime(f, t);
+      g.gain.setValueAtTime(0.07 / (idx + 1), t);
+      g.gain.exponentialRampToValueAtTime(0.0008, t + 0.16);
+      o.connect(g).connect(ctx.destination);
+      o.start(t); o.stop(t + 0.18);
+    });
+  }
+  playChalk() {
+    if (!this.enabled || !this.ctx) return;
+    const ctx = this.ctx, t = ctx.currentTime;
+    const nLen = Math.floor(ctx.sampleRate * 0.14);
+    const buf = ctx.createBuffer(1, nLen, ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < nLen; i++) {
+      const env = Math.sin((i / nLen) * Math.PI);
+      const rasp = 0.6 + 0.4 * Math.sin(i * 0.09);
+      d[i] = (Math.random() * 2 - 1) * env * rasp;
+    }
+    const s = ctx.createBufferSource(); s.buffer = buf;
+    const hp = ctx.createBiquadFilter(); hp.type = 'bandpass'; hp.frequency.value = 3400; hp.Q.value = 2.6;
+    const g = ctx.createGain(); g.gain.value = 0.075;
+    s.connect(hp).connect(g).connect(ctx.destination);
+    s.start(t);
+  }
+  playBell(tone = 'ok') {
+    if (!this.enabled || !this.ctx) return;
+    const ctx = this.ctx, t = ctx.currentTime;
+    const freqs = tone === 'ok' ? [880, 1765, 2642] : tone === 'timeout' ? [520, 1042] : [660, 1320];
+    freqs.forEach((f, i) => {
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = 'sine'; o.frequency.setValueAtTime(f, t);
+      g.gain.setValueAtTime((tone === 'ok' ? 0.09 : 0.065) / (i + 1), t);
+      g.gain.exponentialRampToValueAtTime(0.0008, t + (tone === 'ok' ? 0.55 : 0.35));
+      o.connect(g).connect(ctx.destination);
+      o.start(t); o.stop(t + 0.6);
+    });
+  }
+  playApplause() {
+    if (!this.enabled || !this.ctx) return;
+    const ctx = this.ctx, t = ctx.currentTime;
+    const nLen = Math.floor(ctx.sampleRate * 0.9);
+    const buf = ctx.createBuffer(1, nLen, ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < nLen; i++) {
+      const u = i / nLen;
+      const env = Math.sin(u * Math.PI) * Math.pow(1 - u, 0.55);
+      const flutter = 0.65 + 0.35 * Math.sin(i * 0.015) * Math.cos(i * 0.004);
+      d[i] = (Math.random() * 2 - 1) * env * flutter;
+    }
+    const s = ctx.createBufferSource(); s.buffer = buf;
+    const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1150; bp.Q.value = 0.9;
+    const g = ctx.createGain(); g.gain.value = 0.095;
+    s.connect(bp).connect(g).connect(ctx.destination);
+    s.start(t);
+  }
+}
+const audio = new PubAudio();
+
+/* ============================================================================
+   4. THREE.JS MOODY PUB DIORAMA + DEPTH TILT-SHIFT & LIGHT BAYER DITHER
+   ============================================================================ */
+const canvas = document.getElementById('stage-canvas');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.18;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x111822);
+scene.fog = new THREE.FogExp2(0x111822, 0.042);
+
+const camera = new THREE.PerspectiveCamera(34, window.innerWidth / window.innerHeight, 0.4, 28);
+const BASE_CAM = new THREE.Vector3(0.92, 0.44, 10.65);
+const BASE_LOOK = new THREE.Vector3(0.86, 0.16, 0);
+camera.position.copy(BASE_CAM);
+camera.lookAt(BASE_LOOK);
+
+// Post-processing RenderTarget at full DPR-aware crisp resolution + DepthTexture for subtle diorama tilt-shift
+const RT_SCALE = 1.0;
+function createPostTarget(w, h) {
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const rw = Math.max(640, Math.floor(w * dpr * RT_SCALE));
+  const rh = Math.max(400, Math.floor(h * dpr * RT_SCALE));
+  const depthTex = new THREE.DepthTexture(rw, rh);
+  depthTex.type = THREE.UnsignedIntType;
+  const rt = new THREE.WebGLRenderTarget(rw, rh, {
+    minFilter: THREE.LinearFilter,
+    magFilter: THREE.LinearFilter,
+    format: THREE.RGBAFormat,
+    depthBuffer: true,
+    depthTexture: depthTex,
+  });
+  return rt;
+}
+let postRT = createPostTarget(window.innerWidth, window.innerHeight);
+
+const postScene = new THREE.Scene();
+const postCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+const postMat = new THREE.ShaderMaterial({
+  uniforms: {
+    tDiffuse: { value: postRT.texture },
+    tDepth: { value: postRT.depthTexture },
+    uResolution: { value: new THREE.Vector2(postRT.width, postRT.height) },
+    uNear: { value: camera.near },
+    uFar: { value: camera.far },
+    uFocusDepth: { value: 8.75 },
+    uTime: { value: 0 },
+    uFlowBoost: { value: 0 },
+  },
+  vertexShader: `
+    varying vec2 vUv;
+    void main() {
+      vUv = uv;
+      gl_Position = vec4(position.xy, 0.0, 1.0);
+    }
+  `,
+  fragmentShader: `
+    precision highp float;
+    uniform sampler2D tDiffuse;
+    uniform sampler2D tDepth;
+    uniform vec2 uResolution;
+    uniform float uNear;
+    uniform float uFar;
+    uniform float uFocusDepth;
+    uniform float uTime;
+    uniform float uFlowBoost;
+    varying vec2 vUv;
+
+    float linearizeDepth(float d) {
+      float z = d * 2.0 - 1.0;
+      return (2.0 * uNear * uFar) / (uFar + uNear - z * (uFar - uNear));
+    }
+
+    float bayer4(vec2 p) {
+      vec2 m = mod(floor(p), 4.0);
+      int idx = int(m.x) + int(m.y) * 4;
+      float v = 0.0;
+      if (idx == 0) v = 0.0; else if (idx == 1) v = 8.0; else if (idx == 2) v = 2.0; else if (idx == 3) v = 10.0;
+      else if (idx == 4) v = 12.0; else if (idx == 5) v = 4.0; else if (idx == 6) v = 14.0; else if (idx == 7) v = 6.0;
+      else if (idx == 8) v = 3.0; else if (idx == 9) v = 11.0; else if (idx == 10) v = 1.0; else if (idx == 11) v = 9.0;
+      else if (idx == 12) v = 15.0; else if (idx == 13) v = 7.0; else if (idx == 14) v = 13.0; else v = 5.0;
+      return (v + 0.5) / 16.0 - 0.5;
+    }
+
+    float hash12(vec2 p) {
+      vec3 p3 = fract(vec3(p.xyx) * 0.1031);
+      p3 += dot(p3, p3.yzx + 33.33);
+      return fract((p3.x + p3.y) * p3.z);
+    }
+
+    void main() {
+      vec2 texel = 1.0 / uResolution;
+      float rawD = texture2D(tDepth, vUv).r;
+      float linD = linearizeDepth(rawD);
+      // Crisp focal plane across the entire dartboard & slate chalkboard; subtle diorama blur only on far foreground/background & extreme top/bottom margins
+      float depthDiff = abs(linD - uFocusDepth);
+      float depthBlur = smoothstep(1.25, 4.4, depthDiff);
+      float vertTilt = smoothstep(0.43, 0.52, abs(vUv.y - 0.50));
+      float coc = clamp(depthBlur * 0.95 + vertTilt * 0.75, 0.0, 1.0) * 1.45;
+
+      vec3 col;
+      if (coc < 0.14) {
+        // Gentle unsharp clarity pass on the sharp focal band (keeps sisal, wires, numerals & chalk razor-crisp!)
+        vec3 c0 = texture2D(tDiffuse, vUv).rgb;
+        vec3 avg = (
+          texture2D(tDiffuse, vUv + vec2( texel.x, 0.0)).rgb +
+          texture2D(tDiffuse, vUv + vec2(-texel.x, 0.0)).rgb +
+          texture2D(tDiffuse, vUv + vec2(0.0,  texel.y)).rgb +
+          texture2D(tDiffuse, vUv + vec2(0.0, -texel.y)).rgb
+        ) * 0.25;
+        col = clamp(c0 + (c0 - avg) * 0.28, 0.0, 1.0);
+      } else {
+        col = texture2D(tDiffuse, vUv).rgb * 0.24;
+        float r1 = coc * 0.65;
+        float r2 = coc * 1.25;
+        col += texture2D(tDiffuse, vUv + vec2( r1,  0.0) * texel).rgb * 0.10;
+        col += texture2D(tDiffuse, vUv + vec2(-r1,  0.0) * texel).rgb * 0.10;
+        col += texture2D(tDiffuse, vUv + vec2( 0.0,  r1) * texel).rgb * 0.10;
+        col += texture2D(tDiffuse, vUv + vec2( 0.0, -r1) * texel).rgb * 0.10;
+        col += texture2D(tDiffuse, vUv + vec2( r2,  r2) * 0.707 * texel).rgb * 0.09;
+        col += texture2D(tDiffuse, vUv + vec2(-r2,  r2) * 0.707 * texel).rgb * 0.09;
+        col += texture2D(tDiffuse, vUv + vec2( r2, -r2) * 0.707 * texel).rgb * 0.09;
+        col += texture2D(tDiffuse, vUv + vec2(-r2, -r2) * 0.707 * texel).rgb * 0.09;
+      }
+
+      // Clean warm tungsten / cool blue-slate split-tone grading (preserves natural sisal cream, red & green)
+      float lum = dot(col, vec3(0.299, 0.587, 0.114));
+      vec3 shadowTint = vec3(0.90, 0.96, 1.12);
+      vec3 warmTint = vec3(1.03 + uFlowBoost * 0.03, 1.01 + uFlowBoost * 0.01, 0.97);
+      col *= mix(shadowTint, warmTint, smoothstep(0.05, 0.52, lum));
+
+      // Ultra-refined ordered Bayer dither ONLY in deep shadow falloff (zero grain/screen-door on lit board & chalk!)
+      float ditherAmt = smoothstep(0.36, 0.03, lum) * 0.42;
+      float levels = 36.0;
+      float b = bayer4(gl_FragCoord.xy);
+      vec3 quantized = floor(col * levels + b * 0.85 + 0.5) / levels;
+      col = mix(col, quantized, ditherAmt);
+
+      // Gentle pub vignette framing the cabinet without darkening the board or slate
+      vec2 vc = vUv - 0.5;
+      float vig = 1.0 - dot(vc * vec2(1.05, 1.02), vc * vec2(1.05, 1.02)) * 0.65;
+      col *= clamp(vig, 0.52, 1.02);
+
+      // Whisper-subtle film grain
+      float grain = (hash12(gl_FragCoord.xy + fract(uTime * 17.3) * 100.0) - 0.5) * 0.011;
+      col = clamp(col + grain, 0.0, 1.0);
+
+      gl_FragColor = vec4(col, 1.0);
+    }
+  `,
+  depthWrite: false,
+  depthTest: false,
+});
+postScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), postMat));
+
+/* ============================================================================
+   5. PROCEDURAL TEXTURES (Sisal Board, Wood, Brick, Live Slate Chalkboard)
+   ============================================================================ */
+function makeSisalBoardTextures() {
+  const size = 2048;
+  const c = document.createElement('canvas');
+  c.width = c.height = size;
+  const ctx = c.getContext('2d');
+  const half = size / 2;
+  const scale = half / R_BOARD_EDGE;
+
+  // Outer black surround
+  ctx.fillStyle = '#141618';
+  ctx.fillRect(0, 0, size, size);
+
+  // Subtle dark surround ring texture
+  ctx.beginPath();
+  ctx.arc(half, half, R_BOARD_EDGE * scale, 0, Math.PI * 2);
+  ctx.fillStyle = '#181a1d';
+  ctx.fill();
+
+  const COL_DARK = '#1c1e22';
+  const COL_CREAM = '#e5d9bc';
+  const COL_RED = '#ad2a25';
+  const COL_GREEN = '#216e3f';
+
+  function drawWedge(rIn, rOut, i, color) {
+    // Canvas angle: 0 at +X, clockwise down (+Y). Sector 0 (20) is at -PI/2 (top).
+    const a0 = -Math.PI / 2 + (i - 0.5) * (Math.PI / 10);
+    const a1 = -Math.PI / 2 + (i + 0.5) * (Math.PI / 10);
+    ctx.beginPath();
+    ctx.arc(half, half, rOut * scale, a0, a1, false);
+    ctx.arc(half, half, rIn * scale, a1, a0, true);
+    ctx.closePath();
+    ctx.fillStyle = color;
+    ctx.fill();
+  }
+
+  for (let i = 0; i < 20; i++) {
+    const even = i % 2 === 0;
+    const singleCol = even ? COL_DARK : COL_CREAM;
+    const ringCol = even ? COL_RED : COL_GREEN;
+    drawWedge(R_OUTER_BULL, R_TREBLE_IN, i, singleCol);
+    drawWedge(R_TREBLE_IN, R_TREBLE_OUT, i, ringCol);
+    drawWedge(R_TREBLE_OUT, R_DOUBLE_IN, i, singleCol);
+    drawWedge(R_DOUBLE_IN, R_DOUBLE_OUT, i, ringCol);
+  }
+
+  // Outer Bull (25) & Inner Bull (50)
+  ctx.beginPath(); ctx.arc(half, half, R_OUTER_BULL * scale, 0, Math.PI * 2);
+  ctx.fillStyle = COL_GREEN; ctx.fill();
+  ctx.beginPath(); ctx.arc(half, half, R_INNER_BULL * scale, 0, Math.PI * 2);
+  ctx.fillStyle = COL_RED; ctx.fill();
+
+  // Organic sisal bristle pores & subtle wear marks (especially around T20/T19!)
+  const img = ctx.getImageData(0, 0, size, size);
+  const data = img.data;
+  for (let y = 0; y < size; y++) {
+    const dy = (y - half) / scale;
+    for (let x = 0; x < size; x++) {
+      const dx = (x - half) / scale;
+      const r = Math.hypot(dx, dy);
+      if (r > R_BOARD_EDGE) continue;
+      const idx = (y * size + x) * 4;
+      const n = ((Math.sin(x * 12.9898 + y * 78.233) * 43758.5453) % 1 + 1) % 1;
+      const fiber = (n - 0.5) * (r <= R_DOUBLE_OUT ? 22 : 12);
+      // Tiny sisal pinhole dimples
+      const pit = n > 0.986 && r <= R_DOUBLE_OUT ? -26 : 0;
+      data[idx]     = Math.max(0, Math.min(255, data[idx] + fiber + pit));
+      data[idx + 1] = Math.max(0, Math.min(255, data[idx + 1] + fiber + pit));
+      data[idx + 2] = Math.max(0, Math.min(255, data[idx + 2] + fiber * 0.9 + pit));
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+
+  // Subtle painted pub brand stencil on bottom rim of surround
+  ctx.save();
+  ctx.fillStyle = 'rgba(209, 178, 118, 0.34)';
+  ctx.font = 'bold 34px Georgia, serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('OCHE LIGHT · LONDON SISAL', half, half + 2.16 * scale);
+  ctx.restore();
+
+  // Crisp vintage numerals painted with clean high-contrast pewter-cream highlight on surround
+  ctx.save();
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  for (let i = 0; i < 20; i++) {
+    const theta = i * (Math.PI / 10);
+    const nx = half + Math.sin(theta) * R_NUM_RING * scale;
+    const ny = half - Math.cos(theta) * R_NUM_RING * scale;
+    ctx.font = '700 88px Georgia, "Times New Roman", serif';
+    ctx.fillStyle = 'rgba(0,0,0,0.92)';
+    ctx.fillText(String(SECTORS[i]), nx + 2, ny + 3);
+    ctx.fillStyle = '#f3ebd7';
+    ctx.fillText(String(SECTORS[i]), nx, ny);
+  }
+  ctx.restore();
+
+  const colorTex = new THREE.CanvasTexture(c);
+  colorTex.colorSpace = THREE.SRGBColorSpace;
+  colorTex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+
+  // Matching sisal bump map
+  const bc = document.createElement('canvas');
+  bc.width = bc.height = 512;
+  const bctx = bc.getContext('2d');
+  const bimg = bctx.createImageData(512, 512);
+  for (let i = 0; i < bimg.data.length; i += 4) {
+    const v = 115 + Math.floor(Math.random() * 55);
+    bimg.data[i] = bimg.data[i+1] = bimg.data[i+2] = v;
+    bimg.data[i+3] = 255;
+  }
+  bctx.putImageData(bimg, 0, 0);
+  const bumpTex = new THREE.CanvasTexture(bc);
+  bumpTex.wrapS = bumpTex.wrapT = THREE.RepeatWrapping;
+  bumpTex.repeat.set(3, 3);
+
+  return { colorTex, bumpTex };
+}
+
+function makeWoodTexture(baseHex = '#2c1f16', grainHex = '#1b120c') {
+  const c = document.createElement('canvas');
+  c.width = 512; c.height = 512;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = baseHex;
+  ctx.fillRect(0, 0, 512, 512);
+  for (let i = 0; i < 160; i++) {
+    const x = Math.random() * 512;
+    ctx.strokeStyle = i % 3 === 0 ? 'rgba(110, 76, 44, 0.14)' : grainHex;
+    ctx.lineWidth = 1 + Math.random() * 3.5;
+    ctx.globalAlpha = 0.25 + Math.random() * 0.35;
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.bezierCurveTo(x + (Math.random()-0.5)*18, 170, x + (Math.random()-0.5)*18, 340, x + (Math.random()-0.5)*10, 512);
+    ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  return tex;
+}
+
+function makeBrickTexture() {
+  const c = document.createElement('canvas');
+  c.width = 512; c.height = 512;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#181e28';
+  ctx.fillRect(0, 0, 512, 512);
+  const rows = 12, cols = 6;
+  const bh = 512 / rows, bw = 512 / cols;
+  for (let r = 0; r < rows; r++) {
+    const off = (r % 2) * (bw * 0.5);
+    for (let col = -1; col <= cols; col++) {
+      const shade = 30 + Math.floor(Math.random() * 18);
+      ctx.fillStyle = `rgb(${shade + 6}, ${shade + 4}, ${shade + 10})`;
+      ctx.fillRect(col * bw + off + 3, r * bh + 3, bw - 6, bh - 6);
+    }
+  }
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  tex.repeat.set(3.5, 2.2);
+  return tex;
+}
+
+// Live 2x Retina Slate Chalkboard Canvas on Right Cabinet Door
+const chalkCanvas = document.createElement('canvas');
+chalkCanvas.width = 1024; chalkCanvas.height = 1536;
+const chalkCtx = chalkCanvas.getContext('2d');
+const chalkTex = new THREE.CanvasTexture(chalkCanvas);
+chalkTex.colorSpace = THREE.SRGBColorSpace;
+chalkTex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+
+function wrapText(ctx, text, maxW) {
+  const words = String(text || '').split(' ');
+  const lines = [];
+  let cur = '';
+  for (const w of words) {
+    const test = cur ? cur + ' ' + w : w;
+    if (ctx.measureText(test).width > maxW && cur) { lines.push(cur); cur = w; }
+    else cur = test;
+  }
+  if (cur) lines.push(cur);
+  return lines;
+}
+
+function renderChalkboard({ header = 'OCHE SLATE', big = '148', sub = '', lines = [], footer = '' }) {
+  const ctx = chalkCtx;
+  ctx.save();
+  ctx.setTransform(2, 0, 0, 2, 0, 0); // crisp 2x logical scaling over 512x768 layout
+  // Weathered dark slate surface
+  ctx.fillStyle = '#181e26';
+  ctx.fillRect(0, 0, 512, 768);
+  // Subtle chalk smudge clouds
+  for (let i = 0; i < 16; i++) {
+    const g = ctx.createRadialGradient(
+      80 + (i * 97) % 360, 80 + (i * 153) % 600, 10,
+      80 + (i * 97) % 360, 80 + (i * 153) % 600, 120
+    );
+    g.addColorStop(0, 'rgba(232,225,207,0.036)');
+    g.addColorStop(1, 'rgba(232,225,207,0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, 512, 768);
+  }
+  // Chalk border frame
+  ctx.strokeStyle = 'rgba(232, 225, 207, 0.34)';
+  ctx.lineWidth = 3;
+  ctx.strokeRect(20, 20, 472, 728);
+
+  // Header
+  ctx.fillStyle = '#f0ce8c';
+  ctx.font = '700 25px ui-monospace, monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText(header.toUpperCase(), 256, 68);
+
+  ctx.strokeStyle = 'rgba(232, 225, 207, 0.25)';
+  ctx.beginPath(); ctx.moveTo(46, 86); ctx.lineTo(466, 86); ctx.stroke();
+
+  // Main chalk score
+  ctx.fillStyle = '#f7f1e1';
+  ctx.font = '700 112px Georgia, serif';
+  ctx.fillText(String(big), 256, 204);
+
+  if (sub) {
+    ctx.fillStyle = '#e5c586';
+    ctx.font = 'italic 27px Georgia, serif';
+    const subLines = wrapText(ctx, sub, 430);
+    subLines.slice(0, 2).forEach((ln, idx) => ctx.fillText(ln, 256, 250 + idx * 33));
+  }
+
+  ctx.strokeStyle = 'rgba(232, 225, 207, 0.22)';
+  ctx.beginPath(); ctx.moveTo(46, 306); ctx.lineTo(466, 306); ctx.stroke();
+
+  // Chalk notes / step trace
+  ctx.textAlign = 'left';
+  let y = 354;
+  for (const entry of lines.slice(0, 7)) {
+    const isWarn = typeof entry === 'object' && entry.kind === 'warn';
+    const isGood = typeof entry === 'object' && entry.kind === 'ok';
+    const txt = typeof entry === 'string' ? entry : entry.text;
+    ctx.fillStyle = isWarn ? '#f4b8b0' : isGood ? '#c2f0d0' : '#f2ece0';
+    ctx.font = '26px Georgia, serif';
+    const wrapped = wrapText(ctx, txt, 424);
+    for (const wln of wrapped) {
+      if (y > 670) break;
+      ctx.fillText(wln, 44, y);
+      y += 35;
+    }
+    y += 10;
+  }
+
+  if (footer) {
+    ctx.textAlign = 'center';
+    ctx.fillStyle = 'rgba(183, 213, 238, 0.85)';
+    ctx.font = '21px ui-monospace, monospace';
+    ctx.fillText(footer, 256, 720);
+  }
+  ctx.restore();
+  chalkTex.needsUpdate = true;
+}
+
+/* ============================================================================
+   6. BUILD THE 3D PUB SCENE, CABINET, BOARD, LAMPS & PROPS
+   ============================================================================ */
+const woodTex = makeWoodTexture('#3e2b1d', '#23160d');
+const darkWoodMat = new THREE.MeshStandardMaterial({ map: woodTex, roughness: 0.76, metalness: 0.08 });
+const brassMat = new THREE.MeshStandardMaterial({ color: 0xc9a258, roughness: 0.38, metalness: 0.78 });
+const wireMat = new THREE.MeshStandardMaterial({ color: 0xc2b393, roughness: 0.42, metalness: 0.72 });
+
+// Back Pub Brick & Wainscot Wall
+const brickWall = new THREE.Mesh(
+  new THREE.PlaneGeometry(22, 13),
+  new THREE.MeshStandardMaterial({ map: makeBrickTexture(), roughness: 0.95, metalness: 0.02 })
+);
+brickWall.position.set(0.4, 0, -1.2);
+brickWall.receiveShadow = true;
+scene.add(brickWall);
+
+// Open Dark-Oak Dartboard Cabinet
+const cabinetGroup = new THREE.Group();
+scene.add(cabinetGroup);
+
+// Cabinet backboard
+const backBoard = new THREE.Mesh(new THREE.BoxGeometry(5.3, 5.4, 0.25), darkWoodMat);
+backBoard.position.set(0, 0, -0.52);
+backBoard.receiveShadow = true;
+cabinetGroup.add(backBoard);
+
+// Cabinet frame rails (top, bottom, left, right)
+const topRail = new THREE.Mesh(new THREE.BoxGeometry(5.5, 0.32, 0.65), darkWoodMat);
+topRail.position.set(0, 2.7, -0.3); topRail.castShadow = true; topRail.receiveShadow = true;
+cabinetGroup.add(topRail);
+
+const botRail = new THREE.Mesh(new THREE.BoxGeometry(5.5, 0.34, 0.72), darkWoodMat);
+botRail.position.set(0, -2.72, -0.26); botRail.castShadow = true; botRail.receiveShadow = true;
+cabinetGroup.add(botRail);
+
+const leftSide = new THREE.Mesh(new THREE.BoxGeometry(0.26, 5.4, 0.62), darkWoodMat);
+leftSide.position.set(-2.62, 0, -0.3); leftSide.castShadow = true; leftSide.receiveShadow = true;
+cabinetGroup.add(leftSide);
+
+const rightSide = new THREE.Mesh(new THREE.BoxGeometry(0.26, 5.4, 0.62), darkWoodMat);
+rightSide.position.set(2.62, 0, -0.3); rightSide.castShadow = true; rightSide.receiveShadow = true;
+cabinetGroup.add(rightSide);
+
+// Open Left Door (angled slightly forward into shadow)
+const leftDoorPivot = new THREE.Group();
+leftDoorPivot.position.set(-2.72, 0, 0.02);
+leftDoorPivot.rotation.y = 0.26;
+cabinetGroup.add(leftDoorPivot);
+const leftDoor = new THREE.Mesh(new THREE.BoxGeometry(2.35, 5.15, 0.16), darkWoodMat);
+leftDoor.position.set(-1.18, 0, 0); leftDoor.castShadow = true; leftDoor.receiveShadow = true;
+leftDoorPivot.add(leftDoor);
+const leftInset = new THREE.Mesh(
+  new THREE.BoxGeometry(1.9, 4.45, 0.06),
+  new THREE.MeshStandardMaterial({ color: 0x161b22, roughness: 0.92 })
+);
+leftInset.position.set(-1.18, 0, 0.08);
+leftDoorPivot.add(leftInset);
+
+// Open Right Door with Live 3D Slate Chalkboard
+const rightDoorPivot = new THREE.Group();
+rightDoorPivot.position.set(2.72, 0, 0.02);
+rightDoorPivot.rotation.y = -0.36;
+cabinetGroup.add(rightDoorPivot);
+const rightDoor = new THREE.Mesh(new THREE.BoxGeometry(2.65, 5.15, 0.16), darkWoodMat);
+rightDoor.position.set(1.32, 0, 0); rightDoor.castShadow = true; rightDoor.receiveShadow = true;
+rightDoorPivot.add(rightDoor);
+
+const slateMesh = new THREE.Mesh(
+  new THREE.PlaneGeometry(2.26, 4.32),
+  new THREE.MeshStandardMaterial({ map: chalkTex, roughness: 0.92, metalness: 0.02 })
+);
+slateMesh.position.set(1.32, 0.04, 0.095);
+slateMesh.receiveShadow = true;
+rightDoorPivot.add(slateMesh);
+
+// Chalk ledge under slate + white chalk stub
+const chalkLedge = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.12, 0.24), darkWoodMat);
+chalkLedge.position.set(1.32, -2.26, 0.16);
+rightDoorPivot.add(chalkLedge);
+const chalkStick = new THREE.Mesh(
+  new THREE.CylinderGeometry(0.03, 0.03, 0.34, 8),
+  new THREE.MeshStandardMaterial({ color: 0xe9e2cf, roughness: 0.95 })
+);
+chalkStick.rotation.z = Math.PI / 2 - 0.08;
+chalkStick.position.set(1.12, -2.18, 0.2);
+rightDoorPivot.add(chalkStick);
+
+// Brass Cabinet Hinges
+[-1.7, 1.7].forEach(hy => {
+  [-2.74, 2.74].forEach(hx => {
+    const hinge = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 0.36, 10), brassMat);
+    hinge.position.set(hx, hy, 0.05);
+    cabinetGroup.add(hinge);
+  });
+});
+
+// Wooden pub shelf & moody props (brass dart caddy + dark pint glass silhouette in shadow)
+const pubShelf = new THREE.Mesh(new THREE.BoxGeometry(11.5, 0.22, 1.1), darkWoodMat);
+pubShelf.position.set(0.4, -3.52, -0.35);
+pubShelf.receiveShadow = true;
+scene.add(pubShelf);
+
+const brassCup = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.14, 0.42, 16), brassMat);
+brassCup.position.set(-2.95, -3.2, -0.15);
+brassCup.castShadow = true;
+scene.add(brassCup);
+
+const pintGlass = new THREE.Mesh(
+  new THREE.CylinderGeometry(0.24, 0.17, 0.85, 18),
+  new THREE.MeshStandardMaterial({ color: 0x3b2612, roughness: 0.32, metalness: 0.15, transparent: true, opacity: 0.72 })
+);
+pintGlass.position.set(4.15, -2.98, 0.05);
+pintGlass.castShadow = true;
+scene.add(pintGlass);
+const pintFoam = new THREE.Mesh(
+  new THREE.CylinderGeometry(0.235, 0.23, 0.12, 18),
+  new THREE.MeshStandardMaterial({ color: 0xcab993, roughness: 0.95 })
+);
+pintFoam.position.set(4.15, -2.53, 0.05);
+scene.add(pintFoam);
+
+// Overhead Vintage Brass Pub Lamp Hood
+const lampGroup = new THREE.Group();
+lampGroup.position.set(0, 3.35, 1.65);
+scene.add(lampGroup);
+const lampArm = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 2.1, 10), brassMat);
+lampArm.rotation.x = Math.PI / 2;
+lampArm.position.set(0, 0.18, -1.0);
+lampGroup.add(lampArm);
+const lampShade = new THREE.Mesh(
+  new THREE.ConeGeometry(0.62, 0.44, 24, 1, true),
+  new THREE.MeshStandardMaterial({ color: 0x1d4029, roughness: 0.55, metalness: 0.25, side: THREE.DoubleSide })
+);
+lampShade.rotation.x = 0.34;
+lampGroup.add(lampShade);
+const lampRim = new THREE.Mesh(new THREE.TorusGeometry(0.62, 0.025, 8, 28), brassMat);
+lampRim.rotation.x = Math.PI / 2 + 0.34;
+lampRim.position.set(0, -0.2, 0.07);
+lampGroup.add(lampRim);
+const lampBulb = new THREE.Mesh(
+  new THREE.SphereGeometry(0.14, 12, 12),
+  new THREE.MeshBasicMaterial({ color: 0xffd792 })
+);
+lampBulb.position.set(0, -0.1, 0.03);
+lampGroup.add(lampBulb);
+
+// The 3D Sisal Dartboard!
+const boardGroup = new THREE.Group();
+scene.add(boardGroup);
+
+const { colorTex: boardTex, bumpTex: sisalBump } = makeSisalBoardTextures();
+
+// Board cylinder backing
+const boardBody = new THREE.Mesh(
+  new THREE.CylinderGeometry(R_BOARD_EDGE, R_BOARD_EDGE + 0.03, 0.36, 72),
+  new THREE.MeshStandardMaterial({ color: 0x15171a, roughness: 0.92 })
+);
+boardBody.rotation.x = Math.PI / 2;
+boardBody.position.z = -0.185;
+boardBody.castShadow = true;
+boardBody.receiveShadow = true;
+boardGroup.add(boardBody);
+
+// Matte brass outer rim ring
+const outerBand = new THREE.Mesh(new THREE.TorusGeometry(R_BOARD_EDGE + 0.01, 0.042, 12, 72), brassMat);
+outerBand.position.z = -0.02;
+boardGroup.add(outerBand);
+
+// Front Sisal Face (z = 0) — crisp raycast target with zero dart/wire shadow artifacts
+const boardFace = new THREE.Mesh(
+  new THREE.CircleGeometry(R_BOARD_EDGE, 96),
+  new THREE.MeshStandardMaterial({
+    map: boardTex,
+    bumpMap: sisalBump,
+    bumpScale: 0.008,
+    roughness: 0.92,
+    metalness: 0.02,
+  })
+);
+boardFace.position.z = 0;
+boardFace.receiveShadow = false;
+boardGroup.add(boardFace);
+
+// Raised Matte Spider Wires (4 concentric rings + 20 radial wires + number ring; no messy cast shadows onto sisal)
+const wireZ = 0.012;
+[R_INNER_BULL, R_OUTER_BULL, R_TREBLE_IN, R_TREBLE_OUT, R_DOUBLE_IN, R_DOUBLE_OUT].forEach(r => {
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(r, 0.009, 8, 96), wireMat);
+  ring.position.z = wireZ;
+  ring.castShadow = false;
+  boardGroup.add(ring);
+});
+const numWire = new THREE.Mesh(new THREE.TorusGeometry(R_NUM_RING + 0.17, 0.013, 8, 96), wireMat);
+numWire.position.z = 0.02;
+boardGroup.add(numWire);
+
+for (let i = 0; i < 20; i++) {
+  const theta = (i + 0.5) * (Math.PI / 10);
+  const len = R_DOUBLE_OUT - R_OUTER_BULL;
+  const rMid = (R_DOUBLE_OUT + R_OUTER_BULL) * 0.5;
+  const wMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.0075, 0.0075, len, 6), wireMat);
+  wMesh.position.set(Math.sin(theta) * rMid, Math.cos(theta) * rMid, wireZ);
+  wMesh.rotation.z = -theta;
+  wMesh.castShadow = false;
+  boardGroup.add(wMesh);
+}
+
+/* ============================================================================
+   7. LIGHTING (EVEN PRO BOARD ILLUMINATION + WARM/COOL PUB CONTRAST)
+   ============================================================================ */
+// Balanced cool blue-slate ambient so oak cabinet, left door & brick silhouettes read crisply
+scene.add(new THREE.HemisphereLight(0x88acd4, 0x252d3b, 0.92));
+
+// Primary Warm-Neutral Overhead Pub Lamp (broad, even coverage across top & middle of board)
+const mainSpot = new THREE.SpotLight(0xffe6c2, 42, 22, Math.PI / 2.15, 0.85, 0.85);
+mainSpot.position.set(0.05, 3.05, 3.85);
+mainSpot.target.position.set(0.15, -0.15, 0);
+mainSpot.castShadow = true;
+mainSpot.shadow.mapSize.set(1024, 1024);
+mainSpot.shadow.bias = -0.0005;
+mainSpot.shadow.camera.near = 1.0;
+mainSpot.shadow.camera.far = 14;
+scene.add(mainSpot);
+scene.add(mainSpot.target);
+
+// Soft Lower-Front Corona Fill (eliminates dark bottom half on 19/3/17 so entire 360 deg board reads evenly!)
+const boardLowerFill = new THREE.PointLight(0xffe9ca, 18.0, 12, 1.15);
+boardLowerFill.position.set(0.0, -1.65, 3.75);
+scene.add(boardLowerFill);
+
+// Dedicated Even Warm Fill for the 3D Slate Chalkboard Door
+const slateLight = new THREE.PointLight(0xfff0d4, 24.0, 12, 1.2);
+slateLight.position.set(3.65, 0.65, 3.35);
+scene.add(slateLight);
+
+// Cool Blue-Slate Pub Accent Light from Left (sculpts left oak door, brass hinges & brick wall)
+const coldRim = new THREE.DirectionalLight(0x7caae0, 1.65);
+coldRim.position.set(-5.8, 2.0, 3.4);
+scene.add(coldRim);
+const leftDoorAccent = new THREE.PointLight(0x6d99cc, 10.5, 10, 1.3);
+leftDoorAccent.position.set(-4.35, 0.4, 2.8);
+scene.add(leftDoorAccent);
+
+// Floating Chalk-Dust Motes inside the Warm Lamp Cone
+const DUST_COUNT = 110;
+const dustGeo = new THREE.BufferGeometry();
+const dustPos = new Float32Array(DUST_COUNT * 3);
+const dustVel = [];
+for (let i = 0; i < DUST_COUNT; i++) {
+  dustPos[i * 3]     = (Math.random() - 0.5) * 6.5;
+  dustPos[i * 3 + 1] = (Math.random() - 0.5) * 5.2;
+  dustPos[i * 3 + 2] = 0.25 + Math.random() * 2.8;
+  dustVel.push({
+    vx: (Math.random() - 0.5) * 0.06,
+    vy: 0.02 + Math.random() * 0.055,
+    ph: Math.random() * Math.PI * 2,
+  });
+}
+dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPos, 3));
+const dustMat = new THREE.PointsMaterial({
+  color: 0xf7dfaf, size: 0.038, transparent: true, opacity: 0.42,
+  depthWrite: false, blending: THREE.AdditiveBlending,
+});
+const dustPoints = new THREE.Points(dustGeo, dustMat);
+scene.add(dustPoints);
+
+// Impact Chalk-Puff & Brass Spark Bursts
+const bursts = [];
+function spawnBurst(x, y, kind = 'chalk') {
+  const count = kind === 'spark' ? 14 : 16;
+  const g = new THREE.BufferGeometry();
+  const pos = new Float32Array(count * 3);
+  const vels = [];
+  for (let i = 0; i < count; i++) {
+    pos[i * 3] = x; pos[i * 3 + 1] = y; pos[i * 3 + 2] = 0.04;
+    const ang = Math.random() * Math.PI * 2;
+    const spd = (kind === 'spark' ? 1.4 : 0.45) * (0.4 + Math.random() * 0.8);
+    vels.push({ vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd + 0.15, vz: 0.35 + Math.random() * 0.5 });
+  }
+  g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  const m = new THREE.PointsMaterial({
+    color: kind === 'spark' ? 0xffd27d : 0xefe7d1,
+    size: kind === 'spark' ? 0.055 : 0.07,
+    transparent: true, opacity: 0.85, depthWrite: false,
+    blending: THREE.AdditiveBlending,
+  });
+  const pts = new THREE.Points(g, m);
+  scene.add(pts);
+  bursts.push({ pts, vels, age: 0, life: kind === 'spark' ? 0.42 : 0.55 });
+}
+
+/* ============================================================================
+   8. 3D BOARD-PROJECTED CHALK OVERLAYS (Hover, Links, Aim High, Traps, Groups)
+   ============================================================================ */
+const overlayGroup = new THREE.Group();
+overlayGroup.position.z = 0.018;
+scene.add(overlayGroup);
+
+const hoverGroup = new THREE.Group();
+hoverGroup.position.z = 0.022;
+scene.add(hoverGroup);
+
+function makeBedShapeMesh(code, colorHex, opacity = 0.44, extra = {}) {
+  let geo;
+  if (code === 'BULL') {
+    geo = new THREE.CircleGeometry(R_INNER_BULL, 32);
+  } else if (code === '25') {
+    geo = new THREE.RingGeometry(R_INNER_BULL, R_OUTER_BULL, 36);
+  } else {
+    const ring = code[0];
+    const sec = parseInt(code.slice(1), 10);
+    const idx = SECTOR_INDEX[sec];
+    // Three.js RingGeometry theta starts at +X counterclockwise!
+    // Sector center clockwise from +Y is idx*PI/10 -> CCW from +X is PI/2 - idx*PI/10
+    const centerCCW = Math.PI / 2 - idx * (Math.PI / 10);
+    const thetaStart = centerCCW - Math.PI / 20;
+    let rIn, rOut;
+    if (ring === 'D') { rIn = R_DOUBLE_IN; rOut = R_DOUBLE_OUT; }
+    else if (ring === 'T') { rIn = R_TREBLE_IN; rOut = R_TREBLE_OUT; }
+    else if (extra.aimHigh) { rIn = R_TREBLE_OUT + 0.02; rOut = R_DOUBLE_IN - 0.02; }
+    else if (extra.innerOnly) { rIn = R_OUTER_BULL + 0.01; rOut = R_TREBLE_IN - 0.01; }
+    else { rIn = R_OUTER_BULL; rOut = R_DOUBLE_IN; }
+    geo = new THREE.RingGeometry(rIn, rOut, 18, 1, thetaStart, Math.PI / 10);
+  }
+  const mat = new THREE.MeshBasicMaterial({
+    color: colorHex, transparent: true, opacity, depthWrite: false, side: THREE.DoubleSide,
+  });
+  return new THREE.Mesh(geo, mat);
+}
+
+function clearGroup(grp) {
+  while (grp.children.length) {
+    const ch = grp.children.pop();
+    if (ch.geometry) ch.geometry.dispose();
+    if (ch.material) ch.material.dispose();
+  }
+}
+
+function showBoardOverlays({ highlights = [], link = null, aimHigh = null, trapBeds = [], groupRings = [] }) {
+  clearGroup(overlayGroup);
+  for (const h of highlights) {
+    const m = makeBedShapeMesh(h.code, h.color ?? 0xffe08a, Math.min(0.75, (h.opacity ?? 0.52) + 0.14), h);
+    m.userData.pulse = true;
+    m.userData.baseOp = m.material.opacity;
+    overlayGroup.add(m);
+  }
+  if (aimHigh) {
+    const m = makeBedShapeMesh(aimHigh, 0xf2ba5c, 0.34, { aimHigh: true });
+    overlayGroup.add(m);
+  }
+  for (const tb of trapBeds) {
+    const m = makeBedShapeMesh(tb, 0xd94338, 0.38);
+    overlayGroup.add(m);
+  }
+  if (link && link.length === 2) {
+    const p1 = bedToXY(link[0]);
+    const p2 = bedToXY(link[1]);
+    const mid = new THREE.Vector3((p1.x + p2.x) * 0.5, (p1.y + p2.y) * 0.5, 0.22);
+    const curve = new THREE.QuadraticBezierCurve3(
+      new THREE.Vector3(p1.x, p1.y, 0.02), mid, new THREE.Vector3(p2.x, p2.y, 0.02)
+    );
+    const tube = new THREE.Mesh(
+      new THREE.TubeGeometry(curve, 24, 0.017, 8, false),
+      new THREE.MeshBasicMaterial({ color: 0x9ec9ed, transparent: true, opacity: 0.78 })
+    );
+    overlayGroup.add(tube);
+  }
+  for (const gr of groupRings) {
+    const ring = new THREE.Mesh(
+      new THREE.TorusGeometry(0.17, 0.018, 8, 28),
+      new THREE.MeshBasicMaterial({ color: gr.color, transparent: true, opacity: 0.85 })
+    );
+    ring.position.set(gr.x, gr.y, 0.03);
+    overlayGroup.add(ring);
+  }
+}
+
+let hoveredBedCode = null;
+function updateHoverBed(bed) {
+  const key = bed ? `${bed.code}_${bed.sub}` : null;
+  if (key === hoveredBedCode) return;
+  hoveredBedCode = key;
+  clearGroup(hoverGroup);
+  const el = document.getElementById('hover-bed-val');
+  if (!bed) { el.textContent = '—'; return; }
+  el.textContent = bedPretty(bed.code);
+  const m = makeBedShapeMesh(bed.code, 0xf8dc94, 0.34, { aimHigh: bed.sub === 'OS', innerOnly: bed.sub === 'IS' });
+  hoverGroup.add(m);
+}
+
+/* ============================================================================
+   9. 3D SCULPTED TUNGSTEN DARTS & PARABOLIC FLIGHT ENGINE
+   ============================================================================ */
+const activeDarts = [];
+const dartPoolGroup = new THREE.Group();
+scene.add(dartPoolGroup);
+
+function buildDartMesh(accentHex = 0x8f231e) {
+  const g = new THREE.Group();
+  // Local +Z points back toward flight, tip is at z = 0 (so embedding at z=0 puts tip right into sisal!)
+  const tipMat = new THREE.MeshStandardMaterial({ color: 0xbec5cc, roughness: 0.28, metalness: 0.88 });
+  const barrelMat = new THREE.MeshStandardMaterial({ color: 0x7b8088, roughness: 0.36, metalness: 0.86 });
+  const shaftMat = new THREE.MeshStandardMaterial({ color: 0x1a1d22, roughness: 0.65, metalness: 0.15 });
+  const flightMat = new THREE.MeshStandardMaterial({ color: accentHex, roughness: 0.72, metalness: 0.05, side: THREE.DoubleSide });
+
+  // Steel point (-0.08 into sisal to +0.22) — zero cast shadows onto dartboard
+  const tip = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.002, 0.30, 8), tipMat);
+  tip.rotation.x = Math.PI / 2; tip.position.z = 0.07; tip.castShadow = false;
+  g.add(tip);
+
+  // Knurled tungsten barrel (+0.22 to +0.70)
+  const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.032, 0.026, 0.48, 12), barrelMat);
+  barrel.rotation.x = Math.PI / 2; barrel.position.z = 0.45; barrel.castShadow = false;
+  g.add(barrel);
+
+  // Brass grip rings on barrel
+  [0.36, 0.46, 0.56].forEach(z => {
+    const r = new THREE.Mesh(new THREE.TorusGeometry(0.032, 0.005, 6, 14), brassMat);
+    r.position.z = z;
+    g.add(r);
+  });
+
+  // Stem (+0.69 to +1.12)
+  const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.018, 0.44, 8), shaftMat);
+  stem.rotation.x = Math.PI / 2; stem.position.z = 0.90; stem.castShadow = false;
+  g.add(stem);
+
+  // 4-Vane Cross Flights (+1.02 to +1.44)
+  const fShape = new THREE.Shape();
+  fShape.moveTo(0, 0);
+  fShape.lineTo(0.14, 0.08);
+  fShape.lineTo(0.16, 0.36);
+  fShape.lineTo(0.02, 0.42);
+  fShape.lineTo(0, 0.42);
+  fShape.closePath();
+  const fGeo = new THREE.ShapeGeometry(fShape);
+  for (let k = 0; k < 4; k++) {
+    const vane = new THREE.Mesh(fGeo, flightMat);
+    vane.rotation.x = Math.PI / 2;
+    vane.rotation.z = k * (Math.PI / 2);
+    vane.position.z = 1.02;
+    vane.castShadow = false;
+    g.add(vane);
+  }
+  return g;
+}
+
+function clearDarts() {
+  for (const d of activeDarts) dartPoolGroup.remove(d.mesh);
+  activeDarts.length = 0;
+}
+
+function throwDartTo(x, y, { kind = 'S', accent = 0x8f231e, delay = 0, onLand = null, wireTink = false } = {}) {
+  const mesh = buildDartMesh(accent);
+  const start = new THREE.Vector3(x * 0.35 + (Math.random() - 0.5) * 0.45, -1.55, 6.2);
+  const end = new THREE.Vector3(x, y, 0.0);
+  mesh.position.copy(start);
+  mesh.visible = delay <= 0;
+  dartPoolGroup.add(mesh);
+
+  const entryPitch = -0.10 - Math.random() * 0.07; // slight realistic tail-up pub throw angle
+  const entryYaw = (Math.random() - 0.5) * 0.07;
+
+  const dart = {
+    mesh, start, end, t: -delay, duration: 0.28,
+    landed: false, wobbleT: 0, entryPitch, entryYaw,
+    kind, wireTink, onLand,
+  };
+  activeDarts.push(dart);
+  return dart;
+}
+
+function updateDarts(dt) {
+  for (const d of activeDarts) {
+    if (!d.landed) {
+      d.t += dt;
+      if (d.t < 0) continue;
+      d.mesh.visible = true;
+      const u = Math.min(1, d.t / d.duration);
+      const pos = new THREE.Vector3().lerpVectors(d.start, d.end, u);
+      pos.y += Math.sin(u * Math.PI) * 0.58; // realistic parabolic loft
+      d.mesh.position.copy(pos);
+      // Orient along trajectory tangent
+      const uNext = Math.min(1, u + 0.04);
+      const next = new THREE.Vector3().lerpVectors(d.start, d.end, uNext);
+      next.y += Math.sin(uNext * Math.PI) * 0.58;
+      // Local -Z points toward tip? No: tip at 0, flight at +Z, so looking AWAY from target aligns tip forward!
+      d.mesh.lookAt(pos.clone().sub(next.clone().sub(pos)));
+
+      if (u >= 1) {
+        d.landed = true;
+        d.mesh.position.copy(d.end);
+        d.mesh.rotation.set(d.entryPitch, d.entryYaw, Math.random() * Math.PI);
+        audio.playThud(d.kind);
+        if (d.wireTink) audio.playWireTink();
+        spawnBurst(d.end.x, d.end.y, d.wireTink ? 'spark' : 'chalk');
+        cameraKick = 0.032;
+        if (d.onLand) d.onLand();
+      }
+    } else if (d.wobbleT < 0.45) {
+      d.wobbleT += dt;
+      const damp = Math.exp(-d.wobbleT * 11) * Math.sin(d.wobbleT * 52) * 0.055;
+      d.mesh.rotation.x = d.entryPitch + damp;
+      d.mesh.rotation.y = d.entryYaw + damp * 0.6;
+    }
+  }
+}
+
+/* ============================================================================
+   10. GAME CONTROLLER, SELF-PLAYING "OCHE GHOST" & ALL 7 STAGES
+   ============================================================================ */
+const state = {
+  stage: 'STAGE_2',
+  ghostMode: true,
+  hintMode: 'auto', // 'auto' | 'always' | 'blind'
+  rivalPressure: false,
+  lastPlayerInputAt: 0,
+  ghostTimer: 0,
+  challenge: null,
+  challengeStartMs: 0,
+  stepIndex: 0,
+  remainingScore: 0,
+  dartsLeft: 3,
+  usedHint: false,
+  hintShown: false,
+  busy: false,
+  numInput: '',
+  lastItemId: null,
+  calibQueue: [],
+  calibIndex: 0,
+  calibStats: { ok: 0, total: 0, weakStages: new Set() },
+  stage2Phase: 'green', // progresses green -> yellow -> red organically
+};
+
+// DOM References
+const elGhostPill   = document.getElementById('ghost-pill');
+const elStageLabel  = document.getElementById('stage-label');
+const elPromptSub   = document.getElementById('prompt-sub');
+const elScoreBig    = document.getElementById('score-big');
+const elPromptTask  = document.getElementById('prompt-task');
+const elDartIcons   = document.getElementById('dart-icons');
+const elRivalTag    = document.getElementById('rival-tag');
+const elTimerFill   = document.getElementById('timer-fill');
+const elFeedback    = document.getElementById('feedback-strip');
+const elFlowVal     = document.getElementById('flow-val');
+const elAvgMs       = document.getElementById('avg-ms');
+const elTierBadge   = document.getElementById('tier-badge');
+const elNumpad      = document.getElementById('numpad-panel');
+const elNumDisp     = document.getElementById('numpad-display');
+const elSoundPill   = document.getElementById('sound-pill');
+const elDrawerBg    = document.getElementById('drawer-backdrop');
+const elDrawerBody  = document.getElementById('drawer-body');
+
+function setFeedback(text, cls = 'cue') {
+  elFeedback.textContent = text;
+  elFeedback.className = 'plate feedback-strip ' + cls;
+}
+
+function updateHudStats() {
+  elFlowVal.textContent = String(mastery.data.streak);
+  const avg = mastery.avgMs();
+  elAvgMs.textContent = avg ? (avg / 1000).toFixed(2) + 's' : '—';
+  const st = STAGES.find(s => s.id === state.stage);
+  elStageLabel.textContent = st ? st.short : state.stage;
+  elGhostPill.textContent = state.ghostMode ? 'Ghost Demo' : 'Your Throw';
+  elGhostPill.classList.toggle('active-player', !state.ghostMode);
+  const pips = elDartIcons.querySelectorAll('.dart-pip');
+  pips.forEach((p, idx) => p.classList.toggle('spent', idx >= state.dartsLeft));
+}
+
+function showNumpad(show) {
+  elNumpad.classList.toggle('visible', show);
+  state.numInput = '';
+  renderNumpadDisplay();
+}
+
+function renderNumpadDisplay() {
+  if (!state.numInput) {
+    elNumDisp.textContent = 'Type score…';
+    elNumDisp.classList.add('placeholder');
+  } else {
+    elNumDisp.textContent = state.numInput;
+    elNumDisp.classList.remove('placeholder');
+  }
+}
+
+function updateTierBadge(tier) {
+  elTierBadge.className = 'tier-badge t' + tier;
+  elTierBadge.textContent = tier === 1 ? 'Guided' : tier === 2 ? 'Hint on Pause' : 'Match Speed';
+}
+
+/* ---------- Challenge Generators for Every Stage ---------- */
+function buildCalibrationQueue() {
+  return [
+    { kind: 'double_find', id: 'D18', target: 'D18', val: 36, speedMs: 2500, stageTag: 'STAGE_0A', cue: 'D18 = 2 × 18 = 36' },
+    { kind: 'double_val',  id: 'D14', target: 'D14', val: 28, speedMs: 2500, stageTag: 'STAGE_0A', cue: 'D14 = 2 × 14 = 28' },
+    { kind: 'treble_find', id: 'T14', target: 'T14', val: 42, speedMs: 2200, stageTag: 'STAGE_0B', cue: 'Essential Treble: T14 = 42' },
+    { kind: 'treble_val',  id: 'T17', target: 'T17', val: 51, speedMs: 2200, stageTag: 'STAGE_0B', cue: 'Essential Treble: T17 = 51' },
+    { kind: 'below60',     item: BELOW_60_ITEMS.find(x => x.id === 'B60_49_D16'), speedMs: 3200, stageTag: 'STAGE_1' },
+    { kind: 'below60',     item: BELOW_60_ITEMS.find(x => x.id === 'B60_42_D18'), speedMs: 3200, stageTag: 'STAGE_1' },
+    { kind: 'g44',         item: G44_BY_SCORE[75], speedMs: 3500, stageTag: 'STAGE_2' },
+    { kind: 'g44',         item: G44_BY_SCORE[86], speedMs: 3500, stageTag: 'STAGE_2' },
+    { kind: 'sods',        item: SODS_LAW_ITEMS.find(x => x.id === 'SL_62_1D'), speedMs: 3500, stageTag: 'STAGE_3' },
+    { kind: 'tonplus',     item: TON_PLUS_ITEMS.find(x => x.id === 'TP_148'), speedMs: 4200, stageTag: 'STAGE_4' },
+    { kind: 'tonplus',     item: TON_PLUS_ITEMS.find(x => x.id === 'TP_104_3D'), speedMs: 4200, stageTag: 'STAGE_4' },
+    { kind: 'marking',     item: MARKING_ITEMS.find(x => x.id === 'MK_19_4X'), speedMs: 3500, stageTag: 'STAGE_6' },
+  ];
+}
+
+function nextChallengeForStage(stageId) {
+  if (stageId === 'CALIBRATION') {
+    if (!state.calibQueue.length || state.calibIndex >= state.calibQueue.length) {
+      state.calibQueue = buildCalibrationQueue();
+      state.calibIndex = 0;
+      state.calibStats = { ok: 0, total: 0, weakStages: new Set() };
+    }
+    return state.calibQueue[state.calibIndex];
+  }
+
+  if (stageId === 'STAGE_0A') {
+    const roll = Math.random();
+    if (roll < 0.28) {
+      const h = mastery.pickNext(HALVING_CHAINS, x => x.id, state.lastItemId);
+      return { kind: 'halving', id: h.id, start: h.start, target: h.next, speedMs: 2600, cue: h.cue };
+    }
+    const pool = [...SECTORS.map(s => ({ code: 'D' + s, val: s * 2 })), { code: 'BULL', val: 50 }];
+    const picked = mastery.pickNext(pool, x => x.code, state.lastItemId);
+    const askVal = roll > 0.64;
+    return {
+      kind: askVal ? 'double_val' : 'double_find',
+      id: picked.code, target: picked.code, val: picked.val, speedMs: 2200,
+      cue: picked.code === 'BULL' ? 'Inner Bull = 50' : `${picked.code} = 2 × ${picked.val / 2} = ${picked.val}`,
+    };
+  }
+
+  if (stageId === 'STAGE_0B') {
+    const pool = ESSENTIAL_TREBLES.map(n => ({ code: 'T' + n, val: n * 3 }));
+    const picked = mastery.pickNext(pool, x => x.code, state.lastItemId);
+    const askVal = Math.random() < 0.48;
+    return {
+      kind: askVal ? 'treble_val' : 'treble_find',
+      id: picked.code, target: picked.code, val: picked.val, speedMs: 2000,
+      cue: `${picked.code} = 3 × ${picked.val / 3} = ${picked.val}`,
+    };
+  }
+
+  if (stageId === 'STAGE_1') {
+    const coreMastered = BELOW_60_ITEMS.filter(x => x.tier === 'core' && mastery.get(x.id).ok >= 1).length;
+    const pool = coreMastered >= 8 ? BELOW_60_ITEMS : BELOW_60_ITEMS.filter(x => x.tier === 'core');
+    const item = mastery.pickNext(pool, x => x.id, state.lastItemId);
+    return { kind: 'below60', item, speedMs: 3200 };
+  }
+
+  if (stageId === 'STAGE_2') {
+    // Motivating order: Green quick wins -> Yellow FDIs -> Drip-feed Red Outlaws 1-2 at a time!
+    const greens = GOLDEN_44.filter(x => x.group === 'green');
+    const yellows = GOLDEN_44.filter(x => x.group.startsWith('yellow'));
+    const reds = GOLDEN_44.filter(x => x.group === 'red');
+    const greenOk = greens.filter(x => mastery.get('G44_' + x.score).ok >= 1).length;
+    const yellowOk = yellows.filter(x => mastery.get('G44_' + x.score).ok >= 1).length;
+    let pool = greens;
+    if (greenOk >= 5 || state.ghostMode) pool = [...greens, ...yellows];
+    if (yellowOk >= 4 || state.ghostMode) {
+      const unlockedReds = reds.slice(0, state.ghostMode ? 5 : Math.min(5, 1 + Math.floor(yellowOk / 3)));
+      pool = [...greens, ...yellows, ...unlockedReds];
+    }
+    const item = mastery.pickNext(pool, x => 'G44_' + x.score, state.lastItemId);
+    return { kind: 'g44', item, speedMs: 3200 };
+  }
+
+  if (stageId === 'STAGE_3') {
+    const item = mastery.pickNext(SODS_LAW_ITEMS, x => x.id, state.lastItemId);
+    return { kind: 'sods', item, speedMs: 3600 };
+  }
+
+  if (stageId === 'STAGE_4') {
+    const item = mastery.pickNext(TON_PLUS_ITEMS, x => x.id, state.lastItemId);
+    return { kind: 'tonplus', item, speedMs: 4400 };
+  }
+
+  if (stageId === 'STAGE_5') {
+    const item = mastery.pickNext(BOGEY_ITEMS, x => x.id, state.lastItemId);
+    return { kind: 'bogey', item, speedMs: 3600 };
+  }
+
+  if (stageId === 'STAGE_6') {
+    const item = mastery.pickNext(MARKING_ITEMS, x => x.id, state.lastItemId);
+    return { kind: 'marking', item, speedMs: 3800 };
+  }
+  return nextChallengeForStage('STAGE_2');
+}
+
+function challengeItemId(ch) {
+  if (!ch) return 'NONE';
+  if (ch.kind === 'g44') return 'G44_' + ch.item.score;
+  if (ch.item) return ch.item.id;
+  return ch.id;
+}
+
+function loadChallenge(ch) {
+  clearDarts();
+  clearGroup(overlayGroup);
+  state.challenge = ch;
+  state.lastItemId = challengeItemId(ch);
+  state.stepIndex = 0;
+  state.usedHint = false;
+  state.hintShown = false;
+  state.busy = false;
+  state.challengeStartMs = performance.now();
+  state.ghostTimer = 0;
+
+  const id = state.lastItemId;
+  const tier = state.hintMode === 'always' ? 1 : state.hintMode === 'blind' ? 3 : mastery.tier(id, ch.speedMs || 3000);
+  updateTierBadge(tier);
+  elRivalTag.style.display = 'none';
+
+  // Configure per challenge type
+  if (ch.kind === 'double_find') {
+    state.dartsLeft = 1;
+    elPromptSub.textContent = 'Stage 0A · Find Double';
+    elScoreBig.textContent = String(ch.val);
+    elPromptTask.textContent = `Click the double worth ${ch.val}`;
+    showNumpad(false);
+    renderChalkboard({ header: 'DOUBLES DRILL', big: ch.val, sub: 'Find the double bed', lines: tier === 1 ? [ch.cue] : ['Locate on the 3D board (<2s)'] });
+    if (tier === 1) applyChallengeHint(true);
+  } else if (ch.kind === 'double_val') {
+    state.dartsLeft = 1;
+    elPromptSub.textContent = 'Stage 0A · Double Value';
+    elScoreBig.textContent = ch.target;
+    elPromptTask.textContent = `Enter the value of ${ch.target}`;
+    showNumpad(true);
+    showBoardOverlays({ highlights: [{ code: ch.target, color: 0xf3cc7d, opacity: 0.56 }] });
+    renderChalkboard({ header: 'DOUBLES VALUE', big: ch.target, sub: 'Type total & press CALL', lines: tier === 1 ? [ch.cue] : ['2 × sector number (<2s)'] });
+  } else if (ch.kind === 'halving') {
+    state.dartsLeft = 2;
+    elPromptSub.textContent = 'Stage 0A · Halving Chain';
+    elScoreBig.textContent = ch.start;
+    elPromptTask.textContent = `Missed ${ch.start} inside -> click next double!`;
+    showNumpad(false);
+    const p = bedToXY('S' + ch.start.slice(1), { inner: false });
+    throwDartTo(p.x, p.y, { kind: 'S' });
+    renderChalkboard({ header: 'HALVING CHAIN', big: ch.start, sub: `Inside single hit!`, lines: [tier === 1 ? ch.cue : 'Halve the double cleanly'] });
+    if (tier === 1) applyChallengeHint(true);
+  } else if (ch.kind === 'treble_find') {
+    state.dartsLeft = 1;
+    elPromptSub.textContent = 'Stage 0B · Essential 10 Trebles';
+    elScoreBig.textContent = String(ch.val);
+    elPromptTask.textContent = `Click the treble worth ${ch.val}`;
+    showNumpad(false);
+    renderChalkboard({ header: '10 TREBLES', big: ch.val, sub: 'Bidirectional <2s', lines: [tier === 1 ? ch.cue : 'T10 & T12–T20 only'] });
+    if (tier === 1) applyChallengeHint(true);
+  } else if (ch.kind === 'treble_val') {
+    state.dartsLeft = 1;
+    elPromptSub.textContent = 'Stage 0B · Essential 10 Trebles';
+    elScoreBig.textContent = ch.target;
+    elPromptTask.textContent = `Enter the value of ${ch.target}`;
+    showNumpad(true);
+    showBoardOverlays({ highlights: [{ code: ch.target, color: 0xf3cc7d, opacity: 0.62 }] });
+    renderChalkboard({ header: '10 TREBLES', big: ch.target, sub: 'Type value (<2s)', lines: [tier === 1 ? ch.cue : 'Instant recall, no counting'] });
+  } else if (ch.kind === 'below60') {
+    const it = ch.item;
+    state.remainingScore = it.score;
+    state.dartsLeft = it.darts || 2;
+    elPromptSub.textContent = it.targetD === 'ANY' ? 'Stage 1 · Setup Playbook' : `Stage 1 · Leave ${it.targetD}`;
+    elScoreBig.textContent = String(it.score);
+    elPromptTask.textContent = it.targetD === 'ANY'
+      ? `Click smart setup on ${it.score}`
+      : `Click single setup to leave ${it.targetD}`;
+    showNumpad(false);
+    renderChalkboard({ header: 'BELOW 60', big: it.score, sub: it.targetD === 'ANY' ? 'Safe setup / wedge' : `Target: ${it.targetD}`,
+      lines: [tier === 1 ? it.cue : 'Apply -2 (D16), +4 (D18/D8), +2 (D14/D4), +6 (D12)'] });
+    if (tier === 1) applyChallengeHint(true);
+  } else if (ch.kind === 'g44') {
+    const it = ch.item;
+    state.remainingScore = it.score;
+    state.dartsLeft = 2;
+    const grpName = it.group === 'green' ? 'Green Quick Win' : it.group === 'red' ? 'Red Outlaw' : 'Yellow FDI';
+    elPromptSub.textContent = `Stage 2 · Golden 44 (${grpName})`;
+    elScoreBig.textContent = String(it.score);
+    elPromptTask.textContent = `2-dart checkout on ${it.score} — click Dart 1`;
+    showNumpad(false);
+    renderChalkboard({ header: 'GOLDEN 44', big: it.score, sub: grpName,
+      lines: [tier === 1 ? it.cue : 'Dart 1 -> Double -> Miss Rule'] });
+    if (tier === 1) applyChallengeHint(true);
+  } else if (ch.kind === 'sods') {
+    const it = ch.item;
+    state.remainingScore = it.score;
+    state.dartsLeft = it.darts;
+    const rival = it.rivalClose || state.rivalPressure;
+    if (rival) {
+      elRivalTag.style.display = 'inline-block';
+      elRivalTag.textContent = 'Rival on D16!';
+      elRivalTag.className = 'rival-tag';
+    }
+    elPromptSub.textContent = `Stage 3 · Sod's Law (${it.darts} ${it.darts === 1 ? 'Dart' : 'Darts'} Left)`;
+    elScoreBig.textContent = String(it.score);
+    elPromptTask.textContent = it.darts === 1
+      ? `1 dart left on ${it.score} — click best setup!`
+      : `Play ${it.score} safely (watch for single-miss!)`;
+    showNumpad(false);
+    renderChalkboard({ header: "SOD'S LAW", big: it.score, sub: `${it.darts} dart(s) in hand`,
+      lines: [tier === 1 ? it.cue : 'Track darts in hand & <70 safety'] });
+    if (tier === 1) applyChallengeHint(true);
+  } else if (ch.kind === 'tonplus') {
+    const it = ch.item;
+    state.remainingScore = it.score;
+    state.dartsLeft = 3;
+    elPromptSub.textContent = 'Stage 4 · Ton-Plus (3 Darts)';
+    elScoreBig.textContent = String(it.score);
+    elPromptTask.textContent = `3 darts on ${it.score} — click opening treble`;
+    showNumpad(false);
+    renderChalkboard({ header: 'TON-PLUS 101-170', big: it.score, sub: '3 darts in hand',
+      lines: [tier === 1 ? it.cue : 'Rule of 40 (+40), Rule of 43 (+43), check splash traps'] });
+    if (tier === 1) applyChallengeHint(true);
+  } else if (ch.kind === 'bogey') {
+    const it = ch.item;
+    state.remainingScore = it.rem;
+    state.dartsLeft = 1;
+    elPromptSub.textContent = `Stage 5 · Bogey Dodger (Started ${it.score})`;
+    elScoreBig.textContent = String(it.rem);
+    elPromptTask.textContent = `Dart 3 after ${it.prior.join('+')} — avoid bogey!`;
+    showNumpad(false);
+    // Embed prior 2 darts visually on T20/S20
+    it.prior.forEach((b, i) => {
+      const p = bedToXY(b, { jitter: 0.08 });
+      throwDartTo(p.x, p.y, { kind: b[0], delay: i * 0.08 });
+    });
+    renderChalkboard({ header: 'BOGEY DODGER', big: it.rem, sub: `Started ${it.score} · 1 dart left`,
+      lines: [tier === 1 ? it.cue : 'Teen Cover S(10+d) -> 170/160 (avoid 159,162,163,165,166,168,169)'] });
+    if (tier === 1) applyChallengeHint(true);
+  } else if (ch.kind === 'marking') {
+    const it = ch.item;
+    state.dartsLeft = 0;
+    elPromptSub.textContent = 'Stage 6 · Croupier\'s Chalk';
+    elScoreBig.textContent = '???';
+    elPromptTask.textContent = 'Call the total before the brass bell!';
+    showNumpad(true);
+    // Throw all 2-3 darts into the 3D board!
+    ch.dartCoords = [];
+    it.darts.forEach((code, idx) => {
+      const p = bedToXY(code, { jitter: 0.05, inner: idx === 2 && code[0] === 'S' });
+      ch.dartCoords.push({ code, x: p.x, y: p.y });
+      throwDartTo(p.x, p.y, { kind: code[0], delay: idx * 0.13, accent: idx === it.oddIdx ? 0x2b4a69 : 0x8f231e });
+    });
+    renderChalkboard({ header: "CROUPIER'S CHALK", big: '???', sub: 'Visual shape call',
+      lines: [tier === 1 ? it.cue : 'Snap 2 known darts first ("What do I know?")'] });
+    if (tier === 1) applyChallengeHint(true);
+  }
+
+  audio.playChalk();
+  updateHudStats();
+}
+
+function applyChallengeHint(auto = false) {
+  const ch = state.challenge;
+  if (!ch) return;
+  if (!auto) state.usedHint = true;
+  state.hintShown = true;
+
+  if (ch.kind === 'double_find' || ch.kind === 'treble_find' || ch.kind === 'halving') {
+    showBoardOverlays({ highlights: [{ code: ch.target, color: 0xf3cc7d, opacity: 0.55 }] });
+    setFeedback(`Cue: ${ch.cue}`, 'cue');
+  } else if (ch.kind === 'double_val' || ch.kind === 'treble_val') {
+    setFeedback(`Cue: ${ch.cue}`, 'cue');
+  } else if (ch.kind === 'below60') {
+    const it = ch.item;
+    const hl = state.stepIndex === 0
+      ? it.setup.map(c => ({ code: c, color: 0xf3cc7d, opacity: 0.45 }))
+      : [{ code: 'D' + (state.remainingScore / 2), color: 0x79d499, opacity: 0.52 }];
+    showBoardOverlays({ highlights: hl, aimHigh: it.aimHigh && state.stepIndex === 0 ? it.setup[0] : null });
+    setFeedback(`Cue: ${it.cue}`, 'cue');
+  } else if (ch.kind === 'g44') {
+    const it = ch.item;
+    if (ch.missPrompt) {
+      setFeedback(`Miss Rule: ${it.score} - ${bedValue('S' + it.route[0].slice(1))} = ${it.miss}`, 'cue');
+    } else {
+      const target = it.route[state.stepIndex] || it.route[0];
+      showBoardOverlays({
+        highlights: [{ code: target, color: 0xf3cc7d, opacity: 0.5 }],
+        link: it.link || null,
+        aimHigh: it.aimHigh && state.stepIndex === 0 ? 'S20' : null,
+      });
+      setFeedback(`Cue: ${it.cue}`, 'cue');
+    }
+  } else if (ch.kind === 'sods') {
+    const it = ch.item;
+    const trapBeds = it.trap ? Object.keys(it.trap) : [];
+    const hl = state.stepIndex === 0
+      ? it.valid.map(c => ({ code: c, color: 0xf3cc7d, opacity: 0.48 }))
+      : [];
+    showBoardOverlays({ highlights: hl, trapBeds });
+    setFeedback(`Cue: ${it.cue}`, 'cue');
+  } else if (ch.kind === 'tonplus') {
+    const it = ch.item;
+    const trapBeds = it.traps ? Object.keys(it.traps) : [];
+    const hl = state.stepIndex === 0
+      ? it.open.map(c => ({ code: c, color: 0xf3cc7d, opacity: 0.48 }))
+      : [];
+    showBoardOverlays({ highlights: hl, trapBeds });
+    setFeedback(`Cue: ${it.cue}`, 'cue');
+  } else if (ch.kind === 'bogey') {
+    const it = ch.item;
+    showBoardOverlays({
+      highlights: [{ code: it.cover, color: 0xf3cc7d, opacity: 0.45 }],
+      trapBeds: it.centerOk ? ['S20'] : ['S20', '25', 'BULL'],
+    });
+    setFeedback(`Cue: ${it.cue}`, 'cue');
+  } else if (ch.kind === 'marking') {
+    const it = ch.item;
+    const rings = [];
+    if (ch.dartCoords) {
+      ch.dartCoords.forEach((dc, idx) => {
+        const isOdd = idx === it.oddIdx;
+        rings.push({ x: dc.x, y: dc.y, color: isOdd ? 0x7ba3c4 : 0xf3cc7d });
+      });
+    }
+    showBoardOverlays({ groupRings: rings });
+    setFeedback(`Cue: ${it.cue}`, 'cue');
+  }
+}
+
+function advanceAfter(delayMs = 1150) {
+  state.busy = true;
+  setTimeout(() => {
+    if (state.stage === 'CALIBRATION') {
+      state.calibIndex++;
+      if (state.calibIndex >= state.calibQueue.length) {
+        finishCalibration();
+        return;
+      }
+    }
+    loadChallenge(nextChallengeForStage(state.stage));
+  }, delayMs);
+}
+
+function finishCalibration() {
+  const { ok, total, weakStages } = state.calibStats;
+  const order = ['STAGE_0A', 'STAGE_0B', 'STAGE_1', 'STAGE_2', 'STAGE_3', 'STAGE_4', 'STAGE_6'];
+  const rec = order.find(s => weakStages.has(s)) || 'STAGE_2';
+  const recTitle = STAGES.find(s => s.id === rec)?.short || rec;
+  setFeedback(`Calibration Complete (${ok}/${total})! Recommended start: ${recTitle}`, 'ok');
+  audio.playApplause();
+  renderChalkboard({
+    header: 'CALIBRATION DONE', big: `${ok}/${total}`, sub: 'Recommended Stage:',
+    lines: [{ text: recTitle, kind: 'ok' }, 'Slow beds queued for spaced review!'],
+  });
+  state.stage = rec;
+  setTimeout(() => loadChallenge(nextChallengeForStage(state.stage)), 2400);
+}
+
+function completeChallenge(correct, customMsg = null, customCueLines = null) {
+  const ch = state.challenge;
+  if (!ch) return;
+  const id = challengeItemId(ch);
+  const ms = performance.now() - state.challengeStartMs;
+  if (!state.ghostMode) {
+    mastery.record(id, correct, ms, state.usedHint, ch.speedMs || 3000);
+    if (state.stage === 'CALIBRATION') {
+      state.calibStats.total++;
+      if (correct && ms <= (ch.speedMs || 3200) * 1.35) state.calibStats.ok++;
+      else if (ch.stageTag) state.calibStats.weakStages.add(ch.stageTag);
+    }
+  }
+  updateHudStats();
+  if (correct) {
+    audio.playBell('ok');
+    if (mastery.data.streak > 0 && mastery.data.streak % 5 === 0 && !state.ghostMode) audio.playApplause();
+    setFeedback(customMsg || `Clean! (${(ms / 1000).toFixed(2)}s)`, 'ok');
+    if (customCueLines) {
+      renderChalkboard({ header: 'CHECKED OUT', big: '✓', sub: `${(ms / 1000).toFixed(2)}s`, lines: customCueLines });
+    }
+    advanceAfter(state.ghostMode ? 1250 : 1050);
+  } else {
+    audio.playWireTink();
+    setFeedback(customMsg || 'Try again — check the chalk cue!', 'warn');
+  }
+}
+
+/* ---------- Player & Ghost Interaction Handlers ---------- */
+function handleBoardClick(bed, rawXY) {
+  if (!bed || state.busy || !state.challenge) return;
+  if (!audio.ctx) {
+    audio.unlock();
+    elSoundPill.textContent = 'Sound: On';
+    elSoundPill.classList.add('on');
+  }
+  const ch = state.challenge;
+  if (ch.kind === 'double_val' || ch.kind === 'treble_val' || ch.kind === 'marking' || ch.missPrompt) {
+    return; // numeric response expected
+  }
+
+  const x = rawXY ? rawXY.x : bedToXY(bed.code).x;
+  const y = rawXY ? rawXY.y : bedToXY(bed.code).y;
+
+  // 1. Doubles / Trebles / Halving single-click modes
+  if (ch.kind === 'double_find' || ch.kind === 'treble_find' || ch.kind === 'halving') {
+    if (bed.code === ch.target) {
+      throwDartTo(x, y, { kind: bed.ring });
+      state.dartsLeft = Math.max(0, state.dartsLeft - 1);
+      completeChallenge(true, `Spot on! ${ch.cue}`, [{ text: ch.cue, kind: 'ok' }]);
+    } else {
+      throwDartTo(x, y, { kind: bed.ring, wireTink: true });
+      applyChallengeHint(false);
+      completeChallenge(false, `That's ${bedPretty(bed.code)} — look for ${ch.cue}`);
+    }
+    return;
+  }
+
+  // 2. Stage 1 — Below-60 Double Smiths
+  if (ch.kind === 'below60') {
+    const it = ch.item;
+    if (state.stepIndex === 0) {
+      if (it.setup.includes(bed.code)) {
+        const aimWarn = it.aimHigh && bed.sub === 'IS';
+        throwDartTo(x, y, { kind: bed.ring });
+        state.remainingScore -= bed.value;
+        state.dartsLeft = Math.max(1, state.dartsLeft - 1);
+        state.stepIndex = 1;
+        elScoreBig.textContent = String(state.remainingScore);
+        const nextD = 'D' + (state.remainingScore / 2);
+        elPromptTask.textContent = `Leaves ${state.remainingScore} — finish on ${nextD}!`;
+        updateHudStats();
+        const extra = it.wedge ? 'Safe wire wedge! ' : aimWarn ? 'Good bed (tip: aim HIGH above treble!). ' : '';
+        setFeedback(`${extra}${bed.code} leaves ${state.remainingScore} (${nextD})`, 'ok');
+        renderChalkboard({ header: 'BELOW 60', big: state.remainingScore, sub: `Finish on ${nextD}`, lines: [it.cue] });
+      } else {
+        throwDartTo(x, y, { kind: bed.ring, wireTink: true });
+        applyChallengeHint(false);
+        completeChallenge(false, `${bed.code} leaves ${it.score - bed.value}. ${it.cue}`);
+      }
+    } else {
+      const targetD = 'D' + (state.remainingScore / 2);
+      if (bed.code === targetD) {
+        throwDartTo(x, y, { kind: 'D' });
+        state.dartsLeft = 0;
+        completeChallenge(true, `Game shot! ${it.cue}`, [{ text: it.cue, kind: 'ok' }]);
+      } else {
+        throwDartTo(x, y, { kind: bed.ring, wireTink: true });
+        completeChallenge(false, `Need ${targetD} (${state.remainingScore}) to finish!`);
+      }
+    }
+    return;
+  }
+
+  // 3. Stage 2 — The Golden 44 (2-dart finish + periodic 4-Rounds Miss Rule check!)
+  if (ch.kind === 'g44') {
+    const it = ch.item;
+    const validFirsts = [it.route[0], ...it.alts.map(a => a[0])];
+    if (state.stepIndex === 0) {
+      if (validFirsts.includes(bed.code)) {
+        throwDartTo(x, y, { kind: bed.ring });
+        state.remainingScore -= bed.value;
+        state.dartsLeft = 1;
+        state.stepIndex = 1;
+        ch.chosenFirst = bed.code;
+        elScoreBig.textContent = String(state.remainingScore);
+        const remBed = state.remainingScore === 50 ? 'BULL' : 'D' + (state.remainingScore / 2);
+        elPromptTask.textContent = `${bed.code} hits! Finish on ${remBed}`;
+        updateHudStats();
+        renderChalkboard({ header: 'GOLDEN 44', big: state.remainingScore, sub: `${bed.code} -> ${remBed}`, lines: [it.cue] });
+        setFeedback(`${bed.code} leaves ${state.remainingScore} -> click ${remBed}`, 'cue');
+      } else {
+        throwDartTo(x, y, { kind: bed.ring, wireTink: true });
+        applyChallengeHint(false);
+        completeChallenge(false, `${bed.code} isn't the route on ${it.score}. ${it.cue}`);
+      }
+    } else if (state.stepIndex === 1) {
+      const targetOut = state.remainingScore === 50 ? 'BULL' : 'D' + (state.remainingScore / 2);
+      if (bed.code === targetOut) {
+        throwDartTo(x, y, { kind: targetOut === 'BULL' ? 'BULL' : 'D' });
+        state.dartsLeft = 0;
+        // 40% of player Golden 44 rounds ask quick Round-4 Miss Rule check!
+        const firstIsTreble = ch.chosenFirst === it.route[0] && it.route[0][0] === 'T';
+        if (!state.ghostMode && firstIsTreble && state.stage === 'STAGE_2' && Math.random() < 0.38) {
+          ch.missPrompt = true;
+          ch.missAns = it.miss;
+          const singleName = 'S' + it.route[0].slice(1);
+          elPromptSub.textContent = 'Round 4 · Miss Rule Check';
+          elScoreBig.textContent = `${it.score} - ${singleName}`;
+          elPromptTask.textContent = `Quick! If ${it.route[0]} hits ${singleName}, what's left?`;
+          showNumpad(true);
+          renderChalkboard({ header: 'MISS RULE', big: '?', sub: `${it.score} hit ${singleName}`, lines: ['Pair every finish with its single-miss leave!'] });
+          setFeedback(`Checked out! Now Round 4: hit ${singleName} on ${it.score} -> what's left?`, 'cue');
+        } else {
+          completeChallenge(true, `Game shot ${it.score}! (${it.route.join(' ')} · Miss -> ${it.miss})`,
+            [{ text: `${it.score}: ${it.route.join(' + ')}`, kind: 'ok' }, `Miss Rule -> ${it.miss}`, it.cue]);
+        }
+      } else {
+        throwDartTo(x, y, { kind: bed.ring, wireTink: true });
+        completeChallenge(false, `Need ${targetOut} (${state.remainingScore}) to check out!`);
+      }
+    }
+    return;
+  }
+
+  // 4. Stage 3 — Sod's Law (Live Misses, 1-Dart Abandonment & Safety!)
+  if (ch.kind === 'sods') {
+    const it = ch.item;
+    if (state.stepIndex === 0) {
+      if (it.trap && it.trap[bed.code]) {
+        const tr = it.trap[bed.code];
+        const dp = bedToXY(tr.drift);
+        throwDartTo(dp.x, dp.y, { kind: tr.drift[0], wireTink: true });
+        applyChallengeHint(false);
+        renderChalkboard({ header: 'TRAP TRIGGERED', big: it.score - bedValue(tr.drift), sub: `Drifted into ${tr.drift}!`, lines: [{ text: tr.why, kind: 'warn' }] });
+        completeChallenge(false, tr.why);
+        return;
+      }
+      if (it.valid.includes(bed.code)) {
+        // Trigger realistic Sod's Law single-miss when flagged!
+        if (it.forceMiss && it.darts >= 2 && (bed.code[0] === 'T' || bed.code[0] === 'D')) {
+          const single = 'S' + bed.code.slice(1);
+          const sp = bedToXY(single);
+          throwDartTo(sp.x, sp.y, { kind: 'S' });
+          state.remainingScore -= bedValue(single);
+          state.dartsLeft = 1;
+          state.stepIndex = 1;
+          elScoreBig.textContent = String(state.remainingScore);
+          elPromptTask.textContent = `Sod's Law! Hit ${single} -> ${state.remainingScore} left (1 dart). Click setup!`;
+          updateHudStats();
+          renderChalkboard({
+            header: "SOD'S LAW MISS", big: state.remainingScore, sub: `${bed.code} dropped to ${single}`,
+            lines: [`1 dart left on ${state.remainingScore}!`, 'Use -20 + add-back & set up a clean double!'],
+          });
+          setFeedback(`Sod's Law! ${bed.code} dropped into ${single} -> ${state.remainingScore} left (1 dart)!`, 'cue');
+          return;
+        }
+        throwDartTo(x, y, { kind: bed.ring });
+        state.dartsLeft = Math.max(0, state.dartsLeft - 1);
+        completeChallenge(true, `Smart oche play! ${it.cue}`, [{ text: it.cue, kind: 'ok' }]);
+      } else {
+        throwDartTo(x, y, { kind: bed.ring, wireTink: true });
+        applyChallengeHint(false);
+        completeChallenge(false, `${bed.code} isn't optimal here. ${it.cue}`);
+      }
+    } else {
+      // Follow-up after Sod's Law single miss (1 dart left to set up a clean double!)
+      const rem = state.remainingScore;
+      const leaves = rem - bed.value;
+      const goodDoubles = new Set([40, 36, 32, 28, 24, 20, 16, 12, 8]);
+      if (leaves === 0 && (bed.ring === 'D' || bed.ring === 'BULL')) {
+        throwDartTo(x, y, { kind: bed.ring });
+        completeChallenge(true, `Checkout saved!`, [{ text: `Checked out ${rem}!`, kind: 'ok' }]);
+      } else if (goodDoubles.has(leaves) && (bed.ring === 'S' || bed.ring === 'T')) {
+        throwDartTo(x, y, { kind: bed.ring });
+        completeChallenge(true, `Clean save! ${bed.code} leaves D${leaves / 2} (${leaves}) when you return!`,
+          [{ text: `${bed.code} -> D${leaves / 2} (${leaves})`, kind: 'ok' }, '"When I return!"']);
+      } else {
+        throwDartTo(x, y, { kind: bed.ring, wireTink: true });
+        completeChallenge(false, `${bed.code} leaves ${leaves}. Aim to leave a clean double (D20/D18/D16/D10/D8)!`);
+      }
+    }
+    return;
+  }
+
+  // 5. Stage 4 — Ton-Plus (101-170) & Diagnostic Splash Traps!
+  if (ch.kind === 'tonplus') {
+    const it = ch.item;
+    if (state.stepIndex === 0) {
+      if (it.traps && it.traps[bed.code]) {
+        const tr = it.traps[bed.code];
+        const dp = bedToXY(tr.drift);
+        throwDartTo(dp.x, dp.y, { kind: tr.drift[0], wireTink: true });
+        applyChallengeHint(false);
+        renderChalkboard({
+          header: 'SPLASH TRAP!', big: it.score - bedValue(tr.drift),
+          sub: `${bed.code} drifted -> ${tr.drift}`,
+          lines: [{ text: tr.why, kind: 'warn' }],
+        });
+        completeChallenge(false, tr.why);
+        return;
+      }
+      if (it.open.includes(bed.code)) {
+        throwDartTo(x, y, { kind: bed.ring });
+        state.remainingScore -= bed.value;
+        state.dartsLeft = 2;
+        state.stepIndex = 1;
+        ch.openedWith = bed.code;
+        elScoreBig.textContent = String(state.remainingScore);
+        const formulaNote = bed.code === 'T20' ? `Rule of 40 (+40) -> ${state.remainingScore}`
+          : bed.code === 'T19' ? `Rule of 43 (+43) -> ${state.remainingScore}`
+          : `${bed.code} leaves ${state.remainingScore}`;
+        elPromptTask.textContent = `${formulaNote} — click Dart 2!`;
+        updateHudStats();
+        renderChalkboard({ header: 'TON-PLUS', big: state.remainingScore, sub: formulaNote, lines: [it.cue] });
+        setFeedback(`${bed.code} hits! ${formulaNote}`, 'cue');
+      } else {
+        throwDartTo(x, y, { kind: bed.ring, wireTink: true });
+        applyChallengeHint(false);
+        completeChallenge(false, `Check your opening treble on ${it.score}. ${it.cue}`);
+      }
+    } else if (state.stepIndex === 1) {
+      const rem = state.remainingScore;
+      const leaves = rem - bed.value;
+      const validSecond = (leaves === 50) || (leaves >= 2 && leaves <= 40 && leaves % 2 === 0);
+      if (validSecond) {
+        throwDartTo(x, y, { kind: bed.ring });
+        state.remainingScore = leaves;
+        state.dartsLeft = 1;
+        state.stepIndex = 2;
+        const outBed = leaves === 50 ? 'BULL' : 'D' + (leaves / 2);
+        elScoreBig.textContent = String(leaves);
+        elPromptTask.textContent = `Dart 3 for ${it.score} — finish on ${outBed}!`;
+        updateHudStats();
+        renderChalkboard({ header: 'TON-PLUS', big: leaves, sub: `Finish on ${outBed}`, lines: [it.cue] });
+      } else {
+        throwDartTo(x, y, { kind: bed.ring, wireTink: true });
+        completeChallenge(false, `${bed.code} leaves ${leaves} (not a 1-dart out!). Try a Golden 44 finish on ${rem}!`);
+      }
+    } else {
+      const outBed = state.remainingScore === 50 ? 'BULL' : 'D' + (state.remainingScore / 2);
+      if (bed.code === outBed) {
+        throwDartTo(x, y, { kind: outBed === 'BULL' ? 'BULL' : 'D' });
+        state.dartsLeft = 0;
+        audio.playApplause();
+        completeChallenge(true, `TON-PLUS ${it.score} CHECKOUT! ${it.cue}`, [{ text: `${it.score} OUT!`, kind: 'ok' }, it.cue]);
+      } else {
+        throwDartTo(x, y, { kind: bed.ring, wireTink: true });
+        completeChallenge(false, `Need ${outBed} (${state.remainingScore}) to take out ${it.score}!`);
+      }
+    }
+    return;
+  }
+
+  // 6. Stage 5 — Bogey Dodger (220s/260s/300s Teen Cover + 228/268/308 center trap)
+  if (ch.kind === 'bogey') {
+    const it = ch.item;
+    if (bed.code === it.cover) {
+      throwDartTo(x, y, { kind: 'S' });
+      state.dartsLeft = 0;
+      completeChallenge(true, `Textbook Teen Cover! ${bed.code} leaves exact ${it.targetLeave}!`,
+        [{ text: `${it.rem} - ${bed.value} = ${it.targetLeave}!`, kind: 'ok' }, it.cue]);
+    } else if (bed.code === '25' || bed.code === 'BULL') {
+      if (!it.centerOk) {
+        const p25 = bedToXY('25');
+        throwDartTo(p25.x, p25.y, { kind: '25', wireTink: true });
+        applyChallengeHint(false);
+        renderChalkboard({ header: 'BOGEY TRAP!', big: '163', sub: '25 left BOGEY 163!',
+          lines: [{ text: 'NEVER throw center-board on 228, 268 or 308 — 25 leaves bogey 163!', kind: 'warn' }] });
+        completeChallenge(false, `Trap! Hitting 25 on ${it.rem} leaves BOGEY 163! Throw ${it.cover} -> 170!`);
+      } else {
+        throwDartTo(x, y, { kind: bed.ring });
+        state.dartsLeft = 0;
+        const lv = it.rem - bed.value;
+        completeChallenge(true, `Safe center-board cover (${lv} left)! Teen Cover ${it.cover} leaves ${it.targetLeave}.`,
+          [{ text: `${bed.code} leaves ${lv} (safe!)`, kind: 'ok' }, it.cue]);
+      }
+    } else {
+      const lv = it.rem - bed.value;
+      throwDartTo(x, y, { kind: bed.ring, wireTink: true });
+      applyChallengeHint(false);
+      if (BOGEY_NUMBERS.has(lv)) {
+        renderChalkboard({ header: 'BOGEY LEFT!', big: lv, sub: `${lv} is uncheckoutable!`, lines: [{ text: it.cue, kind: 'warn' }] });
+        completeChallenge(false, `Ouch! ${bed.code} leaves BOGEY ${lv}! ${it.cue}`);
+      } else {
+        completeChallenge(false, `${bed.code} leaves ${lv}. Use the Teen Cover Shot: ${it.cover} -> ${it.targetLeave}!`);
+      }
+    }
+  }
+}
+
+function submitNumericAnswer(rawStr) {
+  const ch = state.challenge;
+  if (!ch || state.busy) return;
+  const val = parseInt(rawStr, 10);
+  if (Number.isNaN(val)) return;
+
+  if (ch.kind === 'double_val' || ch.kind === 'treble_val') {
+    if (val === ch.val) {
+      showNumpad(false);
+      completeChallenge(true, `Instant! ${ch.cue}`, [{ text: ch.cue, kind: 'ok' }]);
+    } else {
+      applyChallengeHint(false);
+      state.numInput = ''; renderNumpadDisplay();
+      completeChallenge(false, `${val} isn't right — ${ch.cue}`);
+    }
+    return;
+  }
+
+  if (ch.missPrompt) {
+    if (val === ch.missAns) {
+      showNumpad(false);
+      ch.missPrompt = false;
+      completeChallenge(true, `Locked in! ${ch.item.score} (${ch.item.route.join(' ')}) · Miss -> ${ch.missAns}`,
+        [{ text: `${ch.item.score} + Miss ${ch.missAns}`, kind: 'ok' }, ch.item.cue]);
+    } else {
+      state.numInput = ''; renderNumpadDisplay();
+      completeChallenge(false, `Check subtraction: ${ch.item.score} - ${bedValue('S' + ch.item.route[0].slice(1))} = ${ch.missAns}`);
+    }
+    return;
+  }
+
+  if (ch.kind === 'marking') {
+    const it = ch.item;
+    if (val === it.total) {
+      elScoreBig.textContent = String(it.total);
+      showNumpad(false);
+      applyChallengeHint(true); // flash visual grouping briefly as reinforcement!
+      completeChallenge(true, `GAME ON! ${it.total} — ${it.cue}`, [{ text: `Called ${it.total}!`, kind: 'ok' }, it.cue]);
+    } else {
+      applyChallengeHint(false);
+      state.numInput = ''; renderNumpadDisplay();
+      completeChallenge(false, `Not ${val}! Group the amber darts first: ${it.cue}`);
+    }
+  }
+}
+
+/* ---------- Self-Playing "Oche Ghost" Autopilot ---------- */
+function tickGhost(dt) {
+  if (!state.ghostMode || state.busy || !state.challenge) return;
+  state.ghostTimer += dt;
+  const ch = state.challenge;
+
+  // Give viewers ~1.5s to read the slate & board before Ghost acts
+  if (state.ghostTimer < 1.55) return;
+  state.ghostTimer = 0;
+
+  if (ch.kind === 'double_find' || ch.kind === 'treble_find' || ch.kind === 'halving') {
+    handleBoardClick({ code: ch.target, ring: ch.target[0], value: bedValue(ch.target) });
+  } else if (ch.kind === 'double_val' || ch.kind === 'treble_val') {
+    submitNumericAnswer(String(ch.val));
+  } else if (ch.kind === 'below60') {
+    const code = state.stepIndex === 0 ? ch.item.setup[0] : 'D' + (state.remainingScore / 2);
+    handleBoardClick({ code, ring: code[0], value: bedValue(code), sub: 'OS' });
+  } else if (ch.kind === 'g44') {
+    const code = state.stepIndex === 0 ? ch.item.route[0] : (state.remainingScore === 50 ? 'BULL' : 'D' + (state.remainingScore / 2));
+    handleBoardClick({ code, ring: code === 'BULL' ? 'BULL' : code[0], value: bedValue(code), sub: 'OS' });
+  } else if (ch.kind === 'sods') {
+    if (state.stepIndex === 0) {
+      const code = ch.item.valid[0];
+      handleBoardClick({ code, ring: code === 'BULL' ? 'BULL' : code[0], value: bedValue(code) });
+    } else {
+      // Pick clean setup after Sod's Law miss
+      const rem = state.remainingScore;
+      const pick = rem === 68 ? 'T16' : rem === 74 ? 'T14' : rem === 66 ? 'T10' : rem === 60 ? 'S20' : rem === 58 ? 'S18' : 'S' + (rem - 32);
+      const code = bedValue(pick) > 0 && rem - bedValue(pick) >= 8 ? pick : 'S20';
+      handleBoardClick({ code, ring: code[0], value: bedValue(code) });
+    }
+  } else if (ch.kind === 'tonplus') {
+    const it = ch.item;
+    let code;
+    if (state.stepIndex === 0) code = it.open[0];
+    else if (state.stepIndex === 1) {
+      const g = G44_BY_SCORE[state.remainingScore];
+      code = g ? g.route[0] : it.next[0];
+    } else code = state.remainingScore === 50 ? 'BULL' : 'D' + (state.remainingScore / 2);
+    handleBoardClick({ code, ring: code === 'BULL' ? 'BULL' : code[0], value: bedValue(code) });
+  } else if (ch.kind === 'bogey') {
+    const code = ch.item.cover;
+    handleBoardClick({ code, ring: 'S', value: bedValue(code) });
+  } else if (ch.kind === 'marking') {
+    submitNumericAnswer(String(ch.item.total));
+  }
+}
+
+function claimPlayerControl() {
+  state.lastPlayerInputAt = performance.now();
+  if (state.ghostMode) {
+    state.ghostMode = false;
+    updateHudStats();
+    setFeedback('You have the darts! Click the 3D board or type scores.', 'cue');
+  }
+}
+
+/* ============================================================================
+   11. RAYCASTING, INPUTS & CHALKBOARD DRAWER (STAGES + MASTERY LEDGER)
+   ============================================================================ */
+const raycaster = new THREE.Raycaster();
+const pointerNDC = new THREE.Vector2();
+
+function raycastBoard(clientX, clientY) {
+  const rect = canvas.getBoundingClientRect();
+  pointerNDC.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+  pointerNDC.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+  raycaster.setFromCamera(pointerNDC, camera);
+  const hits = raycaster.intersectObject(boardFace, false);
+  if (!hits.length) return null;
+  const pt = hits[0].point;
+  const bed = xyToBed(pt.x, pt.y);
+  return bed ? { bed, pt } : null;
+}
+
+canvas.addEventListener('pointermove', (e) => {
+  const hit = raycastBoard(e.clientX, e.clientY);
+  updateHoverBed(hit ? hit.bed : null);
+});
+
+canvas.addEventListener('pointerdown', (e) => {
+  if (e.button !== 0) return;
+  const hit = raycastBoard(e.clientX, e.clientY);
+  if (!hit) return;
+  claimPlayerControl();
+  handleBoardClick(hit.bed, hit.pt);
+});
+
+// Keyboard support (Digits, Enter, Backspace, H=Cue, N=Next, L=Ledger)
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') { closeDrawer(); return; }
+  if (elDrawerBg.classList.contains('open')) return;
+  if (e.key >= '0' && e.key <= '9') {
+    if (elNumpad.classList.contains('visible')) {
+      claimPlayerControl();
+      if (state.numInput.length < 3) { state.numInput += e.key; renderNumpadDisplay(); }
+    }
+  } else if (e.key === 'Backspace' && elNumpad.classList.contains('visible')) {
+    claimPlayerControl();
+    state.numInput = state.numInput.slice(0, -1); renderNumpadDisplay();
+  } else if (e.key === 'Enter' && elNumpad.classList.contains('visible')) {
+    claimPlayerControl();
+    submitNumericAnswer(state.numInput);
+  } else if (e.key.toLowerCase() === 'h') {
+    claimPlayerControl(); applyChallengeHint(false);
+  } else if (e.key.toLowerCase() === 'n') {
+    claimPlayerControl(); loadChallenge(nextChallengeForStage(state.stage));
+  } else if (e.key.toLowerCase() === 'l') {
+    openDrawer('ledger');
+  }
+});
+
+// Slate Numpad clicks
+document.querySelectorAll('.np-key').forEach(btn => {
+  btn.addEventListener('click', () => {
+    claimPlayerControl();
+    if (!audio.ctx) { audio.unlock(); elSoundPill.textContent = 'Sound: On'; elSoundPill.classList.add('on'); }
+    const k = btn.dataset.k;
+    if (k === 'BACK') { state.numInput = state.numInput.slice(0, -1); renderNumpadDisplay(); }
+    else if (k === 'ENTER') submitNumericAnswer(state.numInput);
+    else if (state.numInput.length < 3) { state.numInput += k; renderNumpadDisplay(); }
+  });
+});
+
+document.getElementById('hint-btn').addEventListener('click', () => { claimPlayerControl(); applyChallengeHint(false); });
+document.getElementById('skip-btn').addEventListener('click', () => { claimPlayerControl(); loadChallenge(nextChallengeForStage(state.stage)); });
+document.getElementById('open-stages-btn').addEventListener('click', () => openDrawer('stages'));
+document.getElementById('ledger-btn').addEventListener('click', () => openDrawer('ledger'));
+elGhostPill.title = 'Click to toggle Ghost Demo / Your Throw';
+elGhostPill.addEventListener('click', () => {
+  state.ghostMode = !state.ghostMode;
+  state.lastPlayerInputAt = performance.now();
+  updateHudStats();
+  if (state.ghostMode) {
+    setFeedback('Oche Ghost Demo active — click any 3D bed anytime to take over.', 'cue');
+    state.ghostTimer = 0.6;
+  } else {
+    setFeedback('You have the darts! Click the 3D board or type scores.', 'cue');
+  }
+});
+document.getElementById('drawer-close').addEventListener('click', closeDrawer);
+elDrawerBg.addEventListener('click', (e) => { if (e.target === elDrawerBg) closeDrawer(); });
+
+elSoundPill.addEventListener('click', () => {
+  const on = audio.toggle();
+  elSoundPill.textContent = on ? 'Sound: On' : 'Sound: Off';
+  elSoundPill.classList.toggle('on', on);
+  if (on) audio.playBell('ok');
+});
+
+let drawerTab = 'stages';
+document.querySelectorAll('.dtab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    drawerTab = tab.dataset.tab;
+    document.querySelectorAll('.dtab').forEach(t => t.classList.toggle('active', t.dataset.tab === drawerTab));
+    renderDrawer();
+  });
+});
+
+function openDrawer(tab = 'stages') {
+  drawerTab = tab;
+  document.querySelectorAll('.dtab').forEach(t => t.classList.toggle('active', t.dataset.tab === drawerTab));
+  elDrawerBg.classList.add('open');
+  renderDrawer();
+}
+function closeDrawer() { elDrawerBg.classList.remove('open'); }
+
+function stageProgressPct(stageId) {
+  let ids = [];
+  if (stageId === 'STAGE_0A') ids = [...SECTORS.map(s => 'D' + s), 'BULL'];
+  else if (stageId === 'STAGE_0B') ids = ESSENTIAL_TREBLES.map(n => 'T' + n);
+  else if (stageId === 'STAGE_1') ids = BELOW_60_ITEMS.map(x => x.id);
+  else if (stageId === 'STAGE_2') ids = GOLDEN_44.map(x => 'G44_' + x.score);
+  else if (stageId === 'STAGE_3') ids = SODS_LAW_ITEMS.map(x => x.id);
+  else if (stageId === 'STAGE_4') ids = TON_PLUS_ITEMS.map(x => x.id);
+  else if (stageId === 'STAGE_5') ids = BOGEY_ITEMS.map(x => x.id);
+  else if (stageId === 'STAGE_6') ids = MARKING_ITEMS.map(x => x.id);
+  else return 0;
+  const ok = ids.filter(id => mastery.get(id).ok >= 1).length;
+  return Math.round((ok / ids.length) * 100);
+}
+
+function renderDrawer() {
+  if (drawerTab === 'stages') {
+    elDrawerBody.innerHTML = `
+      <div class="setting-row">
+        <span>Chalk Scaffolding</span>
+        <div class="seg-group">
+          <button class="seg-btn ${state.hintMode === 'auto' ? 'active' : ''}" data-hint="auto">Auto-Fade</button>
+          <button class="seg-btn ${state.hintMode === 'always' ? 'active' : ''}" data-hint="always">Guided</button>
+          <button class="seg-btn ${state.hintMode === 'blind' ? 'active' : ''}" data-hint="blind">Match Blind</button>
+        </div>
+      </div>
+      <div class="setting-row">
+        <span>Match-Night Rival Pressure</span>
+        <div class="seg-group">
+          <button class="seg-btn ${state.rivalPressure ? 'active' : ''}" data-rival="1">Rival on D16</button>
+          <button class="seg-btn ${!state.rivalPressure ? 'active' : ''}" data-rival="0">Practice</button>
+        </div>
+      </div>
+      ${STAGES.map(st => {
+        const pct = stageProgressPct(st.id);
+        return `
+          <div class="stage-card ${state.stage === st.id ? 'selected' : ''}" data-stage="${st.id}">
+            <div class="sc-top">
+              <div class="sc-title">${st.title}</div>
+              <span class="sc-tag">${st.tag}${st.id !== 'CALIBRATION' ? ` · ${pct}%` : ''}</span>
+            </div>
+            <div class="sc-desc">${st.desc}</div>
+            ${st.id !== 'CALIBRATION' ? `<div class="sc-bar"><div class="sc-fill" style="width:${pct}%"></div></div>` : ''}
+          </div>
+        `;
+      }).join('')}
+    `;
+    elDrawerBody.querySelectorAll('[data-hint]').forEach(b => b.addEventListener('click', () => {
+      state.hintMode = b.dataset.hint; renderDrawer(); loadChallenge(nextChallengeForStage(state.stage));
+    }));
+    elDrawerBody.querySelectorAll('[data-rival]').forEach(b => b.addEventListener('click', () => {
+      state.rivalPressure = b.dataset.rival === '1'; renderDrawer();
+    }));
+    elDrawerBody.querySelectorAll('[data-stage]').forEach(card => card.addEventListener('click', () => {
+      claimPlayerControl();
+      state.stage = card.dataset.stage;
+      if (state.stage === 'CALIBRATION') { state.calibQueue = []; state.calibIndex = 0; }
+      closeDrawer();
+      loadChallenge(nextChallengeForStage(state.stage));
+    }));
+  } else {
+    // Mastery Ledger
+    const acc = mastery.data.totalAttempts ? Math.round((mastery.data.totalCorrect / mastery.data.totalAttempts) * 100) : 0;
+    const avg = mastery.avgMs();
+    const cell = (id, label, sub, speedMs = 2800) => {
+      const cls = mastery.badge(id, speedMs);
+      const st = mastery.get(id);
+      const rt = st.bestMs < 90000 ? `${(st.bestMs / 1000).toFixed(1)}s` : sub;
+      return `<div class="l-cell ${cls}">${label}<span class="l-sub">${rt}</span></div>`;
+    };
+    elDrawerBody.innerHTML = `
+      <div class="summary-banner">
+        <strong>Session & Rolodex Stats:</strong> ${mastery.data.totalCorrect}/${mastery.data.totalAttempts} hits (${acc}%) ·
+        Best Flow: <strong>${mastery.data.bestStreak}</strong> · Avg Speed: <strong>${avg ? (avg/1000).toFixed(2)+'s' : '—'}</strong><br/>
+        <span style="opacity:0.75">Dim Chalk = Unseen · Warm Amber = Learning · Burnished Brass = Mastered (&lt;2.8s)</span>
+      </div>
+      <div class="ledger-section-title"><span>10 Essential Trebles</span><span>Target &lt;2.0s</span></div>
+      <div class="ledger-grid">${ESSENTIAL_TREBLES.map(n => cell('T' + n, 'T' + n, String(n * 3), 2100)).join('')}</div>
+
+      <div class="ledger-section-title"><span>All Doubles & Bull</span><span>Target &lt;2.2s</span></div>
+      <div class="ledger-grid">${[...SECTORS.map(s => cell('D' + s, 'D' + s, String(s * 2), 2300)), cell('BULL', 'BULL', '50', 2300)].join('')}</div>
+
+      <div class="ledger-section-title"><span>The Golden 44</span><span>Target &lt;3.0s</span></div>
+      <div class="ledger-grid">${GOLDEN_44.slice().sort((a,b) => a.score - b.score).map(g => cell('G44_' + g.score, String(g.score), g.route[0], 3000)).join('')}</div>
+
+      <div class="ledger-section-title"><span>Croupier Core Shapes</span><span>Target &lt;3.2s</span></div>
+      <div class="ledger-grid">${MARKING_ITEMS.slice(0, 18).map(m => cell(m.id, String(m.total), m.darts[0], 3200)).join('')}</div>
+
+      <button id="reset-mastery-btn" class="hud-btn" style="align-self:flex-start;margin-top:6px;border-color:rgba(184,66,57,0.6);color:#f0a8a2">Reset Progress</button>
+    `;
+    document.getElementById('reset-mastery-btn').addEventListener('click', () => {
+      mastery.reset(); updateHudStats(); renderDrawer();
+    });
+  }
+}
+
+/* ============================================================================
+   12. ANIMATION LOOP (60FPS, LAMP FLICKER, CAMERA BREATH, DUST & POST-PROCESS)
+   ============================================================================ */
+let cameraKick = 0;
+let lastTime = performance.now();
+let clockSec = 0;
+const curCamPos = BASE_CAM.clone();
+const curLookAt = BASE_LOOK.clone();
+
+function onResize() {
+  const w = window.innerWidth, h = window.innerHeight;
+  camera.aspect = w / h;
+  // Frame full board (with 20 completely clear below HUD) + entire right 3D slate chalkboard cleanly
+  const aspectPad = Math.max(0, 1.55 - camera.aspect) * 3.2;
+  const wide = camera.aspect >= 1.15;
+  BASE_CAM.set(wide ? 0.92 : 0.22, 0.44, 10.65 + aspectPad);
+  BASE_LOOK.set(wide ? 0.86 : 0.14, 0.22, 0);
+  camera.updateProjectionMatrix();
+  renderer.setSize(w, h);
+  if (postRT) postRT.dispose();
+  postRT = createPostTarget(w, h);
+  postMat.uniforms.tDiffuse.value = postRT.texture;
+  postMat.uniforms.tDepth.value = postRT.depthTexture;
+  postMat.uniforms.uResolution.value.set(postRT.width, postRT.height);
+}
+window.addEventListener('resize', onResize);
+onResize();
+
+// Start immediately with Oche Ghost demonstrating a live Golden 44 / Ton-Plus / Marking showcase!
+const GHOST_ROTATION = ['STAGE_4', 'STAGE_2', 'STAGE_6', 'STAGE_3', 'STAGE_5', 'STAGE_1'];
+let ghostRotIdx = 0;
+state.stage = 'STAGE_2';
+loadChallenge(nextChallengeForStage('STAGE_2'));
+
+function animate(now) {
+  requestAnimationFrame(animate);
+  const dt = Math.min(0.05, (now - lastTime) / 1000);
+  lastTime = now;
+  clockSec += dt;
+
+  // Return seamlessly to Oche Ghost after 14s of player inactivity (when drawer closed)
+  if (!state.ghostMode && !elDrawerBg.classList.contains('open') && now - state.lastPlayerInputAt > 14000) {
+    state.ghostMode = true;
+    ghostRotIdx = (ghostRotIdx + 1) % GHOST_ROTATION.length;
+    state.stage = GHOST_ROTATION[ghostRotIdx];
+    updateHudStats();
+    setFeedback('Oche Ghost resumed — click any 3D bed anytime to take over.', 'cue');
+    loadChallenge(nextChallengeForStage(state.stage));
+  }
+
+  // Auto-fade Hint-on-Hesitation (Tier 2): gently reveal rescue cue after 3.4s pause!
+  if (!state.ghostMode && !state.busy && state.challenge && !state.hintShown && state.hintMode === 'auto') {
+    const id = challengeItemId(state.challenge);
+    const tier = mastery.tier(id, state.challenge.speedMs || 3000);
+    if (tier === 2 && now - state.challengeStartMs > 3400) {
+      applyChallengeHint(true);
+    }
+  }
+
+  // Speed/Flow bar update
+  if (state.challenge && !state.busy) {
+    const targetMs = (state.challenge.speedMs || 3200) * (state.ghostMode ? 2.2 : 1.4);
+    const elapsed = now - state.challengeStartMs;
+    const pct = Math.max(0, 1 - elapsed / targetMs);
+    elTimerFill.style.transform = `scaleX(${pct})`;
+    elTimerFill.className = 'timer-fill' + (pct < 0.25 ? ' urgent' : pct < 0.5 ? ' warn' : '');
+  }
+
+  // Subtle organic tungsten lamp warmth + Oche Flow boost (balanced, even illumination!)
+  const flowBoost = Math.min(1, mastery.data.streak / 8);
+  const flicker = 1 + Math.sin(clockSec * 7.3) * 0.012 + Math.sin(clockSec * 19.7) * 0.007;
+  mainSpot.intensity = (42 + flowBoost * 8) * flicker;
+  boardLowerFill.intensity = (18.0 + flowBoost * 3.0) * flicker;
+  slateLight.intensity = (24.0 + flowBoost * 3.5) * flicker;
+  postMat.uniforms.uFlowBoost.value = flowBoost;
+  postMat.uniforms.uTime.value = clockSec;
+
+  // Gently pulse highlighted target beds on the 3D board so cues read effortlessly
+  for (const ch of overlayGroup.children) {
+    if (ch.userData && ch.userData.pulse && ch.material) {
+      ch.material.opacity = ch.userData.baseOp * (0.78 + 0.24 * Math.sin(clockSec * 4.5));
+    }
+  }
+
+  // Gentle oche camera breathing & subtle dart-impact kick
+  cameraKick *= Math.exp(-dt * 12);
+  const targetCam = BASE_CAM.clone();
+  targetCam.x += Math.sin(clockSec * 0.42) * 0.07;
+  targetCam.y += Math.cos(clockSec * 0.55) * 0.045 - cameraKick;
+  // Slightly lean toward right slate chalkboard during Marking mode
+  if (state.challenge && state.challenge.kind === 'marking') {
+    targetCam.x += 0.22;
+    targetCam.z -= 0.18;
+  }
+  curCamPos.lerp(targetCam, 1 - Math.exp(-dt * 3.5));
+  camera.position.copy(curCamPos);
+  camera.lookAt(curLookAt);
+  postMat.uniforms.uFocusDepth.value = camera.position.z;
+
+  // Drift chalk dust motes in the warm lamp beam
+  const dArr = dustGeo.attributes.position.array;
+  for (let i = 0; i < DUST_COUNT; i++) {
+    const v = dustVel[i];
+    dArr[i * 3]     += (v.vx + Math.sin(clockSec * 0.7 + v.ph) * 0.025) * dt;
+    dArr[i * 3 + 1] += v.vy * dt;
+    if (dArr[i * 3 + 1] > 2.8) {
+      dArr[i * 3 + 1] = -2.6;
+      dArr[i * 3] = (Math.random() - 0.5) * 6.2;
+    }
+  }
+  dustGeo.attributes.position.needsUpdate = true;
+
+  // Update impact chalk/spark bursts
+  for (let i = bursts.length - 1; i >= 0; i--) {
+    const b = bursts[i];
+    b.age += dt;
+    if (b.age >= b.life) {
+      scene.remove(b.pts); b.pts.geometry.dispose(); b.pts.material.dispose();
+      bursts.splice(i, 1); continue;
+    }
+    const arr = b.pts.geometry.attributes.position.array;
+    for (let k = 0; k < b.vels.length; k++) {
+      b.vels[k].vy -= 2.2 * dt;
+      arr[k * 3]     += b.vels[k].vx * dt;
+      arr[k * 3 + 1] += b.vels[k].vy * dt;
+      arr[k * 3 + 2] += b.vels[k].vz * dt;
+    }
+    b.pts.geometry.attributes.position.needsUpdate = true;
+    b.pts.material.opacity = 0.85 * (1 - b.age / b.life);
+  }
+
+  updateDarts(dt);
+  tickGhost(dt);
+
+  // Pass 1: Render 3D scene to reduced-res target with DepthTexture
+  renderer.setRenderTarget(postRT);
+  renderer.render(scene, camera);
+
+  // Pass 2: Full-screen depth tilt-shift + subtle Bayer dither + vignette + film grain
+  renderer.setRenderTarget(null);
+  renderer.render(postScene, postCam);
+}
+
+requestAnimationFrame(animate);
+</script>
+</body>
+</html>
