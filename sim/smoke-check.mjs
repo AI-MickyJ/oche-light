@@ -155,7 +155,19 @@ async function run() {
   const cfgCold = engine.applyMathFlowToConfig(mCfg, mfExpired);
   assert(cfgFlow.horizSpeed < mCfg.horizSpeed && cfgFlow.horizSweet > mCfg.horizSweet, 'IN FLOW slows & widens horiz corridor');
   assert(cfgCold.horizSpeed > mCfg.horizSpeed && cfgCold.horizSweet < mCfg.horizSweet, 'RATTLED speeds up & narrows horiz corridor');
-  console.log('PASS: Curriculum, auditor, 3-beat physics, subtraction method & maths-flow assertions (all green)');
+
+  // Outer-ring FDI number circle & pair invariant assertions
+  assert(engine.FDI_SCORES.length === 20, 'Expected 20 FDI_SCORES');
+  for (const s of engine.FDI_SCORES) {
+    const fdi = engine.getFdiRule(s);
+    assert(fdi && fdi.tNum + fdi.dNum === fdi.sum, `FDI ${s}: tNum+dNum === sum`);
+    assert(fdi.tNum * 3 + fdi.dNum * 2 === s, `FDI ${s}: 3*tNum + 2*dNum === score`);
+  }
+  for (const sec of engine.SECTORS) {
+    const p = engine.sectorNumberXY(sec);
+    assert(engine.xyToSectorNumber(p.x, p.y) === sec, `Outer-ring number hit round-trip for sector ${sec}`);
+  }
+  console.log('PASS: Curriculum, auditor, 3-beat physics, subtraction method, maths-flow & FDI outer-ring assertions (all green)');
 
   // 4. Smoke test all 5 physics bots
   const rng = engine.createSeededRng(42);

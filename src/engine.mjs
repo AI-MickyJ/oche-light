@@ -98,6 +98,22 @@ export function bedToXY(code, opts = {}) {
   return { x: Math.sin(theta) * r + jx, y: Math.cos(theta) * r + jy };
 }
 
+export function sectorNumberXY(sector) {
+  const idx = SECTOR_INDEX[sector];
+  if (idx === undefined) return { x: 0, y: 0 };
+  const theta = idx * (Math.PI / 10);
+  return { x: Math.sin(theta) * R_NUM_RING, y: Math.cos(theta) * R_NUM_RING };
+}
+
+export function xyToSectorNumber(x, y) {
+  const r = Math.hypot(x, y);
+  if (r <= R_OUTER_BULL || r > R_BOARD_EDGE + 0.04) return null;
+  let cw = Math.atan2(x, y);
+  if (cw < 0) cw += Math.PI * 2;
+  const idx = Math.floor(((cw + Math.PI / 20) % (Math.PI * 2)) / (Math.PI / 10));
+  return SECTORS[idx] || null;
+}
+
 export function xyToBed(x, y) {
   const r = Math.hypot(x, y);
   if (r > R_DOUBLE_OUT + 0.05) return null;
@@ -173,6 +189,8 @@ export const GOLDEN_44 = [
   { score: 93, group: 'red', route: ['T19', 'D18'], alts: [], miss: 74, link: ['T19','D18'], cue: 'Red Outlaw: T19 (57) + D18 (36) (19 down to 18) · Miss 74' },
 ];
 export const G44_BY_SCORE = Object.fromEntries(GOLDEN_44.map(x => [x.score, x]));
+
+export const FDI_SCORES = [61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 72, 74, 75, 76, 78, 79, 85, 87, 89, 90];
 
 export function getFdiRule(score) {
   if (score >= 61 && score <= 69) {

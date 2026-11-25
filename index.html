@@ -1173,7 +1173,8 @@ import {
   R_INNER_BULL, R_OUTER_BULL, R_TREBLE_IN, R_TREBLE_OUT, R_DOUBLE_IN, R_DOUBLE_OUT, R_NUM_RING, R_BOARD_EDGE,
   ESSENTIAL_TREBLES, BOGEY_NUMBERS, HOT_SECTORS,
   sectorWeight, getNeighborSectors, bedValue, parseBedCode, bedPretty, bedToXY, xyToBed,
-  GOLDEN_44, G44_BY_SCORE, getFdiRule,
+  sectorNumberXY, xyToSectorNumber,
+  GOLDEN_44, G44_BY_SCORE, FDI_SCORES, getFdiRule,
   HALVING_CHAINS, BELOW_60_ITEMS, SODS_LAW_ITEMS, TON_PLUS_ITEMS, TON_PLUS_BY_SCORE, BOGEY_ITEMS, MARKING_ITEMS,
   subtractionShortcut, subtractionMethodInfo, buildVisitCue, generatePub3DartVisit, applyPubScatter,
   aimConfigForDifficulty as engineAimConfigForDifficulty, getScreenSideNeighbors, computeAimDrop,
@@ -1198,7 +1199,7 @@ const STAGES = [
   { id: 'LEVEL_4', short: 'Level 4 · 301 Countdown', title: 'Level 4 · 301 / 260 Chalk & Countdown', tag: 'Throw & Chalk',
     desc: 'Mix of Your Throw (with real pub scatter) & Pub Chalker! Throw 3 darts, chalk the visit total, then subtract from 301/260.' },
   { id: 'LEVEL_5', short: 'Level 5 · 2-Dart Finishes', title: 'Level 5 · Two-Dart Finishes & 25/30/35 FDIs', tag: '≤110 Checkouts',
-    desc: 'Below-60 Double Smiths, The Golden 44 (25/30/35 No-Peek FDIs + Red Outlaws) and Sod\'s Law live miss saves.' },
+    desc: 'FDI Pair Hunter (circle outer-ring numbers adding to 25/30/35!), Below-60 Double Smiths, Golden 44 No-Peek & Sod\'s Law saves.' },
   { id: 'LEVEL_6', short: 'Level 6 · 3-Dart Finishes', title: 'Level 6 · Three-Dart Finishes (101–170) & Traps', tag: 'FDIs + Bogeys',
     desc: 'Rule of 40 (+40), Rule of 43 (+43), Two-T19 (-14) bridging into 25/30/35 FDIs, Splash-Trap saves & Bogey Dodger!' },
   { id: 'LEVEL_7', short: 'Level 7 · 501 Match', title: 'Level 7 · Championship 501 (Board Management)', tag: '5 Bots · Bo3',
@@ -1320,12 +1321,13 @@ const STAGE_BRIEFING_CARDS = {
   },
   LEVEL_5: {
     tag: 'LEVEL 5 · 2-DART CHECKOUTS (≤110)', title: 'Two-Dart Finishes & The 25 / 30 / 35 Rules',
-    goal: 'Combine Below-60 setups, the Golden 44 (No-Peek 25/30/35 FDIs + 5 Red Outlaws) and Sod\'s Law single-miss saves!',
-    html: `<strong>Below-60 Last-Digit Formulas:</strong> <code>D16: -2</code> (cap 52) · <code>D18 &amp; D8: +4</code> (cap 56; <code>42&rarr;S6</code>) · <code>D14/D4: +2</code> · <code>D12: +6</code> · Wedges <code>46 (10/6)</code> &amp; <code>48 (16/8)</code>.<br/>
+    goal: 'Master FDI Pair Hunter (circle the two outer-ring numbers adding to 25, 30, or 35!), Below-60 setups, Golden 44 No-Peek checkouts & Sod\'s Law saves!',
+    html: `<strong>Outer-Ring FDI Circles:</strong> Guided hints &amp; <em>FDI Pair Hunter</em> circle the two outer-ring numbers (<span style="color:#ffe082">Gold = Treble</span> + <span style="color:#7ae09f">Emerald = Double</span>) that sum to <code>25</code>, <code>30</code>, or <code>35</code>!<br/>
+      <strong>Below-60 Last-Digit Formulas:</strong> <code>D16: -2</code> (cap 52) · <code>D18 &amp; D8: +4</code> (cap 56; <code>42&rarr;S6</code>) · <code>D14/D4: +2</code> · <code>D12: +6</code>.<br/>
       <strong>Golden 44 FDI Staircase (No Chalkboard Peek on the double!):</strong>
       <div class="briefing-grid" style="grid-template-columns:1fr">
         <div class="b-chip" style="text-align:left"><b>60s (+70): T + D = 25</b> · Miss always <b>50</b> &nbsp;|&nbsp; <b>1 dart left:</b> bin FDI &rarr; <b>T10 Hub</b>!</div>
-        <div class="b-chip" style="text-align:left"><b>70s: T + D = 30</b> (or <b>10 &minus; d</b>) · <code>72, 74, 75 (T15 D15), 76, 78, 79</code> · Miss <b>60</b></div>
+        <div class="b-chip" style="text-align:left"><b>70s: T + D = 30</b> (or <b>10 &minus; d</b>) · <code>72, 74, 75 (15+15!), 76, 78, 79</code> · Miss <b>60</b></div>
         <div class="b-chip" style="text-align:left"><b>80s (+90): T + D = 35</b> · <code>85, 87, 89, 90</code> · Miss <b>70</b> · + <code>95 (T15 Bull)</code></div>
       </div>`,
   },
@@ -3069,7 +3071,27 @@ function clearGroup(grp) {
   }
 }
 
-function showBoardOverlays({ highlights = [], link = null, aimHigh = null, trapBeds = [], groupRings = [] }) {
+function buildFdiNumberOverlays(fdi, { showT = true, showD = true, link = true, pulseT = true, pulseD = true, dim = false } = {}) {
+  if (!fdi) return { numberRings: [], numberLink: null };
+  const rings = [];
+  const goldHex = 0xffe082;
+  const emHex = 0x7ae09f;
+  const arcHex = fdi.sum === 25 ? 0x8cc9f5 : fdi.sum === 30 ? 0xf3cc7d : 0xffb37a;
+  const op = dim ? 0.52 : 0.94;
+  if (showT && showD && fdi.tNum === fdi.dNum) {
+    // 75 ("All the 15s"): concentric gold + emerald rings around 15!
+    rings.push({ sector: fdi.tNum, color: goldHex, opacity: op, pulse: pulseT, doubleRing: emHex });
+  } else {
+    if (showT) rings.push({ sector: fdi.tNum, color: goldHex, opacity: op, pulse: pulseT });
+    if (showD) rings.push({ sector: fdi.dNum, color: emHex, opacity: op, pulse: pulseD });
+  }
+  const numberLink = (link && showT && showD && fdi.tNum !== fdi.dNum)
+    ? { a: fdi.tNum, b: fdi.dNum, color: arcHex, opacity: dim ? 0.42 : 0.78 }
+    : null;
+  return { numberRings: rings, numberLink };
+}
+
+function showBoardOverlays({ highlights = [], link = null, aimHigh = null, trapBeds = [], groupRings = [], numberRings = [], numberLink = null }) {
   clearGroup(overlayGroup);
   for (const h of highlights) {
     const m = makeBedShapeMesh(h.code, h.color ?? 0xffe08a, Math.min(0.75, (h.opacity ?? 0.52) + 0.14), h);
@@ -3106,6 +3128,54 @@ function showBoardOverlays({ highlights = [], link = null, aimHigh = null, trapB
     ring.position.set(gr.x, gr.y, 0.03);
     overlayGroup.add(ring);
   }
+  // Glowing 3D circles around outer-ring dartboard numbers (for 25 / 30 / 35 FDI visual memory & Pair Hunter!)
+  for (const nr of numberRings) {
+    const np = sectorNumberXY(nr.sector);
+    const col = nr.color ?? 0xffe082;
+    const baseOp = nr.opacity ?? 0.94;
+    // Soft luminous halo behind the number so the white numeral lights up on the dark surround
+    const halo = new THREE.Mesh(
+      new THREE.CircleGeometry(0.184, 28),
+      new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: baseOp * 0.22, depthWrite: false, side: THREE.DoubleSide })
+    );
+    halo.position.set(np.x, np.y, 0.028);
+    if (nr.pulse) { halo.userData.pulse = true; halo.userData.baseOp = baseOp * 0.22; }
+    overlayGroup.add(halo);
+
+    // Crisp luminous chalk-glow circle framing the outer-ring number
+    const ring = new THREE.Mesh(
+      new THREE.TorusGeometry(0.188, 0.023, 10, 36),
+      new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: baseOp })
+    );
+    ring.position.set(np.x, np.y, 0.036);
+    if (nr.pulse) { ring.userData.pulse = true; ring.userData.baseOp = baseOp; }
+    overlayGroup.add(ring);
+
+    if (nr.doubleRing) {
+      const outer = new THREE.Mesh(
+        new THREE.TorusGeometry(0.236, 0.019, 10, 36),
+        new THREE.MeshBasicMaterial({ color: nr.doubleRing, transparent: true, opacity: baseOp })
+      );
+      outer.position.set(np.x, np.y, 0.038);
+      if (nr.pulse) { outer.userData.pulse = true; outer.userData.baseOp = baseOp; }
+      overlayGroup.add(outer);
+    }
+  }
+  if (numberLink && numberLink.a && numberLink.b && numberLink.a !== numberLink.b) {
+    const p1 = sectorNumberXY(numberLink.a);
+    const p2 = sectorNumberXY(numberLink.b);
+    const midX = (p1.x + p2.x) * 0.5;
+    const midY = (p1.y + p2.y) * 0.5;
+    const mid = new THREE.Vector3(midX * 0.94, midY * 0.94, 0.24);
+    const curve = new THREE.QuadraticBezierCurve3(
+      new THREE.Vector3(p1.x, p1.y, 0.036), mid, new THREE.Vector3(p2.x, p2.y, 0.036)
+    );
+    const arc = new THREE.Mesh(
+      new THREE.TubeGeometry(curve, 28, 0.014, 8, false),
+      new THREE.MeshBasicMaterial({ color: numberLink.color ?? 0xf3cc7d, transparent: true, opacity: numberLink.opacity ?? 0.76 })
+    );
+    overlayGroup.add(arc);
+  }
 }
 
 let hoveredBedCode = null;
@@ -3116,6 +3186,22 @@ function updateHoverBed(bed) {
   clearGroup(hoverGroup);
   const el = document.getElementById('hover-bed-val');
   if (!bed) { el.textContent = '—'; return; }
+  if (bed.ring === 'NUM') {
+    el.textContent = `Number ${bed.sector}`;
+    const np = sectorNumberXY(bed.sector);
+    const hRing = new THREE.Mesh(
+      new THREE.TorusGeometry(0.192, 0.018, 8, 32),
+      new THREE.MeshBasicMaterial({ color: 0xf8dc94, transparent: true, opacity: 0.75 })
+    );
+    hRing.position.set(np.x, np.y, 0.04);
+    const hDisc = new THREE.Mesh(
+      new THREE.CircleGeometry(0.185, 24),
+      new THREE.MeshBasicMaterial({ color: 0xf8dc94, transparent: true, opacity: 0.14, depthWrite: false, side: THREE.DoubleSide })
+    );
+    hDisc.position.set(np.x, np.y, 0.032);
+    hoverGroup.add(hDisc, hRing);
+    return;
+  }
   el.textContent = bedPretty(bed.code);
   const m = makeBedShapeMesh(bed.code, 0xf8dc94, 0.34, { aimHigh: bed.sub === 'OS', innerOnly: bed.sub === 'IS' });
   hoverGroup.add(m);
@@ -3886,6 +3972,8 @@ class CoachTrev {
           : `Right, on ${ch.item.score}: ${ch.item.cue}. Keep that Miss Rule tucked in yer back pocket!`;
       } else if (ch.kind === 'tonplus') {
         tip = `Don't panic at three digits, me old china! Drop the one — add 40 for T20, add 43 for T19 — an' watch for sneaky splash traps!`;
+      } else if (ch.kind === 'fdi_pair') {
+        tip = `Look right at the outer number ring, sunshine! Circle the two numbers that add up to 25 (60s), 30 (70s), or 35 (80s) — gold is the treble, emerald's the double!`;
       } else if (ch.kind === 'below60') {
         tip = `Remember the last-digit trick, mate: minus 2 for D16, plus 4 for all the eights (D18 & D8), plus 2 for the fours!`;
       } else if (ch.kind === 'bogey') {
@@ -4070,6 +4158,7 @@ const state = {
   ghostMode: true,
   hintMode: 'auto', // 'auto' | 'always' | 'blind'
   difficulty: mastery.data.difficulty || 'league',
+  fdiPairsOnly: false,
   fdiBridgesOnly: false,
   rivalPressure: false,
   aimMode: '3beat', // '3beat' | '2beat' | 'scatter'
@@ -4752,11 +4841,12 @@ function buildTrialQueue(levelId) {
   if (levelId === 'LEVEL_5') {
     const fdis = GOLDEN_44.filter(x => x.group.startsWith('yellow'));
     const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+    const pairScore = pick(FDI_SCORES);
     return [
-      { kind: 'below60', item: pick(BELOW_60_ITEMS), speedMs: 3200 },
-      { kind: 'g44',     item: pick(fdis), speedMs: 3400 },
-      { kind: 'sods',    item: pick(SODS_LAW_ITEMS), speedMs: 3600 },
-      { kind: 'g44',     item: pick(GOLDEN_44.filter(x => x.group !== 'green')), speedMs: 3400 },
+      { kind: 'fdi_pair', id: 'FDIP_' + pairScore, score: pairScore, variant: 'both', speedMs: 7500 },
+      { kind: 'below60', item: pick(BELOW_60_ITEMS), speedMs: 3600 },
+      { kind: 'g44',     item: pick(fdis), speedMs: 3800 },
+      { kind: 'sods',    item: pick(SODS_LAW_ITEMS), speedMs: 3800 },
     ];
   }
   if (levelId === 'LEVEL_6') {
@@ -5043,14 +5133,21 @@ function nextChallengeForStage(stageId) {
     };
   }
 
-  // LEVEL 5: Unified 2-Dart Finishes (Below-60 + Golden 44 25/30/35 No-Peek + Sod's Law)
+  // LEVEL 5: Unified 2-Dart Finishes (FDI Pair Hunter + Below-60 + Golden 44 25/30/35 No-Peek + Sod's Law)
   if (stageId === 'LEVEL_5') {
     const roll = Math.random();
-    if (roll < 0.24) {
-      const item = mastery.pickNext(BELOW_60_ITEMS, x => x.id, state.lastItemId);
-      return { kind: 'below60', item, speedMs: 3200 };
+    if (state.fdiPairsOnly || roll < 0.30) {
+      const score = mastery.pickNext(FDI_SCORES, s => 'FDIP_' + s, state.lastItemId);
+      const st = mastery.get('FDIP_' + score);
+      // First exposure -> "partner" (anchor T circled, find D partner); once seen -> mix with "both" (spot both numbers!)
+      const variant = (st.ok < 1 && Math.random() < 0.72) ? 'partner' : (Math.random() < 0.45 ? 'partner' : 'both');
+      return { kind: 'fdi_pair', id: 'FDIP_' + score, score, variant, speedMs: variant === 'both' ? 8500 : 6500 };
     }
-    if (roll < 0.80) {
+    if (roll < 0.48) {
+      const item = mastery.pickNext(BELOW_60_ITEMS, x => x.id, state.lastItemId);
+      return { kind: 'below60', item, speedMs: 3600 };
+    }
+    if (roll < 0.85) {
       // Motivating order: Green quick wins -> Yellow 25/30/35 FDIs -> drip-feed Red Outlaws
       const greens = GOLDEN_44.filter(x => x.group === 'green');
       const yellows = GOLDEN_44.filter(x => x.group.startsWith('yellow'));
@@ -5064,10 +5161,10 @@ function nextChallengeForStage(stageId) {
         pool = [...greens, ...yellows, ...unlockedReds];
       }
       const item = mastery.pickNext(pool, x => 'G44_' + x.score, state.lastItemId);
-      return { kind: 'g44', item, speedMs: 3300 };
+      return { kind: 'g44', item, speedMs: 3800 };
     }
     const item = mastery.pickNext(SODS_LAW_ITEMS, x => x.id, state.lastItemId);
-    return { kind: 'sods', item, speedMs: 3600 };
+    return { kind: 'sods', item, speedMs: 3800 };
   }
 
   // LEVEL 6: Unified 3-Dart Finishes (101-170 Ton-Plus FDI Bridges & Splash Traps + Bogey Dodger)
@@ -5230,6 +5327,38 @@ function loadChallenge(ch) {
       });
       if (tier === 1) applyChallengeHint(true);
     }
+  } else if (ch.kind === 'fdi_pair') {
+    const fdi = getFdiRule(ch.score);
+    ch.fdi = fdi;
+    ch.foundT = ch.variant === 'partner';
+    ch.foundD = false;
+    state.remainingScore = ch.score;
+    state.dartsLeft = ch.foundT ? 1 : 2;
+    setBridgeBadge(fdi, 'PAIR HUNTER');
+    elPromptSub.textContent = `${modeTag || 'Level 5'} · FDI Pair Hunter (Rule of ${fdi.sum})`;
+    elScoreBig.textContent = String(ch.score);
+    elPromptTask.textContent = ch.foundT
+      ? `${fdi.tNum} is circled! ${V} its partner on the outer ring (${fdi.tNum} + ? = ${fdi.sum})`
+      : `${V} BOTH outer-ring numbers adding to ${fdi.sum} (T + D = ${fdi.sum})!`;
+    showNumpad(false);
+    const eqLine = ch.foundT
+      ? `${fdi.tNum} + ? = ${fdi.sum}`
+      : `? + ? = ${fdi.sum} (T = 10 + ${ch.score % 10 === 0 ? '10' : ch.score % 10})`;
+    renderChalkboard({
+      header: `RULE OF ${fdi.sum} · RING HUNT`, big: ch.score, sub: `${fdi.decade} FDI · Outer Number Ring`,
+      lines: [
+        eqLine,
+        ch.foundT
+          ? `Gold circle = T${fdi.tNum}. Pick the outer number for D(?)!`
+          : `Circle the two outer-ring numbers that sum to ${fdi.sum}!`,
+      ],
+    });
+    if (tier === 1) {
+      applyChallengeHint(true);
+    } else if (ch.foundT) {
+      // Anchor T number glows brightly in gold; player hunts its D partner cold!
+      showBoardOverlays(buildFdiNumberOverlays(fdi, { showT: true, showD: false, link: false }));
+    }
   } else if (ch.kind === 'below60') {
     const it = ch.item;
     state.remainingScore = it.score;
@@ -5387,7 +5516,8 @@ function applyChallengeHint(auto = false) {
       setFeedback(`Cue: ${subtractionShortcut(ch.startScore, ch.visitTotal)}`, 'cue');
     } else if (ch.noPeekFdi) {
       const nf = ch.noPeekFdi;
-      showBoardOverlays({ highlights: [{ code: nf.dbl, color: 0x79d499, opacity: 0.56 }] });
+      const ringOv = buildFdiNumberOverlays(nf, { showT: true, showD: true, link: true });
+      showBoardOverlays({ highlights: [{ code: nf.dbl, color: 0x79d499, opacity: 0.56 }], ...ringOv });
       setFeedback(`Cue (Rule of ${nf.sum}): ${nf.tNum} + ${nf.dNum} = ${nf.sum} -> finish on ${nf.dbl}!`, 'cue');
     } else {
       const rem = ch.liveRem;
@@ -5409,7 +5539,8 @@ function applyChallengeHint(auto = false) {
         showBoardOverlays({ highlights: tp.open.map(c => ({ code: c, color: 0xf3cc7d, opacity: 0.5 })), trapBeds: tp.traps ? Object.keys(tp.traps) : [] });
         setFeedback(`Cue (${rem}): ${tp.cue}`, 'cue');
       } else if (g && state.dartsLeft >= 2) {
-        showBoardOverlays({ highlights: [{ code: g.route[0], color: 0xf3cc7d, opacity: 0.5 }], link: fdi ? [fdi.treble, fdi.dbl] : null });
+        const ringOv = fdi ? buildFdiNumberOverlays(fdi, { showT: true, showD: true, link: true }) : {};
+        showBoardOverlays({ highlights: [{ code: g.route[0], color: 0xf3cc7d, opacity: 0.5 }], link: fdi ? [fdi.treble, fdi.dbl] : null, ...ringOv });
         setFeedback(`Cue (${rem}): ${g.cue}`, 'cue');
       } else if (rem >= 41 && rem <= 59 && rem !== 50) {
         const sD16 = rem - 32;
@@ -5421,6 +5552,14 @@ function applyChallengeHint(auto = false) {
         setFeedback(`Cue: Score heavy on T20/T19 and get below 170 cleanly!`, 'cue');
       }
     }
+  } else if (ch.kind === 'fdi_pair') {
+    const fdi = ch.fdi || getFdiRule(ch.score);
+    const ringOv = buildFdiNumberOverlays(fdi, {
+      showT: true, showD: true, link: true,
+      dim: auto && (!ch.foundT || !ch.foundD),
+    });
+    showBoardOverlays(ringOv);
+    setFeedback(`Cue (${fdi.decade} Rule of ${fdi.sum}): Circle ${fdi.tNum} (${fdi.treble}) + ${fdi.dNum} (${fdi.dbl}) -> ${fdi.tNum} + ${fdi.dNum} = ${fdi.sum}!`, 'cue');
   } else if (ch.kind === 'below60') {
     const it = ch.item;
     const hl = state.stepIndex === 0
@@ -5430,16 +5569,21 @@ function applyChallengeHint(auto = false) {
     setFeedback(`Cue: ${it.cue}`, 'cue');
   } else if (ch.kind === 'g44') {
     const it = ch.item;
+    const fdi = getFdiRule(it.score);
     if (ch.missPrompt) {
       setFeedback(`Miss Rule: ${it.score} - ${bedValue('S' + it.route[0].slice(1))} = ${it.miss}`, 'cue');
     } else {
       const target = it.route[state.stepIndex] || it.route[0];
+      const ringOv = fdi ? buildFdiNumberOverlays(fdi, { showT: true, showD: true, link: true }) : {};
       showBoardOverlays({
-        highlights: [{ code: target, color: 0xf3cc7d, opacity: 0.5 }],
+        highlights: [{ code: target, color: state.stepIndex === 1 ? 0x79d499 : 0xf3cc7d, opacity: 0.52 }],
         link: it.link || null,
         aimHigh: it.aimHigh && state.stepIndex === 0 ? 'S20' : null,
+        ...ringOv,
       });
-      setFeedback(`Cue: ${it.cue}`, 'cue');
+      setFeedback(fdi
+        ? `Cue (${fdi.decade} Rule of ${fdi.sum}): ${fdi.tNum} + ${fdi.dNum} = ${fdi.sum} (circled on outer ring!) -> ${fdi.treble} ${fdi.dbl}`
+        : `Cue: ${it.cue}`, 'cue');
     }
   } else if (ch.kind === 'sods') {
     const it = ch.item;
@@ -5459,17 +5603,20 @@ function applyChallengeHint(auto = false) {
       const fdi = getFdiRule(state.remainingScore);
       const g = G44_BY_SCORE[state.remainingScore];
       const nextT = fdi ? fdi.treble : (g ? g.route[0] : it.next[0]);
+      const ringOv = fdi ? buildFdiNumberOverlays(fdi, { showT: true, showD: true, link: true }) : {};
       showBoardOverlays({
         highlights: [{ code: nextT, color: 0xf3cc7d, opacity: 0.52 }],
         link: fdi ? [fdi.treble, fdi.dbl] : null,
+        ...ringOv,
       });
       setFeedback(fdi
-        ? `Cue (${fdi.decade} FDI · Rule of ${fdi.sum}): Hit ${fdi.treble}, then solve ${fdi.tNum} + D(?) = ${fdi.sum}!`
+        ? `Cue (${fdi.decade} FDI · Rule of ${fdi.sum}): ${fdi.tNum} + ${fdi.dNum} = ${fdi.sum} circled! Hit ${fdi.treble} -> ${fdi.dbl}!`
         : `Cue: On ${state.remainingScore}, throw ${nextT}!`, 'cue');
     } else {
       const outBed = state.remainingScore === 50 ? 'BULL' : 'D' + (state.remainingScore / 2);
-      showBoardOverlays({ highlights: [{ code: outBed, color: 0x79d499, opacity: 0.56 }] });
       const fdi = ch.activeFdi;
+      const ringOv = (fdi && ch.usedFdiTreble) ? buildFdiNumberOverlays(fdi, { showT: true, showD: true, link: true }) : {};
+      showBoardOverlays({ highlights: [{ code: outBed, color: 0x79d499, opacity: 0.56 }], ...ringOv });
       setFeedback(fdi && ch.usedFdiTreble
         ? `Cue: ${fdi.tNum} + ${fdi.dNum} = ${fdi.sum} -> finish on ${fdi.dbl}!`
         : `Cue: Finish on ${outBed} (${state.remainingScore})!`, 'cue');
@@ -6268,10 +6415,11 @@ function commit501Dart(aimedBed, landedBed, pt, zone = null) {
   }
 
   if (triggeredNoPeek) {
-    // Hold displayed score at remBefore so player uses Rule of 25/30/35 WITHOUT arithmetic peeking!
+    // Hold displayed score at remBefore & circle the opening treble number on the outer ring (No Peek!)
     elScoreBig.textContent = String(remBefore);
     setBridgeBadge(fdiHit, 'NO PEEK!');
     elPromptTask.textContent = `${fdiHit.treble} hits! Solve ${fdiHit.tNum} + D(?) = ${fdiHit.sum} — hit the double!`;
+    showBoardOverlays(buildFdiNumberOverlays(fdiHit, { showT: true, showD: false, link: false }));
     if (!state.ghostMode) spawnCallout(`NO PEEK · RULE OF ${fdiHit.sum}!`, { x: 0, y: 0.36, style: 'gold' });
     draw501Slate({
       pendingLeft: { scored: '…', rem: '…' },
@@ -6361,8 +6509,9 @@ function handleBoardClick(bed, rawXY) {
     return; // waiting for chalking numpad entry
   }
 
-  const x = rawXY ? rawXY.x : bedToXY(bed.code).x;
-  const y = rawXY ? rawXY.y : bedToXY(bed.code).y;
+  const fallbackXY = bed.ring === 'NUM' ? sectorNumberXY(bed.sector) : bedToXY(bed.code);
+  const x = rawXY ? rawXY.x : fallbackXY.x;
+  const y = rawXY ? rawXY.y : fallbackXY.y;
 
   // 0A. Level 4 — 301 / 260 Chalk & Countdown (Skill Aim Gauge or Instant Auto Scatter)
   if (ch.kind === 'countdown301' && ch.phase === 'throw') {
@@ -6400,6 +6549,86 @@ function handleBoardClick(bed, rawXY) {
       throwDartTo(x, y, { kind: bed.ring, wireTink: true });
       if (!state.inTrial) applyChallengeHint(false);
       completeChallenge(false, `That's ${bedPretty(bed.code)} — look for ${ch.cue}`);
+    }
+    return;
+  }
+
+  // 1B. FDI Pair Hunter (Level 5 — Circle the two outer-ring numbers adding to 25 / 30 / 35!)
+  if (ch.kind === 'fdi_pair') {
+    const fdi = ch.fdi || getFdiRule(ch.score);
+    const sec = bed.sector;
+    if (!sec) return;
+    let matched = false;
+    if (!ch.foundT && sec === fdi.tNum) {
+      ch.foundT = true;
+      matched = true;
+    } else if (!ch.foundD && sec === fdi.dNum) {
+      ch.foundD = true;
+      matched = true;
+    }
+
+    if (matched) {
+      const np = sectorNumberXY(sec);
+      if (ch.foundT && ch.foundD) {
+        state.dartsLeft = 0;
+        const ringOv = buildFdiNumberOverlays(fdi, { showT: true, showD: true, link: true });
+        showBoardOverlays({
+          highlights: [
+            { code: fdi.treble, color: 0xffe082, opacity: 0.48 },
+            { code: fdi.dbl, color: 0x7ae09f, opacity: 0.56 },
+          ],
+          ...ringOv,
+        });
+        // Celebratory dual-dart flight straight from the circled pair into T & D!
+        const pT = bedToXY(fdi.treble, { jitter: 0.03 });
+        const pD = bedToXY(fdi.dbl, { jitter: 0.03 });
+        throwDartTo(pT.x, pT.y, { kind: 'T', accent: 0x8f231e, delay: 0.0, ringHex: 0xffe082, ringScale: 2.8 });
+        throwDartTo(pD.x, pD.y, { kind: 'D', accent: 0x2a6b48, delay: 0.16, ringHex: 0x7ae09f, ringScale: 3.4 });
+        audio.playSweetSpot();
+        if (!state.ghostMode) {
+          spawnCallout(`${fdi.tNum} + ${fdi.dNum} = ${fdi.sum} ✓`, { x: np.x * 0.65, y: np.y * 0.65, style: 'gold' });
+        }
+        const sumLine = `${fdi.tNum} + ${fdi.dNum} = ${fdi.sum} ✓ -> ${fdi.treble} ${fdi.dbl}`;
+        completeChallenge(true, `Rule of ${fdi.sum} nailed! ${sumLine}`, [
+          { text: `${fdi.tNum} + ${fdi.dNum} = ${fdi.sum} ✓`, kind: 'ok' },
+          `${fdi.treble} (${fdi.tNum * 3}) + ${fdi.dbl} (${fdi.dNum * 2}) = ${ch.score}`,
+          `Miss single -> ${fdi.miss}`,
+        ]);
+      } else {
+        // First of the two numbers locked in — circle it brightly & prompt for its partner!
+        state.dartsLeft = 1;
+        audio.playBeatLock('green');
+        const ringOv = buildFdiNumberOverlays(fdi, { showT: ch.foundT, showD: ch.foundD, link: false });
+        showBoardOverlays(ringOv);
+        if (!state.ghostMode) {
+          spawnCallout(ch.foundT ? `T${fdi.tNum} LOCKED!` : `D${fdi.dNum} LOCKED!`, { x: np.x * 0.72, y: np.y * 0.72, style: 'gold' });
+        }
+        const eq = ch.foundT ? `${fdi.tNum} + ? = ${fdi.sum}` : `? + ${fdi.dNum} = ${fdi.sum}`;
+        elPromptTask.textContent = ch.foundT
+          ? (fdi.tNum === fdi.dNum
+            ? `${fdi.tNum} locked! Tap ${fdi.tNum} again for All the 15s (15 + 15 = 30)!`
+            : `${fdi.tNum} circled! Now pick its partner on the outer ring (${fdi.tNum} + ? = ${fdi.sum})!`)
+          : `D${fdi.dNum} circled! Now pick the opening treble number (? + ${fdi.dNum} = ${fdi.sum})!`;
+        renderChalkboard({
+          header: `RULE OF ${fdi.sum} · RING HUNT`, big: ch.score, sub: ch.foundT ? `Gold: ${fdi.tNum} (T${fdi.tNum})` : `Emerald: ${fdi.dNum} (D${fdi.dNum})`,
+          lines: [eq, 'Tap its partner number on the outer ring!'],
+        });
+        setFeedback(`Locked ${sec}! Now find its partner: ${eq}`, 'ok');
+        updateHudStats();
+      }
+    } else {
+      // Wrong outer-ring number — flash crimson circle on the clicked number while preserving locked circle!
+      audio.playWireTink(false);
+      const baseOv = buildFdiNumberOverlays(fdi, { showT: ch.foundT, showD: ch.foundD, link: false });
+      baseOv.numberRings.push({ sector: sec, color: 0xf0685e, opacity: 0.92, pulse: true });
+      showBoardOverlays(baseOv);
+      const why = ch.foundT
+        ? `${fdi.tNum} + ${sec} = ${fdi.tNum + sec} — need ${fdi.sum}! (Rule of ${fdi.sum})`
+        : ch.foundD
+          ? `${sec} + ${fdi.dNum} = ${sec + fdi.dNum} — need ${fdi.sum}!`
+          : `${sec} isn't in ${ch.score}'s Rule of ${fdi.sum} pair (T = 10 + last digit)!`;
+      if (!state.inTrial) applyChallengeHint(false);
+      completeChallenge(false, why);
     }
     return;
   }
@@ -6459,6 +6688,8 @@ function handleBoardClick(bed, rawXY) {
         if (usedFdi) {
           elScoreBig.textContent = String(it.score);
           setBridgeBadge(fdi);
+          // Always circle the opening treble number on the outer ring as a visual anchor (and its double partner in Guided Tier 1!)
+          showBoardOverlays(buildFdiNumberOverlays(fdi, { showT: true, showD: tier === 1, link: tier === 1 }));
           const compTip = fdi.comp10 !== undefined ? ` (or 10-${it.score % 10}=${fdi.comp10})` : '';
           elPromptTask.textContent = tier === 1
             ? `${bed.code} hits! Solve ${fdi.tNum} + D(?) = ${fdi.sum}`
@@ -6624,7 +6855,10 @@ function handleBoardClick(bed, rawXY) {
           });
           setFeedback(`${bridgeLine} — ${fdi.decade} FDI (Rule of ${fdi.sum})!`, 'cue');
           if (tier === 1) {
-            showBoardOverlays({ highlights: [{ code: fdi.treble, color: 0xf3cc7d, opacity: 0.48 }] });
+            showBoardOverlays({
+              highlights: [{ code: fdi.treble, color: 0xf3cc7d, opacity: 0.48 }],
+              ...buildFdiNumberOverlays(fdi, { showT: true, showD: true, link: true }),
+            });
           }
         } else {
           elPromptTask.textContent = `${formulaNote} — ${actionVerb().toLowerCase()} Dart 2!`;
@@ -6655,6 +6889,7 @@ function handleBoardClick(bed, rawXY) {
 
         if (usedFdiTreble) {
           elScoreBig.textContent = String(ch.afterDart1Score);
+          showBoardOverlays(buildFdiNumberOverlays(fdi, { showT: true, showD: tier === 1, link: tier === 1 }));
           const compTip = fdi.comp10 !== undefined ? ` (or 10-${ch.afterDart1Score % 10}=${fdi.comp10})` : '';
           elPromptTask.textContent = tier === 1
             ? `${bed.code} hits! Solve ${fdi.tNum} + D(?) = ${fdi.sum}`
@@ -7033,6 +7268,10 @@ function tickGhost(dt) {
     } else if (ch.phase === 'chalk_rem') {
       submitNumericAnswer(String(ch.expectedRem));
     }
+  } else if (ch.kind === 'fdi_pair') {
+    const fdi = ch.fdi || getFdiRule(ch.score);
+    const sec = !ch.foundT ? fdi.tNum : fdi.dNum;
+    handleBoardClick({ code: 'NUM' + sec, ring: 'NUM', sector: sec, value: sec, sub: 'NUM' });
   } else if (ch.kind === 'below60') {
     const code = state.stepIndex === 0 ? ch.item.setup[0] : 'D' + (state.remainingScore / 2);
     handleBoardClick({ code, ring: code[0], value: bedValue(code), sub: 'OS' });
@@ -7095,6 +7334,11 @@ function raycastBoard(clientX, clientY) {
   const hits = raycaster.intersectObject(boardFace, false);
   if (!hits.length) return null;
   const pt = hits[0].point;
+  // In FDI Pair Hunter, clicking/hovering ANY outer-ring number (or its sector wedge) picks that number directly!
+  if (state.challenge && state.challenge.kind === 'fdi_pair') {
+    const sec = xyToSectorNumber(pt.x, pt.y);
+    return sec ? { bed: { code: 'NUM' + sec, ring: 'NUM', sector: sec, value: sec, sub: 'NUM' }, pt } : null;
+  }
   const bed = xyToBed(pt.x, pt.y);
   return bed ? { bed, pt } : null;
 }
@@ -7107,6 +7351,10 @@ function updateTouchAimPill(clientX, clientY, hit) {
   elTouchAim.style.display = 'block';
   if (hit && hit.bed) {
     elTouchAim.classList.remove('cancel');
+    if (hit.bed.ring === 'NUM') {
+      elTouchAim.innerHTML = `Number ${hit.bed.sector}<span class="sub">Lift finger to circle</span>`;
+      return;
+    }
     const willLockAim = state.useAimGauge && state.challenge && (state.challenge.kind === 'countdown301' || state.challenge.kind === 'match501') && state.challenge.phase === 'throw';
     elTouchAim.innerHTML = `${bedPretty(hit.bed.code)}<span class="sub">${willLockAim ? 'Lift finger to lock aim' : 'Lift finger to throw'}</span>`;
   } else {
@@ -7367,6 +7615,13 @@ function renderDrawer() {
         </div>
       </div>
       <div class="setting-row">
+        <span>Level 5 · FDI Training Mode</span>
+        <div class="seg-group">
+          <button class="seg-btn ${!state.fdiPairsOnly ? 'active' : ''}" data-fdipair="0">All 2-Dart</button>
+          <button class="seg-btn ${state.fdiPairsOnly ? 'active' : ''}" data-fdipair="1">FDI Pair Hunter (25/30/35)</button>
+        </div>
+      </div>
+      <div class="setting-row">
         <span>Level 6 Big-Finish Focus</span>
         <div class="seg-group">
           <button class="seg-btn ${!state.fdiBridgesOnly ? 'active' : ''}" data-fdi="0">All 101–170</button>
@@ -7468,6 +7723,16 @@ function renderDrawer() {
     elDrawerBody.querySelectorAll('[data-hint]').forEach(b => b.addEventListener('click', () => {
       state.hintMode = b.dataset.hint; renderDrawer(); loadChallenge(nextChallengeForStage(state.stage));
     }));
+    elDrawerBody.querySelectorAll('[data-fdipair]').forEach(b => b.addEventListener('click', () => {
+      state.fdiPairsOnly = b.dataset.fdipair === '1';
+      renderDrawer();
+      if (state.fdiPairsOnly) {
+        closeDrawer();
+        selectStage('LEVEL_5', true, false);
+      } else if (state.stage === 'LEVEL_5') {
+        loadChallenge(nextChallengeForStage('LEVEL_5'));
+      }
+    }));
     elDrawerBody.querySelectorAll('[data-fdi]').forEach(b => b.addEventListener('click', () => {
       state.fdiBridgesOnly = b.dataset.fdi === '1'; renderDrawer();
       if (state.stage === 'LEVEL_6') loadChallenge(nextChallengeForStage('LEVEL_6'));
@@ -7541,7 +7806,7 @@ function renderDrawer() {
           <li><strong>Level 2 · Trebles Mastery:</strong> All <code>T1–T20</code> two-way recall — <code>20–15</code> &amp; neighbors weighted <strong>1.4&times;</strong>.</li>
           <li><strong>Level 3 · 3-Dart Adding:</strong> Realistic <code>20–15</code> throws, stray wire misses (<code>1, 5, 3, 7, 4</code>), <code>Bull (50)</code> &amp; <code>25</code>.</li>
           <li><strong>Level 4 · 301 / 260 Chalk &amp; Countdown:</strong> Mix of <em>Your Throw</em> (Accuracy Gauge) &amp; <em>Pub Chalker</em> — add the 3-dart visit, then subtract it live on the chalkboard!</li>
-          <li><strong>Level 5 · 2-Dart Finishes:</strong> Below-60 Double Smiths, Golden 44 (<code>25/30/35</code> No-Peek FDIs) &amp; Sod's Law miss saves.</li>
+          <li><strong>Level 5 · 2-Dart Finishes &amp; FDI Pair Hunter:</strong> Circle the two outer-ring numbers adding to <code>25</code>, <code>30</code>, or <code>35</code> directly on the board, plus Below-60 Double Smiths, Golden 44 No-Peek checkouts &amp; Sod's Law miss saves!</li>
           <li><strong>Level 6 · 3-Dart Finishes:</strong> <code>101–170</code> FDI bridges, splash traps (<code>129, 104, 101</code>) &amp; Bogey Teen Covers.</li>
           <li><strong>Level 7 · Championship 501:</strong> Single-leg or <strong>Best-of-3 Pub Night</strong> Double-Out matches against 5 physics-driven pub bots (<em>Big Dave</em>, <em>Steady Eddie</em>, <em>Nervy Nigel</em>, <em>The Guv'nor</em> &amp; <em>"Razor" Rita</em>) — plus live 3D <strong>Watch Bot vs Bot</strong> exhibition mode and live <strong>Board IQ (S / A / B / C)</strong> grading!</li>
         </ul>
