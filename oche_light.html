@@ -349,19 +349,19 @@
   .np-key.enter { background: rgba(60, 140, 88, 0.35); border-color: rgba(60,140,88,0.75); color: #d1f2dc; }
   .np-key.del { background: rgba(184, 66, 57, 0.22); border-color: rgba(184,66,57,0.55); color: #f2b7b1; }
 
-  /* 3-Dart Skill Aiming & Brass Accuracy Gauge (Levels 4 & 7) */
+  /* 3-Beat Oche Rhythm Multi-Axis Brass Aiming Panel (Levels 4 & 7) */
   .aim-gauge-panel {
-    position: fixed; left: 50%; bottom: 66px; transform: translateX(-50%);
-    z-index: 26; width: min(390px, calc(100vw - 24px));
-    padding: 9px 13px 10px; display: none; flex-direction: column; gap: 7px;
-    border-color: rgba(232, 198, 130, 0.68);
-    box-shadow: 0 12px 34px rgba(0,0,0,0.82), inset 0 1px 0 rgba(255,240,200,0.16);
+    position: fixed; left: 50%; bottom: 64px; transform: translateX(-50%);
+    z-index: 26; width: min(420px, calc(100vw - 20px));
+    padding: 8px 12px 9px; display: none; flex-direction: column; gap: 5px;
+    border-color: rgba(232, 198, 130, 0.72);
+    box-shadow: 0 12px 34px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,240,200,0.16);
   }
   .aim-gauge-panel.visible { display: flex; }
   .aim-top {
     display: flex; align-items: center; justify-content: space-between; gap: 8px;
     font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
-    font-size: 11px; letter-spacing: 0.7px; text-transform: uppercase; color: var(--brass-bright);
+    font-size: 10.5px; letter-spacing: 0.7px; text-transform: uppercase; color: var(--brass-bright);
   }
   .aim-live-bed {
     padding: 1px 7px; border-radius: 3px; font-weight: 700; font-size: 11px;
@@ -370,25 +370,53 @@
   .aim-live-bed.zone-green { background: rgba(46, 134, 78, 0.42); border-color: #7ae09f; color: #dcfce7; }
   .aim-live-bed.zone-amber { background: rgba(196, 134, 34, 0.38); border-color: #f2c46d; color: #fff0c7; }
   .aim-live-bed.zone-red   { background: rgba(176, 54, 46, 0.42); border-color: #f08a82; color: #ffd9d6; }
-  .aim-track-row {
-    display: flex; align-items: center; gap: 8px;
+  .aim-flow-pill {
+    display: none; padding: 1px 6px; border-radius: 3px; font-weight: 700; font-size: 9.5px;
+    letter-spacing: 0.45px; white-space: nowrap;
   }
+  .aim-flow-pill.visible { display: inline-block; }
+  .aim-flow-pill.flow-hot  { background: rgba(46, 150, 86, 0.38); border: 1px solid #7ae09f; color: #d8ffe4; box-shadow: 0 0 8px rgba(122,224,159,0.28); }
+  .aim-flow-pill.flow-warm { background: rgba(201, 161, 90, 0.24); border: 1px solid #f0ce8c; color: #fff0c7; }
+  .aim-flow-pill.flow-slow { background: rgba(196, 126, 34, 0.34); border: 1px solid #f2b75c; color: #ffe4b5; }
+  .aim-flow-pill.flow-cold { background: rgba(184, 52, 44, 0.42); border: 1px solid #f08a82; color: #ffd9d6; }
+  .aim-row {
+    display: flex; align-items: center; gap: 6px;
+    padding: 2px 4px; border-radius: 5px;
+    border: 1px solid transparent; transition: opacity 0.14s, border-color 0.14s, background 0.14s;
+  }
+  .aim-row.active-row {
+    opacity: 1; background: rgba(201, 161, 90, 0.10);
+    border-color: rgba(232, 198, 130, 0.55);
+  }
+  .aim-row.locked-row { opacity: 0.78; background: rgba(46, 134, 78, 0.08); }
+  .aim-row.waiting-row { opacity: 0.42; }
+  .aim-row.hidden-row { display: none; }
+  .aim-row-tag {
+    font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+    font-size: 9.5px; font-weight: 700; letter-spacing: 0.4px; text-transform: uppercase;
+    color: var(--brass); width: 54px; flex-shrink: 0;
+  }
+  .aim-row.active-row .aim-row-tag { color: #fff4d2; }
   .aim-edge-lbl {
     font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
-    font-size: 11px; font-weight: 700; color: #f0a8a2; min-width: 30px; text-align: center;
+    font-size: 10px; font-weight: 700; color: #f0a8a2; min-width: 28px; text-align: center;
     background: rgba(140, 34, 28, 0.28); border: 1px solid rgba(184, 66, 57, 0.45);
-    border-radius: 4px; padding: 2px 4px;
+    border-radius: 3px; padding: 1px 3px; flex-shrink: 0;
+  }
+  .aim-edge-lbl.neutral {
+    color: var(--chalk-dim); background: rgba(255,255,255,0.04); border-color: rgba(201,161,90,0.28);
   }
   .aim-track {
-    position: relative; flex: 1; height: 22px; border-radius: 11px; overflow: hidden;
+    position: relative; flex: 1; height: 15px; border-radius: 8px; overflow: hidden;
     background: rgba(10, 14, 20, 0.92);
-    border: 1.5px solid rgba(201, 161, 90, 0.52);
-    box-shadow: inset 0 2px 6px rgba(0,0,0,0.75);
+    border: 1.5px solid rgba(201, 161, 90, 0.48);
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.75);
   }
+  .aim-row.active-row .aim-track { border-color: var(--brass-bright); }
   .aim-zone { position: absolute; top: 0; bottom: 0; }
-  .aim-zone.red { inset: 0; background: linear-gradient(90deg, rgba(168,46,38,0.68), rgba(168,46,38,0.28) 25%, rgba(168,46,38,0.28) 75%, rgba(168,46,38,0.68)); }
-  .aim-zone.amber { background: rgba(214, 152, 48, 0.48); border-left: 1px solid rgba(242,196,109,0.5); border-right: 1px solid rgba(242,196,109,0.5); }
-  .aim-zone.green { background: linear-gradient(90deg, rgba(54,158,92,0.58), rgba(102,216,142,0.88), rgba(54,158,92,0.58)); border-left: 1px solid #b4f8cc; border-right: 1px solid #b4f8cc; }
+  .aim-zone.red { inset: 0; background: linear-gradient(90deg, rgba(168,46,38,0.72), rgba(168,46,38,0.32) 25%, rgba(168,46,38,0.32) 75%, rgba(168,46,38,0.72)); }
+  .aim-zone.amber { background: rgba(214, 152, 48, 0.50); border-left: 1px solid rgba(242,196,109,0.5); border-right: 1px solid rgba(242,196,109,0.5); }
+  .aim-zone.green { background: linear-gradient(90deg, rgba(54,158,92,0.62), rgba(102,216,142,0.92), rgba(54,158,92,0.62)); border-left: 1px solid #b4f8cc; border-right: 1px solid #b4f8cc; }
   .aim-center-tick {
     position: absolute; left: 50%; top: 0; bottom: 0; width: 2px;
     transform: translateX(-50%); background: rgba(255, 248, 224, 0.72);
@@ -400,21 +428,22 @@
     box-shadow: 0 0 10px rgba(255, 226, 150, 0.95), 0 0 2px #000;
     will-change: left;
   }
+  .aim-row.locked-row .aim-needle { background: #a7f3c2; box-shadow: 0 0 6px rgba(122,224,159,0.85); }
   .aim-actions {
-    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    display: flex; align-items: center; justify-content: space-between; gap: 7px; margin-top: 1px;
   }
   .aim-throw-btn {
-    flex: 1; padding: 7px 14px; border-radius: 5px; cursor: pointer;
+    flex: 1; padding: 6px 12px; border-radius: 5px; cursor: pointer;
     background: linear-gradient(135deg, rgba(212,164,74,0.38), rgba(145,100,32,0.52));
     border: 1.5px solid var(--brass-bright); color: #fff7e0;
     font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
-    font-size: 12px; font-weight: 700; letter-spacing: 0.9px; text-transform: uppercase;
+    font-size: 11.5px; font-weight: 700; letter-spacing: 0.7px; text-transform: uppercase;
   }
   .aim-throw-btn:hover { filter: brightness(1.16); }
   .aim-cancel-btn {
-    padding: 7px 10px; border-radius: 5px; cursor: pointer;
+    padding: 6px 10px; border-radius: 5px; cursor: pointer;
     background: rgba(255,255,255,0.05); border: 1px solid rgba(201,161,90,0.34);
-    color: var(--chalk-dim); font-family: ui-monospace, monospace; font-size: 11px;
+    color: var(--chalk-dim); font-family: ui-monospace, monospace; font-size: 10.5px;
   }
   .aim-cancel-btn:hover { color: var(--chalk); border-color: var(--brass); }
 
@@ -857,8 +886,10 @@
     .numpad-grid { grid-template-columns: repeat(6, 1fr); gap: 5px; }
     .np-key { padding: 8px 0; font-size: 14px; }
     .np-key.enter { font-size: 11px; letter-spacing: 0.4px; }
-    .aim-gauge-panel { bottom: 68px; width: calc(100vw - 16px); padding: 7px 10px 8px; gap: 6px; }
-    .aim-throw-btn { padding: 9px 12px; font-size: 12px; }
+    .aim-gauge-panel { bottom: 56px; width: calc(100vw - 16px); padding: 6px 9px 7px; gap: 4px; }
+    .aim-track { height: 13px; }
+    .aim-row-tag { width: 48px; font-size: 9px; }
+    .aim-throw-btn { padding: 8px 10px; font-size: 11px; }
     .relock-pill { bottom: 152px; padding: 6px 14px; font-size: 11px; }
     body.numpad-open .trev-dock, body.aim-open .trev-dock { opacity: 0; pointer-events: none; }
     .toast-stack { bottom: 52px; }
@@ -1039,25 +1070,51 @@
 <!-- Quick Repeat-Aim Pill for Darts 2 & 3 (1-tap / Spacebar muscle-memory rhythm!) -->
 <button id="relock-pill" class="relock-pill">Aim T20 Again [Space]</button>
 
-<!-- 3-Dart Skill Aiming & Brass Accuracy Gauge (Levels 4 & 7) -->
+<!-- 3-Beat Oche Rhythm Aiming Panel (1. Focus/Grip -> 2. Horizontal Line -> 3. Vertical Height) -->
 <div id="aim-gauge-panel" class="plate aim-gauge-panel">
   <div class="aim-top">
     <span id="aim-target-lbl">AIMING T20 · DART 1/3</span>
-    <span id="aim-live-bed" class="aim-live-bed zone-green">T20 (60)</span>
+    <span id="aim-flow-pill" class="aim-flow-pill"></span>
+    <span id="aim-live-bed" class="aim-live-bed zone-green">1/3 FOCUS</span>
   </div>
-  <div class="aim-track-row">
+  <div id="aim-row-focus" class="aim-row active-row">
+    <span class="aim-row-tag">1·Focus</span>
+    <span class="aim-edge-lbl neutral">SHK</span>
+    <div class="aim-track">
+      <div class="aim-zone red"></div>
+      <div id="aim-f-amber" class="aim-zone amber" style="left:26%;width:48%"></div>
+      <div id="aim-f-green" class="aim-zone green" style="left:41%;width:18%"></div>
+      <div class="aim-center-tick"></div>
+      <div id="aim-f-needle" class="aim-needle"></div>
+    </div>
+    <span id="aim-f-stat" class="aim-edge-lbl neutral">GRP</span>
+  </div>
+  <div id="aim-row-horiz" class="aim-row waiting-row">
+    <span class="aim-row-tag">2·Line</span>
     <span id="aim-left-lbl" class="aim-edge-lbl">5</span>
     <div class="aim-track">
       <div class="aim-zone red"></div>
-      <div id="aim-zone-amber" class="aim-zone amber" style="left:22%;width:56%"></div>
-      <div id="aim-zone-green" class="aim-zone green" style="left:40%;width:20%"></div>
+      <div id="aim-h-amber" class="aim-zone amber" style="left:33%;width:34%"></div>
+      <div id="aim-h-green" class="aim-zone green" style="left:43%;width:14%"></div>
       <div class="aim-center-tick"></div>
-      <div id="aim-needle" class="aim-needle"></div>
+      <div id="aim-h-needle" class="aim-needle"></div>
     </div>
     <span id="aim-right-lbl" class="aim-edge-lbl">1</span>
   </div>
+  <div id="aim-row-vert" class="aim-row waiting-row">
+    <span class="aim-row-tag">3·Height</span>
+    <span class="aim-edge-lbl neutral">LOW</span>
+    <div class="aim-track">
+      <div class="aim-zone red"></div>
+      <div id="aim-v-amber" class="aim-zone amber" style="left:27%;width:46%"></div>
+      <div id="aim-v-green" class="aim-zone green" style="left:42%;width:16%"></div>
+      <div class="aim-center-tick"></div>
+      <div id="aim-v-needle" class="aim-needle"></div>
+    </div>
+    <span class="aim-edge-lbl neutral">HI</span>
+  </div>
   <div class="aim-actions">
-    <button id="aim-throw-btn" class="aim-throw-btn">Throw Dart [Click / Space]</button>
+    <button id="aim-throw-btn" class="aim-throw-btn">1/3 Lock Focus [Click / Space]</button>
     <button id="aim-cancel-btn" class="aim-cancel-btn" title="Pick another target (Esc)">Re-aim</button>
   </div>
 </div>
@@ -1118,8 +1175,10 @@ import {
   sectorWeight, getNeighborSectors, bedValue, parseBedCode, bedPretty, bedToXY, xyToBed,
   GOLDEN_44, G44_BY_SCORE, getFdiRule,
   HALVING_CHAINS, BELOW_60_ITEMS, SODS_LAW_ITEMS, TON_PLUS_ITEMS, TON_PLUS_BY_SCORE, BOGEY_ITEMS, MARKING_ITEMS,
-  subtractionShortcut, buildVisitCue, generatePub3DartVisit, applyPubScatter,
+  subtractionShortcut, subtractionMethodInfo, buildVisitCue, generatePub3DartVisit, applyPubScatter,
   aimConfigForDifficulty as engineAimConfigForDifficulty, getScreenSideNeighbors, computeAimDrop,
+  multiAxisConfigForDifficulty, evaluateFocusBeat, computeMultiAxisDrop,
+  DEFAULT_MATH_FLOW, computeMathFlowModifier, applyMathFlowToConfig,
   resolve501Dart, clamp301Dart, audit501Decision,
 } from './src/engine.mjs';
 import { BOT_PROFILES, BOT_IDS, simulateBot501Visit } from './src/bots.mjs';
@@ -1252,12 +1311,12 @@ const STAGE_BRIEFING_CARDS = {
   },
   LEVEL_4: {
     tag: 'LEVEL 4 · LIVE CHALK & SUBTRACT', title: '301 / Under-260 Chalk & Countdown',
-    goal: 'Play real pub chalking! Throw 3 darts (or score a pub regular), chalk the 3-dart visit total, then subtract it live on the chalkboard.',
+    goal: 'Play real pub chalking! Throw 3 darts with the 3-Beat Oche Rhythm (Focus → Line → Height), chalk your visit, then subtract live on the pub scoreboard.',
     html: `<strong>3-Step Pub Chalk Loop:</strong><br/>
-      &bull; <strong>1. Throw (or Watch) 3 Darts:</strong> Mix of <em>Your Throw</em> (aim on the 3D board — slight realistic pub scatter keeps scores lively!) and <em>Pub Chalker</em> visits.<br/>
-      &bull; <strong>2. Chalk the Visit:</strong> Add the 3 darts in the board and call the visit total.<br/>
-      &bull; <strong>3. Take It Off the Score:</strong> Subtract the visit from <code>301</code> (or a <code>~260</code> mid-leg) down toward checkout range! Shortcut: <code>-85 = -100, +15</code> · <code>-57 = -60, +3</code>.<br/>
-      &bull; <strong>Bogey Watch:</strong> In the <code>220s/260s</code>, Trev warns you if Dart 3 could leave a bogey (<code>159, 162, 163, 165, 166, 168, 169</code>)!`,
+      &bull; <strong>1. Throw (3-Beat Oche Rhythm):</strong> Click a bed, then lock <strong>1·Focus/Grip</strong>, <strong>2·Horizontal Line</strong> (stay inside the wire!), and <strong>3·Vertical Height</strong> — or toggle <em>2-Beat</em> / <em>Instant Scatter</em> in the Pub Ladder.<br/>
+      &bull; <strong>2. Chalk the Visit:</strong> Add the 3 darts in the board and call the visit total onto the slate.<br/>
+      &bull; <strong>3. Subtract with Rounding Methods:</strong> Practice <code>-100, +?</code> and <code>-60, +?</code> badges live on the chalkboard (+10 Method XP)!<br/>
+      &bull; <strong>Bogey Watch:</strong> On <code>179–189</code> with 1 dart left, throw the Teen Cover <code>S(10+d)</code> for <strong>+20 XP</strong> instead of leaving a bogey (<code>159–169</code>)!`,
   },
   LEVEL_5: {
     tag: 'LEVEL 5 · 2-DART CHECKOUTS (≤110)', title: 'Two-Dart Finishes & The 25 / 30 / 35 Rules',
@@ -1281,12 +1340,12 @@ const STAGE_BRIEFING_CARDS = {
   },
   LEVEL_7: {
     tag: 'FINAL LEVEL 7 · CHAMPIONSHIP 501', title: 'Full 501 Match + Board-Management Auditor',
-    goal: 'Beat pub rival "Big Dave" from 501 to 0 (Double Out)! Throw, chalk & subtract every visit while Trev grades every tactical choice.',
+    goal: 'Beat pub rival "Big Dave" from 501 to 0 (Double Out)! Throw with the 3-Beat Oche Rhythm, chalk every visit onto the 2-column pub scoreboard, and pass live @yourdarts method tests!',
     html: `<strong>How Trev Grades Your 501 Match IQ:</strong><br/>
-      &bull; <strong>501 &rarr; 171:</strong> Aim &amp; throw 3 darts, chalk the visit total, and subtract your score live on the slate.<br/>
-      &bull; <strong>Bogey Danger Band (309..219):</strong> Throw Teen Cover <code>S(10+d)</code> on Dart 3 instead of leaving a bogey (<code>159, 162, 163, 165, 166, 168, 169</code>)!<br/>
-      &bull; <strong>≤170 Board-Management Audit:</strong> Trev grades your opening treble on trap scores (<code>129, 128, 126, 123, 122, 119, 107, 104, 103, 101</code>), 1-dart FDI switches (<code>62–70</code>), <code>&lt;70</code> safety, rival pressure on <code>50</code>, and <code>25/30/35</code> checkouts!<br/>
-      &bull; <strong>Double Out:</strong> Hit <code>0</code> cleanly on a double/Bull (busts revert your score!). Earn a <strong>Board IQ Grade (S / A / B / C)</strong> &amp; Brass Stars!`,
+      &bull; <strong>Live 2-Column Pub Chalkboard:</strong> Every visit gets chalked under <code>SCORED | TO GO</code> with classic chalk strike-throughs — take your time on the generous maths clock!<br/>
+      &bull; <strong>Live No-Peek 25 / 30 / 35 FDIs:</strong> Nail the FDI treble on <code>61–90</code> and the score holds without peeking — solve <code>T + D(?) = 25/30/35</code> for <strong>+25 XP</strong>!<br/>
+      &bull; <strong>Sod's Law Miss-Rule Checks:</strong> Slip off a checkout treble into its single? Call the remaining score live (<code>+15 XP</code>) before your next dart!<br/>
+      &bull; <strong>≤189 Board-Management Audit:</strong> Trev grades Bogey Teen Covers, Splash Trap dodges (<code>129, 128, 126, 104, 101</code>), 1-dart FDI switches (<code>62–70</code>), and Double-Out finishes!`,
   },
 };
 
@@ -1927,6 +1986,20 @@ class PubAudio {
       o.start(t + off); o.stop(t + off + 0.18);
     });
   }
+  playBeatLock(zone = 'green') {
+    if (!this.enabled || !this.ctx) return;
+    const ctx = this.ctx, t = ctx.currentTime;
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type = zone === 'green' ? 'triangle' : zone === 'amber' ? 'sine' : 'sawtooth';
+    const f = zone === 'green' ? 680 : zone === 'amber' ? 420 : 210;
+    o.frequency.setValueAtTime(f, t);
+    o.frequency.exponentialRampToValueAtTime(zone === 'green' ? f * 1.18 : f * 0.82, t + 0.065);
+    g.gain.setValueAtTime(zone === 'red' ? 0.08 : 0.095, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.075);
+    o.connect(g).connect(ctx.destination);
+    o.start(t); o.stop(t + 0.08);
+  }
   ensureVoiceBus() {
     if (!this.ctx) return null;
     if (this.voiceBus) return this.voiceBus;
@@ -2091,11 +2164,11 @@ const postMat = new THREE.ShaderMaterial({
       vec2 texel = 1.0 / uResolution;
       float rawD = texture2D(tDepth, vUv).r;
       float linD = linearizeDepth(rawD);
-      // Crisp focal plane across the entire dartboard & slate chalkboard; subtle diorama blur only on far foreground/background & extreme top/bottom margins
+      // Crisp focal plane across the entire dartboard, protruding 3D dart flights & slate chalkboard; subtle blur only on far background/extreme margins
       float depthDiff = abs(linD - uFocusDepth);
-      float depthBlur = smoothstep(1.25, 4.4, depthDiff);
-      float vertTilt = smoothstep(0.43, 0.52, abs(vUv.y - 0.50));
-      float coc = clamp(depthBlur * 0.95 + vertTilt * 0.75, 0.0, 1.0) * 1.45;
+      float depthBlur = smoothstep(2.15, 5.4, depthDiff);
+      float vertTilt = smoothstep(0.45, 0.53, abs(vUv.y - 0.50));
+      float coc = clamp(depthBlur * 0.90 + vertTilt * 0.65, 0.0, 1.0) * 1.35;
 
       vec3 col;
       if (coc < 0.14) {
@@ -2411,6 +2484,178 @@ function renderChalkboard({ header = 'OCHE SLATE', big = '148', sub = '', lines 
     ctx.font = '21px ui-monospace, monospace';
     ctx.fillText(footer, 256, 720);
   }
+  ctx.restore();
+  chalkTex.needsUpdate = true;
+}
+
+// Authentic British Pub Match Chalkboard (Scored | Remaining columns with diagonal chalk strike-throughs!)
+function renderMatchChalkboard({
+  title = 'CHAMPIONSHIP 501',
+  leftName = 'YOU',
+  rightName = 'RIVAL',
+  leftRows = [{ scored: null, rem: 501 }],
+  rightRows = null,
+  pendingLeft = null,   // { scored: '?' | 85, rem: '?' | '…', note?: string }
+  pendingRight = null,
+  footer = '',
+  footer2 = '',
+}) {
+  const ctx = chalkCtx;
+  ctx.save();
+  ctx.setTransform(2, 0, 0, 2, 0, 0); // crisp 2x logical scaling over full 1024x1536 HiDPI chalkboard!
+  ctx.fillStyle = '#181e26';
+  ctx.fillRect(0, 0, 512, 768);
+  // Subtle chalk-dust smudge backdrop
+  for (let i = 0; i < 140; i++) {
+    ctx.fillStyle = `rgba(225,222,208,${Math.random() * 0.026})`;
+    ctx.beginPath();
+    ctx.arc(Math.random() * 512, Math.random() * 768, 12 + Math.random() * 44, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.strokeStyle = 'rgba(232, 225, 207, 0.36)';
+  ctx.lineWidth = 3;
+  ctx.strokeRect(18, 18, 476, 732);
+
+  // Title bar
+  ctx.fillStyle = '#f0ce8c';
+  ctx.font = '700 24px ui-monospace, monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText(title.toUpperCase(), 256, 58);
+
+  ctx.strokeStyle = 'rgba(232, 225, 207, 0.30)';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath(); ctx.moveTo(34, 74); ctx.lineTo(478, 74); ctx.stroke();
+
+  const drawStrike = (cx, cy, w) => {
+    ctx.save();
+    ctx.strokeStyle = 'rgba(232, 225, 207, 0.72)';
+    ctx.lineWidth = 3.2;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(cx - w * 0.56, cy + 8);
+    ctx.lineTo(cx + w * 0.56, cy - 16);
+    ctx.stroke();
+    ctx.restore();
+  };
+
+  const drawColumn = (name, rows, pending, x0, colW, bigScale = false) => {
+    const midX = x0 + colW * 0.5;
+    const scoreX = x0 + colW * 0.25;
+    const remX = x0 + colW * 0.72;
+
+    // Player Name header
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#f3cc7d';
+    ctx.font = bigScale ? '700 28px Georgia, serif' : '700 24px Georgia, serif';
+    ctx.fillText(name.toUpperCase(), midX, 108);
+
+    // Sub-headers: SCORED | LEFT
+    ctx.fillStyle = 'rgba(232, 225, 207, 0.52)';
+    ctx.font = '600 13px ui-monospace, monospace';
+    ctx.fillText('SCORED', scoreX, 132);
+    ctx.fillText('TO GO', remX, 132);
+
+    // Build visible rows (auto-scroll to last 8 entries if leg gets long!)
+    const all = rows.slice();
+    if (pending) all.push({ ...pending, isPending: true });
+    const maxVisible = bigScale ? 8 : 8;
+    const visible = all.length > maxVisible ? all.slice(all.length - maxVisible) : all;
+
+    const rowH = 58;
+    let y = 186;
+    for (let i = 0; i < visible.length; i++) {
+      const r = visible[i];
+      const isLast = i === visible.length - 1;
+      const isActiveRem = isLast && !r.isPending;
+      const hasNextValid = !isLast && !(visible[i + 1].isPending && visible[i + 1].rem === '…');
+
+      // Scored column (left half)
+      if (r.scored !== null && r.scored !== undefined && r.scored !== '') {
+        ctx.textAlign = 'center';
+        if (r.scored === '?') {
+          ctx.fillStyle = '#ffd97d';
+          ctx.font = bigScale ? '700 34px ui-monospace, monospace' : '700 29px ui-monospace, monospace';
+        } else if (r.scored === 'BUST') {
+          ctx.fillStyle = '#f29b94';
+          ctx.font = '700 20px ui-monospace, monospace';
+        } else {
+          const bigHit = typeof r.scored === 'number' && r.scored >= 100;
+          ctx.fillStyle = r.isPending ? '#9be8b5' : bigHit ? '#ffe39a' : 'rgba(232, 225, 207, 0.78)';
+          ctx.font = bigScale ? '700 30px ui-monospace, monospace' : '700 25px ui-monospace, monospace';
+        }
+        ctx.fillText(String(r.scored), scoreX, y);
+      }
+
+      // Remaining ("TO GO") column (right half)
+      if (r.rem !== null && r.rem !== undefined && r.rem !== '') {
+        ctx.textAlign = 'center';
+        if (r.rem === '?') {
+          ctx.fillStyle = '#ffd97d';
+          ctx.font = bigScale ? '700 44px Georgia, serif' : '700 38px Georgia, serif';
+          ctx.fillText('?', remX, y + 2);
+        } else if (r.rem === '…') {
+          ctx.fillStyle = 'rgba(232, 225, 207, 0.35)';
+          ctx.font = '700 30px Georgia, serif';
+          ctx.fillText('…', remX, y);
+        } else {
+          const isZero = r.rem === 0 || r.rem === 'OUT';
+          ctx.fillStyle = isZero ? '#8ee8ad' : isActiveRem ? '#fff8e6' : 'rgba(232, 225, 207, 0.56)';
+          ctx.font = isActiveRem || isZero
+            ? (bigScale ? '700 44px Georgia, serif' : '700 38px Georgia, serif')
+            : (bigScale ? '700 34px Georgia, serif' : '700 30px Georgia, serif');
+          const txt = isZero ? '0 ✓' : String(r.rem);
+          ctx.fillText(txt, remX, y + 2);
+          if (hasNextValid && !isZero) {
+            drawStrike(remX, y, Math.max(46, ctx.measureText(txt).width + 10));
+          }
+        }
+      }
+      y += rowH;
+    }
+  };
+
+  if (rightRows) {
+    // Classic 2-Column Pub 501 Chalkboard (YOU | RIVAL)
+    ctx.strokeStyle = 'rgba(232, 225, 207, 0.34)';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.moveTo(256, 76); ctx.lineTo(256, 658); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(34, 142); ctx.lineTo(478, 142); ctx.stroke();
+
+    // Subtle thin sub-dividers between SCORED and TO GO inside each half
+    ctx.strokeStyle = 'rgba(232, 225, 207, 0.14)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(132, 142); ctx.lineTo(132, 656); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(366, 142); ctx.lineTo(366, 656); ctx.stroke();
+
+    drawColumn(leftName, leftRows, pendingLeft, 28, 222, false);
+    drawColumn(rightName, rightRows, pendingRight, 262, 222, false);
+  } else {
+    // Single-Player 301/260 Pub Countdown Slate (SCORED | TO GO)
+    ctx.strokeStyle = 'rgba(232, 225, 207, 0.30)';
+    ctx.lineWidth = 2.2;
+    ctx.beginPath(); ctx.moveTo(34, 142); ctx.lineTo(478, 142); ctx.stroke();
+    ctx.strokeStyle = 'rgba(232, 225, 207, 0.22)';
+    ctx.beginPath(); ctx.moveTo(222, 142); ctx.lineTo(222, 656); ctx.stroke();
+
+    drawColumn(leftName, leftRows, pendingLeft, 44, 424, true);
+  }
+
+  // Bottom chalk tray note area
+  ctx.strokeStyle = 'rgba(232, 225, 207, 0.26)';
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(34, 662); ctx.lineTo(478, 662); ctx.stroke();
+  ctx.textAlign = 'center';
+  if (footer) {
+    ctx.fillStyle = '#f2ece0';
+    ctx.font = '700 20px ui-monospace, monospace';
+    ctx.fillText(footer.slice(0, 38), 256, 696);
+  }
+  if (footer2) {
+    ctx.fillStyle = '#e5c586';
+    ctx.font = 'italic 20px Georgia, serif';
+    ctx.fillText(footer2.slice(0, 42), 256, 728);
+  }
+
   ctx.restore();
   chalkTex.needsUpdate = true;
 }
@@ -2762,9 +3007,16 @@ scene.add(aimGroup);
 
 const aimAnchorRing = new THREE.Mesh(
   new THREE.RingGeometry(0.115, 0.135, 32),
-  new THREE.MeshBasicMaterial({ color: 0xf3cc7d, transparent: true, opacity: 0.52, side: THREE.DoubleSide, depthWrite: false })
+  new THREE.MeshBasicMaterial({ color: 0xf3cc7d, transparent: true, opacity: 0.56, side: THREE.DoubleSide, depthWrite: false })
 );
 aimGroup.add(aimAnchorRing);
+
+// 3D radial spoke guide line showing locked horizontal line while timing vertical release height!
+const aimLineGeo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 1.75, 0)]);
+const aimLineMat = new THREE.LineBasicMaterial({ color: 0xf3cc7d, transparent: true, opacity: 0.52 });
+const aimLineGuide = new THREE.Line(aimLineGeo, aimLineMat);
+aimLineGuide.visible = false;
+aimGroup.add(aimLineGuide);
 
 const aimCrosshair = new THREE.Group();
 const aimCrossMat = new THREE.MeshBasicMaterial({ color: 0x7ae09f, transparent: true, opacity: 0.94, side: THREE.DoubleSide, depthWrite: false });
@@ -2906,22 +3158,45 @@ function buildDartMesh(accentHex = 0x8f231e) {
   stem.rotation.x = Math.PI / 2; stem.position.z = 0.90; stem.castShadow = false;
   g.add(stem);
 
-  // 4-Vane Cross Flights (+1.02 to +1.44)
+  // Brass shaft collar ring where flight seats into stem
+  const collar = new THREE.Mesh(new THREE.CylinderGeometry(0.021, 0.017, 0.055, 10), brassMat);
+  collar.rotation.x = Math.PI / 2; collar.position.z = 1.03; collar.castShadow = false;
+  g.add(collar);
+
+  // 4-Vane Cross Flights (+1.03 to +1.46): pre-rotate fin geometry onto +Z axis BEFORE radial fan so all 4 vanes form a true 90° cross!
   const fShape = new THREE.Shape();
-  fShape.moveTo(0, 0);
-  fShape.lineTo(0.14, 0.08);
-  fShape.lineTo(0.16, 0.36);
-  fShape.lineTo(0.02, 0.42);
-  fShape.lineTo(0, 0.42);
+  fShape.moveTo(0.004, 0);
+  fShape.lineTo(0.115, 0.085);
+  fShape.quadraticCurveTo(0.142, 0.22, 0.132, 0.35);
+  fShape.lineTo(0.025, 0.43);
+  fShape.lineTo(0.004, 0.43);
   fShape.closePath();
   const fGeo = new THREE.ShapeGeometry(fShape);
+  fGeo.rotateX(Math.PI / 2); // maps local Y -> +Z along dart shaft, local X -> radial fin width!
+
+  const flightTrimMat = new THREE.MeshStandardMaterial({ color: 0xe6c47a, roughness: 0.48, metalness: 0.35, side: THREE.DoubleSide });
+  const trimShape = new THREE.Shape();
+  trimShape.moveTo(0.006, 0.34);
+  trimShape.lineTo(0.130, 0.34);
+  trimShape.lineTo(0.124, 0.365);
+  trimShape.lineTo(0.006, 0.365);
+  trimShape.closePath();
+  const trimGeo = new THREE.ShapeGeometry(trimShape);
+  trimGeo.rotateX(Math.PI / 2);
+
   for (let k = 0; k < 4; k++) {
+    const ang = k * (Math.PI / 2);
     const vane = new THREE.Mesh(fGeo, flightMat);
-    vane.rotation.x = Math.PI / 2;
-    vane.rotation.z = k * (Math.PI / 2);
-    vane.position.z = 1.02;
+    vane.rotation.z = ang;
+    vane.position.z = 1.03;
     vane.castShadow = false;
     g.add(vane);
+
+    const stripe = new THREE.Mesh(trimGeo, flightTrimMat);
+    stripe.rotation.z = ang;
+    stripe.position.z = 1.03;
+    stripe.castShadow = false;
+    g.add(stripe);
   }
   return g;
 }
@@ -3797,7 +4072,9 @@ const state = {
   difficulty: mastery.data.difficulty || 'league',
   fdiBridgesOnly: false,
   rivalPressure: false,
+  aimMode: '3beat', // '3beat' | '2beat' | 'scatter'
   useAimGauge: true,
+  mathFlow: { ...DEFAULT_MATH_FLOW },
   isTouch: ('ontouchstart' in window) || (navigator.maxTouchPoints > 0),
   lastPlayerInputAt: 0,
   ghostTimer: 0,
@@ -3826,7 +4103,7 @@ const state = {
   trialQueue: [],
   trialReadyNotified: {},
   // Level 4: 301 / Under-260 Chalk & Countdown running leg
-  leg301: { score: 301, startMode: 301, visitsDone: 0, nextMode: 'throw' },
+  leg301: { score: 301, startMode: 301, visitsDone: 0, nextMode: 'throw', rows: [{ scored: null, rem: 301 }] },
   // Level 7: Championship 501 vs. 5 Real-Physics Pub Bots + Best-of-3 + Live 3D Bot-vs-Bot Spectator
   rivalId: 'big_dave',
   matchFormat: 'single', // 'single' | 'bo3'
@@ -3837,6 +4114,8 @@ const state = {
     chalkOk: 0, chalkAttempts: 0, auditGood: 0, auditTotal: 0, auditNotes: [],
     visitNum: 1, lastDaveNote: '', finished: false,
     legsYou: 0, legsRival: 0, legNum: 1, rivalD1Darts: 0,
+    playerRows: [{ scored: null, rem: 501 }],
+    rivalRows: [{ scored: null, rem: 501 }],
   },
   spectator: {
     active: false,
@@ -3844,6 +4123,8 @@ const state = {
     botB: 'pub_shark',
     scores: [501, 501],
     d1Darts: [0, 0],
+    rowsA: [{ scored: null, rem: 501 }],
+    rowsB: [{ scored: null, rem: 501 }],
     turn: 0,
     visitNum: 1,
     timerId: null,
@@ -3879,7 +4160,7 @@ function resetLeg301(startScore = null) {
   const nextStart = startScore !== null
     ? startScore
     : (state.leg301.startMode === 301 ? (226 + Math.floor(Math.random() * 42)) : 301);
-  state.leg301 = { score: nextStart, startMode: nextStart, visitsDone: 0, nextMode: 'throw' };
+  state.leg301 = { score: nextStart, startMode: nextStart, visitsDone: 0, nextMode: 'throw', rows: [{ scored: null, rem: nextStart }] };
 }
 
 function resetMatch501(keepSeries = false) {
@@ -3893,7 +4174,10 @@ function resetMatch501(keepSeries = false) {
     chalkOk: 0, chalkAttempts: 0, auditGood: 0, auditTotal: 0, auditNotes: [],
     visitNum: 1, lastDaveNote: `${rv.name} (${rv.avgLabel}): 501`, finished: false,
     legsYou, legsRival, legNum, rivalD1Darts: 0,
+    playerRows: [{ scored: null, rem: 501 }],
+    rivalRows: [{ scored: null, rem: 501 }],
   };
+  if (!keepSeries) state.mathFlow = { ...DEFAULT_MATH_FLOW };
 }
 
 // Pure darts shortcuts, pub scatter & audit501Decision imported from ./src/engine.mjs
@@ -3941,26 +4225,151 @@ const elBriefGoal    = document.getElementById('briefing-goal');
 const elBriefBody    = document.getElementById('briefing-body');
 const elAimPanel     = document.getElementById('aim-gauge-panel');
 const elAimTarget    = document.getElementById('aim-target-lbl');
+const elAimFlowPill  = document.getElementById('aim-flow-pill');
 const elAimLive      = document.getElementById('aim-live-bed');
 const elAimLeft      = document.getElementById('aim-left-lbl');
 const elAimRight     = document.getElementById('aim-right-lbl');
-const elAimAmber     = document.getElementById('aim-zone-amber');
-const elAimGreen     = document.getElementById('aim-zone-green');
-const elAimNeedle    = document.getElementById('aim-needle');
+const elAimRowFocus  = document.getElementById('aim-row-focus');
+const elAimRowHoriz  = document.getElementById('aim-row-horiz');
+const elAimRowVert   = document.getElementById('aim-row-vert');
+const elAimFAmber    = document.getElementById('aim-f-amber');
+const elAimFGreen    = document.getElementById('aim-f-green');
+const elAimFNeedle   = document.getElementById('aim-f-needle');
+const elAimFStat     = document.getElementById('aim-f-stat');
+const elAimHAmber    = document.getElementById('aim-h-amber');
+const elAimHGreen    = document.getElementById('aim-h-green');
+const elAimHNeedle   = document.getElementById('aim-h-needle');
+const elAimVAmber    = document.getElementById('aim-v-amber');
+const elAimVGreen    = document.getElementById('aim-v-green');
+const elAimVNeedle   = document.getElementById('aim-v-needle');
+const elAimThrowBtn  = document.getElementById('aim-throw-btn');
 
-/* ---------- 3-Dart Skill Aiming & Brass Accuracy Gauge Engine ---------- */
+/* ---------- 3-Beat / 2-Beat Oche Rhythm Multi-Axis Aiming Engine ---------- */
 const aimGauge = {
   active: false,
   mode: null, // '301' | '501'
   aimedBed: null,
   aimXY: null,
+  cfg: null,
+  step: 'focus', // 'focus' | 'horiz' | 'vert'
+  is2Beat: false,
   startedAt: 0,
+  lastLockAt: 0,
   phase: 0,
-  vPhase: 0,
+  focusU: 0,
+  focusRes: null,
+  horizU: 0,
+  vertV: 0,
   curDrop: null,
 };
 
 function aimConfigForDifficulty(diff = state.difficulty) { return engineAimConfigForDifficulty(diff); }
+
+function recordMathFlowStep(ch, { isFinal = true, silent = false } = {}) {
+  if (!ch || state.ghostMode) return state.mathFlow;
+  const isMathPhase = ch.missPrompt || ((ch.kind === 'countdown301' || ch.kind === 'match501') && ch.phase !== 'throw');
+  const baseMs = isMathPhase ? (ch.chalkSpeedMs || (ch.missPrompt ? 9500 : 14000)) : (ch.speedMs || 5200);
+  const targetMs = Math.max(1000, baseMs * currentProfile().timerMult);
+  const stepRatio = Math.max(0, (performance.now() - state.challengeStartMs) / targetMs);
+  ch.mathRatios = ch.mathRatios || [];
+  ch.mathRatios.push(stepRatio);
+  if (state.bellChimed || stepRatio > 1.0) ch.mathTimedOut = true;
+  if (!isFinal) return state.mathFlow;
+
+  const avgRatio = ch.mathRatios.reduce((a, b) => a + b, 0) / ch.mathRatios.length;
+  const mf = computeMathFlowModifier(avgRatio, {
+    wrongCount: ch.mathWrongCount || 0,
+    usedHint: state.usedHint,
+    timedOut: !!ch.mathTimedOut,
+  });
+  state.mathFlow = mf;
+  if (!silent && mf.callout) {
+    const style = (mf.tier === 'in_flow') ? 'gold' : (mf.tier === 'sharp') ? 'ok' : 'warn';
+    spawnCallout(mf.callout, { x: 0, y: 0.56, style });
+    if (mf.tier === 'in_flow') {
+      trev.say("Lightning chalkin', sunshine! Yer right in the flow — watch yer aim bars slow down an' open wide!", { mood: 'cheer', holdMs: 2200, speak: true });
+    } else if (mf.tier === 'cold') {
+      trev.say("Clock beat yer on the chalk, mate — head's spinnin', so yer throw's gonna feel tighter!", { mood: 'wince', holdMs: 2200, speak: true });
+    }
+  }
+  return mf;
+}
+
+function setAimLineGuide3D(drop) {
+  if (!drop || !aimGauge.aimedBed) {
+    aimLineGuide.visible = false;
+    return;
+  }
+  const pos = aimLineGuide.geometry.attributes.position;
+  if (aimGauge.aimedBed.code === 'BULL' || aimGauge.aimedBed.code === '25') {
+    pos.setXYZ(0, drop.x, -0.82, 0);
+    pos.setXYZ(1, drop.x, 0.82, 0);
+  } else {
+    const ang = Math.atan2(drop.x, drop.y);
+    pos.setXYZ(0, Math.sin(ang) * 0.16, Math.cos(ang) * 0.16, 0);
+    pos.setXYZ(1, Math.sin(ang) * 1.78, Math.cos(ang) * 1.78, 0);
+  }
+  pos.needsUpdate = true;
+  aimLineMat.color.setHex(drop.horizZone === 'green' ? 0x7ae09f : drop.horizZone === 'amber' ? 0xf3cc7d : 0xf0685e);
+  aimLineGuide.visible = true;
+}
+
+function applyAimCorridorBars() {
+  const cfg = aimGauge.cfg || multiAxisConfigForDifficulty(state.difficulty);
+  const mult = aimGauge.focusRes ? aimGauge.focusRes.zoneMult : 1.0;
+  const hSweet = Math.min(0.45, cfg.horizSweet * mult);
+  const hAmber = Math.min(0.68, cfg.horizAmber * mult);
+  const vSweet = Math.min(0.42, cfg.vertSweet * mult);
+  const vAmber = Math.min(0.70, cfg.vertAmber * mult);
+
+  elAimFAmber.style.left = `${50 - cfg.focusAmber * 50}%`;
+  elAimFAmber.style.width = `${cfg.focusAmber * 100}%`;
+  elAimFGreen.style.left = `${50 - cfg.focusSweet * 50}%`;
+  elAimFGreen.style.width = `${cfg.focusSweet * 100}%`;
+
+  elAimHAmber.style.left = `${50 - hAmber * 50}%`;
+  elAimHAmber.style.width = `${hAmber * 100}%`;
+  elAimHGreen.style.left = `${50 - hSweet * 50}%`;
+  elAimHGreen.style.width = `${hSweet * 100}%`;
+
+  elAimVAmber.style.left = `${50 - vAmber * 50}%`;
+  elAimVAmber.style.width = `${vAmber * 100}%`;
+  elAimVGreen.style.left = `${50 - vSweet * 50}%`;
+  elAimVGreen.style.width = `${vSweet * 100}%`;
+}
+
+function syncAimRowClasses() {
+  const act = state.isTouch ? 'Tap' : 'Click / Space';
+  if (aimGauge.is2Beat) {
+    elAimRowFocus.className = 'aim-row hidden-row';
+    if (aimGauge.step === 'horiz') {
+      elAimRowHoriz.className = 'aim-row active-row';
+      elAimRowVert.className = 'aim-row waiting-row';
+      elAimThrowBtn.textContent = `1/2 Lock Line [${act}]`;
+    } else {
+      elAimRowHoriz.className = 'aim-row locked-row';
+      elAimRowVert.className = 'aim-row active-row';
+      elAimThrowBtn.textContent = `2/2 Release Height! [${act}]`;
+    }
+    return;
+  }
+  if (aimGauge.step === 'focus') {
+    elAimRowFocus.className = 'aim-row active-row';
+    elAimRowHoriz.className = 'aim-row waiting-row';
+    elAimRowVert.className = 'aim-row waiting-row';
+    elAimThrowBtn.textContent = `1/3 Lock Focus [${act}]`;
+  } else if (aimGauge.step === 'horiz') {
+    elAimRowFocus.className = 'aim-row locked-row';
+    elAimRowHoriz.className = 'aim-row active-row';
+    elAimRowVert.className = 'aim-row waiting-row';
+    elAimThrowBtn.textContent = `2/3 Lock Line [${act}]`;
+  } else {
+    elAimRowFocus.className = 'aim-row locked-row';
+    elAimRowHoriz.className = 'aim-row locked-row';
+    elAimRowVert.className = 'aim-row active-row';
+    elAimThrowBtn.textContent = `3/3 Release Height! [${act}]`;
+  }
+}
 
 function updateRelockPill() {
   const ch = state.challenge;
@@ -3989,8 +4398,12 @@ function relockLastAim() {
 
 function startAimGauge(mode, bed, rawXY) {
   const pt = rawXY ? { x: rawXY.x, y: rawXY.y } : bedToXY(bed.code);
-  const cfg = aimConfigForDifficulty();
+  const mf = state.mathFlow || DEFAULT_MATH_FLOW;
+  const cfg = applyMathFlowToConfig(multiAxisConfigForDifficulty(state.difficulty), mf);
   const sides = getScreenSideNeighbors(bed, pt);
+  const is2Beat = state.aimMode === '2beat';
+  const now = performance.now();
+
   state.lastAimBed = bed;
   state.lastAimXY = pt;
   elRelockPill.classList.remove('visible');
@@ -3998,10 +4411,17 @@ function startAimGauge(mode, bed, rawXY) {
   aimGauge.mode = mode;
   aimGauge.aimedBed = bed;
   aimGauge.aimXY = pt;
-  aimGauge.startedAt = performance.now();
-  // Start sweeping from left or right edge so needle moves smoothly INTO the sweet spot!
-  aimGauge.phase = (Math.random() < 0.5 ? -1 : 1) * (0.85 + Math.random() * 0.35);
-  aimGauge.vPhase = Math.random() * Math.PI * 2;
+  aimGauge.cfg = cfg;
+  aimGauge.is2Beat = is2Beat;
+  aimGauge.step = is2Beat ? 'horiz' : 'focus';
+  aimGauge.startedAt = now;
+  aimGauge.lastLockAt = now;
+  aimGauge.focusU = 0;
+  aimGauge.focusRes = is2Beat ? { zone: 'amber', label: '2-BEAT', speedMult: 1.0, zoneMult: 1.0, jitter: 0.032 } : null;
+  aimGauge.horizU = 0;
+  aimGauge.vertV = 0;
+  aimGauge.curDrop = null;
+  aimGauge.phase = (Math.random() < 0.5 ? -1 : 1) * (0.92 + Math.random() * 0.35);
 
   const ch = state.challenge;
   const dartNum = (ch && ch.darts ? ch.darts.length : 0) + 1;
@@ -4012,21 +4432,35 @@ function startAimGauge(mode, bed, rawXY) {
     audio.playHeartbeat();
     spawnCallout(on180Dart ? '180 DART!' : 'MATCH DART!', { x: pt.x, y: pt.y + 0.25, style: 'gold' });
   }
+
   elAimTarget.textContent = `AIMING ${bed.code} · DART ${dartNum}/3`;
+  if (mf.pill && mf.cls !== 'neutral') {
+    elAimFlowPill.textContent = mf.pill;
+    elAimFlowPill.className = 'aim-flow-pill visible ' + mf.cls;
+  } else {
+    elAimFlowPill.textContent = '';
+    elAimFlowPill.className = 'aim-flow-pill';
+  }
   elAimLeft.textContent = sides.left;
   elAimRight.textContent = sides.right;
-  elAimAmber.style.left = `${50 - cfg.amber * 50}%`;
-  elAimAmber.style.width = `${cfg.amber * 100}%`;
-  elAimGreen.style.left = `${50 - cfg.sweet * 50}%`;
-  elAimGreen.style.width = `${cfg.sweet * 100}%`;
+  elAimFStat.textContent = 'GRP';
+  elAimFNeedle.style.left = '50%';
+  elAimHNeedle.style.left = '50%';
+  elAimVNeedle.style.left = '50%';
+  applyAimCorridorBars();
+  syncAimRowClasses();
   elAimPanel.classList.add('visible');
   document.body.classList.add('aim-open');
 
   aimAnchorRing.position.set(pt.x, pt.y, 0);
+  aimCrosshair.scale.setScalar(1.0);
+  aimLineGuide.visible = false;
   aimGroup.visible = true;
   updateHoverBed(null);
   updateAimGauge(0);
-  setFeedback(`Locked on ${bed.code}! Click board or press Space when the needle hits GREEN!`, 'cue');
+  setFeedback(is2Beat
+    ? `Locked on ${bed.code}! 1/2: Click or press Space to lock Horizontal Line (${sides.left} ← ${bed.sector || 'BULL'} → ${sides.right})!`
+    : `Locked on ${bed.code}! 1/3: Lock Focus/Grip on GREEN to steady your Line & Height!`, 'cue');
 }
 
 function cancelAimGauge() {
@@ -4036,7 +4470,11 @@ function cancelAimGauge() {
   aimGauge.mode = null;
   aimGauge.aimedBed = null;
   aimGauge.aimXY = null;
+  aimGauge.cfg = null;
+  aimGauge.focusRes = null;
   aimGauge.curDrop = null;
+  aimLineGuide.visible = false;
+  aimCrosshair.scale.setScalar(1.0);
   aimGroup.visible = false;
   elAimPanel.classList.remove('visible');
   document.body.classList.remove('aim-open');
@@ -4044,32 +4482,104 @@ function cancelAimGauge() {
 
 function updateAimGauge(dt) {
   if (!aimGauge.active) return;
-  const cfg = aimConfigForDifficulty();
-  aimGauge.phase += dt * cfg.speed;
-  aimGauge.vPhase += dt * (cfg.speed * 0.73);
-  const u = Math.sin(aimGauge.phase);
-  const v = Math.sin(aimGauge.vPhase);
+  const cfg = aimGauge.cfg || multiAxisConfigForDifficulty(state.difficulty);
   const allowMiss = aimGauge.mode === '501';
-  const drop = computeAimDrop(aimGauge.aimedBed, aimGauge.aimXY, u, v, cfg, allowMiss);
+
+  if (aimGauge.step === 'focus') {
+    aimGauge.phase += dt * cfg.focusSpeed;
+    const u = Math.sin(aimGauge.phase);
+    aimGauge.focusU = u;
+    elAimFNeedle.style.left = `${(u + 1) * 50}%`;
+    const fPrev = evaluateFocusBeat(u, cfg);
+    elAimFStat.textContent = fPrev.zone === 'green' ? 'LOCK' : fPrev.zone === 'amber' ? 'LOSE' : 'SNCH';
+    elAimLive.textContent = `1/3 ${fPrev.label}`;
+    elAimLive.className = 'aim-live-bed zone-' + fPrev.zone;
+    aimCrosshair.position.set(aimGauge.aimXY.x, aimGauge.aimXY.y, 0);
+    aimCrosshair.scale.setScalar(fPrev.zone === 'green' ? 0.84 : fPrev.zone === 'amber' ? 1.18 : 1.56);
+    aimCrossMat.color.setHex(fPrev.zone === 'green' ? 0x7ae09f : fPrev.zone === 'amber' ? 0xf3cc7d : 0xf0685e);
+    aimLineGuide.visible = false;
+    return;
+  }
+
+  const f = aimGauge.focusRes || { zone: 'amber', speedMult: 1.0, zoneMult: 1.0, jitter: 0.035 };
+  if (aimGauge.step === 'horiz') {
+    aimGauge.phase += dt * cfg.horizSpeed * f.speedMult;
+    const u = Math.sin(aimGauge.phase);
+    aimGauge.horizU = u;
+    elAimHNeedle.style.left = `${(u + 1) * 50}%`;
+    const drop = computeMultiAxisDrop(aimGauge.aimedBed, aimGauge.aimXY, f, u, 0, cfg, allowMiss);
+    aimGauge.curDrop = drop;
+    aimCrosshair.scale.setScalar(1.0);
+    aimCrosshair.position.set(drop.x, drop.y, 0);
+    aimCrossMat.color.setHex(drop.horizZone === 'green' ? 0x7ae09f : drop.horizZone === 'amber' ? 0xf3cc7d : 0xf0685e);
+    setAimLineGuide3D(drop);
+    elAimLive.textContent = `LINE · ${drop.bed.code}`;
+    elAimLive.className = 'aim-live-bed zone-' + drop.horizZone;
+    return;
+  }
+
+  // Step 3: Vertical Height release along the locked horizontal line!
+  aimGauge.phase += dt * cfg.vertSpeed * f.speedMult;
+  const v = Math.sin(aimGauge.phase);
+  aimGauge.vertV = v;
+  elAimVNeedle.style.left = `${(v + 1) * 50}%`;
+  const drop = computeMultiAxisDrop(aimGauge.aimedBed, aimGauge.aimXY, f, aimGauge.horizU, v, cfg, allowMiss);
   aimGauge.curDrop = drop;
-
-  elAimNeedle.style.left = `${(u + 1) * 50}%`;
-  elAimLive.textContent = bedPretty(drop.bed.code);
-  elAimLive.className = 'aim-live-bed zone-' + drop.zone;
-
+  aimCrosshair.scale.setScalar(1.0);
   aimCrosshair.position.set(drop.x, drop.y, 0);
   aimCrossMat.color.setHex(drop.zone === 'green' ? 0x7ae09f : drop.zone === 'amber' ? 0xf3cc7d : 0xf0685e);
+  elAimLive.textContent = bedPretty(drop.bed.code);
+  elAimLive.className = 'aim-live-bed zone-' + drop.zone;
 }
 
 function releaseAimGauge() {
   if (!aimGauge.active) return;
-  // Ignore accidental double-click within 110ms of locking the target
-  if (performance.now() - aimGauge.startedAt < 110) return;
+  const now = performance.now();
+  // Ignore accidental double-click within 115ms of locking or advancing a beat
+  if (now - aimGauge.lastLockAt < 115) return;
+  aimGauge.lastLockAt = now;
+  const cfg = aimGauge.cfg || multiAxisConfigForDifficulty(state.difficulty);
+  const allowMiss = aimGauge.mode === '501';
+
+  // Beat 1: Lock Focus / Grip Steadiness
+  if (aimGauge.step === 'focus') {
+    const fRes = evaluateFocusBeat(aimGauge.focusU, cfg);
+    aimGauge.focusRes = fRes;
+    audio.playBeatLock(fRes.zone);
+    elAimFStat.textContent = fRes.zone === 'green' ? 'OK' : fRes.zone === 'amber' ? 'LOSE' : 'SNCH';
+    applyAimCorridorBars();
+    aimGauge.step = 'horiz';
+    aimGauge.phase = (Math.random() < 0.5 ? -1 : 1) * (0.90 + Math.random() * 0.35);
+    syncAimRowClasses();
+    updateAimGauge(0);
+    setFeedback(`1/3 Focus: ${fRes.label}! Now lock Horizontal Line (2/3) — keep inside the wire!`, fRes.zone === 'green' ? 'ok' : fRes.zone === 'red' ? 'warn' : 'cue');
+    return;
+  }
+
+  // Beat 2: Lock Horizontal Line (stays visible as a 3D radial spoke!)
+  if (aimGauge.step === 'horiz') {
+    const dropH = computeMultiAxisDrop(aimGauge.aimedBed, aimGauge.aimXY, aimGauge.focusRes, aimGauge.horizU, 0, cfg, allowMiss);
+    audio.playBeatLock(dropH.horizZone);
+    setAimLineGuide3D(dropH);
+    aimGauge.step = 'vert';
+    aimGauge.phase = (Math.random() < 0.5 ? -1 : 1) * (0.90 + Math.random() * 0.35);
+    syncAimRowClasses();
+    updateAimGauge(0);
+    const lineNote = dropH.horizZone === 'green' ? 'DEAD STRAIGHT' : dropH.horizZone === 'amber' ? 'TIGHT ON WIRE' : 'PULLED WIDE';
+    setFeedback(`Line locked (${lineNote})! Now release Vertical Height (${aimGauge.is2Beat ? '2/2' : '3/3'})!`, dropH.horizZone === 'green' ? 'ok' : dropH.horizZone === 'red' ? 'warn' : 'cue');
+    return;
+  }
+
+  // Beat 3: Final Vertical Height Release + Focus Grip & Maths-Flow Dispersion Jitter!
   const mode = aimGauge.mode;
   const aimedBed = aimGauge.aimedBed;
-  const drop = aimGauge.curDrop || computeAimDrop(aimedBed, aimGauge.aimXY, 0, 0, aimConfigForDifficulty(), mode === '501');
+  const f = aimGauge.focusRes || { zone: 'amber', label: '2-BEAT', speedMult: 1.0, zoneMult: 1.0, jitter: 0.032 };
+  const ja = Math.random() * Math.PI * 2;
+  const jr = Math.random() * f.jitter * (cfg.jitterMult || 1.0);
+  const jitterXY = { x: Math.cos(ja) * jr, y: Math.sin(ja) * jr };
+  const drop = computeMultiAxisDrop(aimedBed, aimGauge.aimXY, f, aimGauge.horizU, aimGauge.vertV, cfg, allowMiss, jitterXY);
   cancelAimGauge();
-  state.lastPlayerInputAt = performance.now();
+  state.lastPlayerInputAt = now;
 
   if (mode === '301') {
     commit301Dart(aimedBed, drop.bed, { x: drop.x, y: drop.y }, drop.zone);
@@ -4103,14 +4613,59 @@ function closeStageBriefing() {
   updateRelockPill();
 }
 
-function setBridgeBadge(fdi) {
+function setBridgeBadge(fdi, suffix = '') {
   if (!fdi) {
     elBridgeTag.style.display = 'none';
     return;
   }
   elBridgeTag.style.display = 'inline-block';
   elBridgeTag.className = 'bridge-tag ' + fdi.cls;
-  elBridgeTag.textContent = `${fdi.decade} FDI · Rule of ${fdi.sum}`;
+  elBridgeTag.textContent = `${fdi.decade} FDI · Rule of ${fdi.sum}${suffix ? ' · ' + suffix : ''}`;
+}
+
+function setMethodBadge(text, cls = 'fdi-70') {
+  if (!text) {
+    elBridgeTag.style.display = 'none';
+    return;
+  }
+  elBridgeTag.style.display = 'inline-block';
+  elBridgeTag.className = 'bridge-tag ' + cls;
+  elBridgeTag.textContent = text;
+}
+
+function draw301Slate({ pending = null, footer = '', footer2 = '', startOverride = null } = {}) {
+  const isCal = state.stage === 'CALIBRATION';
+  const rows = isCal
+    ? [{ scored: null, rem: startOverride ?? state.challenge?.startScore ?? 241 }]
+    : (state.leg301.rows && state.leg301.rows.length ? state.leg301.rows : [{ scored: null, rem: state.leg301.score }]);
+  renderMatchChalkboard({
+    title: isCal ? 'PLACEMENT · 301' : (state.inTrial ? 'PUB TRIAL · 260' : '301 COUNTDOWN'),
+    leftName: 'YOU',
+    leftRows: rows,
+    rightRows: null,
+    pendingLeft: pending,
+    footer,
+    footer2,
+  });
+}
+
+function draw501Slate({ pendingLeft = null, pendingRight = null, footer = '', footer2 = '' } = {}) {
+  const m = state.match501;
+  const rv = currentRival();
+  const title = state.matchFormat === 'bo3'
+    ? `501 PUB NIGHT (L${m.legsYou}-${m.legsRival})`
+    : 'CHAMPIONSHIP 501';
+  renderMatchChalkboard({
+    title,
+    leftName: 'YOU',
+    rightName: rv.short,
+    leftRows: m.playerRows && m.playerRows.length ? m.playerRows : [{ scored: null, rem: m.playerScore }],
+    rightRows: m.rivalRows && m.rivalRows.length ? m.rivalRows : [{ scored: null, rem: m.rivalScore }],
+    pendingLeft,
+    pendingRight,
+    footer,
+    footer2,
+  });
 }
 
 function setFeedback(text, cls = 'cue') {
@@ -4161,11 +4716,11 @@ function buildTrialQueue(levelId) {
     const a = pickD(null), b = pickD(a.code), c = pickD(b.code), d = pickD(c.code);
     const h = HALVING_CHAINS[Math.floor(Math.random() * HALVING_CHAINS.length)];
     return [
-      { kind: 'double_find', id: a.code, target: a.code, val: a.val, speedMs: 2400, cue: `${a.code} = ${a.val}` },
-      { kind: 'double_val',  id: b.code, target: b.code, val: b.val, speedMs: 2400, cue: `${b.code} = ${b.val}` },
-      { kind: 'double_find', id: c.code, target: c.code, val: c.val, speedMs: 2400, cue: `${c.code} = ${c.val}` },
-      { kind: 'double_val',  id: d.code, target: d.code, val: d.val, speedMs: 2400, cue: `${d.code} = ${d.val}` },
-      { kind: 'halving',     id: h.id,   start: h.start, target: h.next, speedMs: 2600, cue: h.cue },
+      { kind: 'double_find', id: a.code, target: a.code, val: a.val, speedMs: 2600, cue: `${a.code} = ${a.val}` },
+      { kind: 'double_val',  id: b.code, target: b.code, val: b.val, speedMs: 5200, cue: `${b.code} = ${b.val}` },
+      { kind: 'double_find', id: c.code, target: c.code, val: c.val, speedMs: 2600, cue: `${c.code} = ${c.val}` },
+      { kind: 'double_val',  id: d.code, target: d.code, val: d.val, speedMs: 5200, cue: `${d.code} = ${d.val}` },
+      { kind: 'halving',     id: h.id,   start: h.start, target: h.next, speedMs: 2800, cue: h.cue },
     ];
   }
   if (levelId === 'LEVEL_2') {
@@ -4174,7 +4729,7 @@ function buildTrialQueue(levelId) {
     for (let i = 0; i < 5; i++) {
       const p = mastery.pickNext(tPool, x => x.code, prev, x => sectorWeight(x.sec));
       prev = p.code;
-      out.push({ kind: i % 2 === 0 ? 'treble_find' : 'treble_val', id: p.code, target: p.code, val: p.val, speedMs: 2200, cue: `${p.code} = 3 × ${p.sec} = ${p.val}` });
+      out.push({ kind: i % 2 === 0 ? 'treble_find' : 'treble_val', id: p.code, target: p.code, val: p.val, speedMs: i % 2 === 0 ? 2500 : 5200, cue: `${p.code} = 3 × ${p.sec} = ${p.val}` });
     }
     return out;
   }
@@ -4183,11 +4738,11 @@ function buildTrialQueue(levelId) {
     const core = MARKING_ITEMS.filter(m => m.cat === 'core' || m.cat === 'big');
     const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
     return [
-      { kind: 'marking', item: pick(missOrBull), speedMs: 3600 },
-      { kind: 'marking', item: pick(core), speedMs: 3600 },
-      { kind: 'marking', item: generatePub3DartVisit({ biasBull: true }), speedMs: 3800 },
-      { kind: 'marking', item: pick(missOrBull), speedMs: 3600 },
-      { kind: 'marking', item: generatePub3DartVisit({ biasBull: false }), speedMs: 3800 },
+      { kind: 'marking', item: pick(missOrBull), speedMs: 8500 },
+      { kind: 'marking', item: pick(core), speedMs: 8500 },
+      { kind: 'marking', item: generatePub3DartVisit({ biasBull: true }), speedMs: 8800 },
+      { kind: 'marking', item: pick(missOrBull), speedMs: 8500 },
+      { kind: 'marking', item: generatePub3DartVisit({ biasBull: false }), speedMs: 8800 },
     ];
   }
   if (levelId === 'LEVEL_4') {
@@ -4399,18 +4954,18 @@ function updateTierBadge(tier) {
 /* ---------- Challenge Generators for All 7 Levels + Placement Check ---------- */
 function buildCalibrationQueue() {
   return [
-    { kind: 'double_find', id: 'D18', target: 'D18', val: 36, speedMs: 2500, stageTag: 'LEVEL_1', cue: 'D18 = 2 × 18 = 36' },
-    { kind: 'double_val',  id: 'D16', target: 'D16', val: 32, speedMs: 2500, stageTag: 'LEVEL_1', cue: 'D16 = 2 × 16 = 32' },
-    { kind: 'treble_find', id: 'T19', target: 'T19', val: 57, speedMs: 2300, stageTag: 'LEVEL_2', cue: 'T19 = 3 × 19 = 57' },
-    { kind: 'treble_val',  id: 'T17', target: 'T17', val: 51, speedMs: 2300, stageTag: 'LEVEL_2', cue: 'T17 = 3 × 17 = 51' },
-    { kind: 'marking',     item: MARKING_ITEMS.find(x => x.id === 'MK_PM4') || MARKING_ITEMS[0], speedMs: 3600, stageTag: 'LEVEL_3' },
-    { kind: 'marking',     item: MARKING_ITEMS.find(x => x.id === 'MK_BL1') || MARKING_ITEMS[1], speedMs: 3600, stageTag: 'LEVEL_3' },
-    { kind: 'countdown301', id: 'CAL_301', startScore: 241, visitMode: 'chalker', visit: { darts: ['T20', 'S20', 'S5'], ...buildVisitCue(['T20', 'S20', 'S5']) }, speedMs: 6500, stageTag: 'LEVEL_4' },
-    { kind: 'below60',     item: BELOW_60_ITEMS.find(x => x.id === 'B60_49_D16'), speedMs: 3200, stageTag: 'LEVEL_5' },
-    { kind: 'g44',         item: G44_BY_SCORE[75], speedMs: 3500, stageTag: 'LEVEL_5' },
-    { kind: 'sods',        item: SODS_LAW_ITEMS.find(x => x.id === 'SL_62_1D'), speedMs: 3500, stageTag: 'LEVEL_5' },
-    { kind: 'tonplus',     item: TON_PLUS_ITEMS.find(x => x.id === 'TP_148'), speedMs: 4200, stageTag: 'LEVEL_6' },
-    { kind: 'tonplus',     item: TON_PLUS_ITEMS.find(x => x.id === 'TP_104_3D'), speedMs: 4200, stageTag: 'LEVEL_6' },
+    { kind: 'double_find', id: 'D18', target: 'D18', val: 36, speedMs: 2700, stageTag: 'LEVEL_1', cue: 'D18 = 2 × 18 = 36' },
+    { kind: 'double_val',  id: 'D16', target: 'D16', val: 32, speedMs: 5200, stageTag: 'LEVEL_1', cue: 'D16 = 2 × 16 = 32' },
+    { kind: 'treble_find', id: 'T19', target: 'T19', val: 57, speedMs: 2500, stageTag: 'LEVEL_2', cue: 'T19 = 3 × 19 = 57' },
+    { kind: 'treble_val',  id: 'T17', target: 'T17', val: 51, speedMs: 5200, stageTag: 'LEVEL_2', cue: 'T17 = 3 × 17 = 51' },
+    { kind: 'marking',     item: MARKING_ITEMS.find(x => x.id === 'MK_PM4') || MARKING_ITEMS[0], speedMs: 8500, stageTag: 'LEVEL_3' },
+    { kind: 'marking',     item: MARKING_ITEMS.find(x => x.id === 'MK_BL1') || MARKING_ITEMS[1], speedMs: 8500, stageTag: 'LEVEL_3' },
+    { kind: 'countdown301', id: 'CAL_301', startScore: 241, visitMode: 'chalker', visit: { darts: ['T20', 'S20', 'S5'], ...buildVisitCue(['T20', 'S20', 'S5']) }, speedMs: 13500, chalkSpeedMs: 13500, stageTag: 'LEVEL_4' },
+    { kind: 'below60',     item: BELOW_60_ITEMS.find(x => x.id === 'B60_49_D16'), speedMs: 3600, stageTag: 'LEVEL_5' },
+    { kind: 'g44',         item: G44_BY_SCORE[75], speedMs: 3800, stageTag: 'LEVEL_5' },
+    { kind: 'sods',        item: SODS_LAW_ITEMS.find(x => x.id === 'SL_62_1D'), speedMs: 3800, stageTag: 'LEVEL_5' },
+    { kind: 'tonplus',     item: TON_PLUS_ITEMS.find(x => x.id === 'TP_148'), speedMs: 4600, stageTag: 'LEVEL_6' },
+    { kind: 'tonplus',     item: TON_PLUS_ITEMS.find(x => x.id === 'TP_104_3D'), speedMs: 4600, stageTag: 'LEVEL_6' },
   ];
 }
 
@@ -4441,7 +4996,7 @@ function nextChallengeForStage(stageId) {
     const askVal = roll > 0.60;
     return {
       kind: askVal ? 'double_val' : 'double_find',
-      id: picked.code, target: picked.code, val: picked.val, speedMs: 2300,
+      id: picked.code, target: picked.code, val: picked.val, speedMs: askVal ? 5200 : 2500,
       cue: picked.code === 'BULL' ? 'Inner Bull = 50' : `${picked.code} = 2 × ${picked.val / 2} = ${picked.val}`,
     };
   }
@@ -4453,7 +5008,7 @@ function nextChallengeForStage(stageId) {
     const askVal = Math.random() < 0.50;
     return {
       kind: askVal ? 'treble_val' : 'treble_find',
-      id: picked.code, target: picked.code, val: picked.val, speedMs: 2200,
+      id: picked.code, target: picked.code, val: picked.val, speedMs: askVal ? 5200 : 2400,
       cue: `${picked.code} = 3 × ${picked.sec} = ${picked.val}`,
     };
   }
@@ -4462,15 +5017,15 @@ function nextChallengeForStage(stageId) {
   if (stageId === 'LEVEL_3') {
     if (Math.random() < 0.28) {
       const dyn = generatePub3DartVisit({ maxTotal: 180, biasBull: Math.random() < 0.35 });
-      return { kind: 'marking', item: dyn, speedMs: 4000 };
+      return { kind: 'marking', item: dyn, speedMs: 8800 };
     }
     const item = mastery.pickNext(MARKING_ITEMS, x => x.id, state.lastItemId, m =>
       (m.cat === 'miss' || m.cat === 'bull') ? 1.55 : 1.0
     );
-    return { kind: 'marking', item, speedMs: 3900 };
+    return { kind: 'marking', item, speedMs: 8500 };
   }
 
-  // LEVEL 4: 301 / Under-260 Chalk & Countdown (Mix of Your Throw w/ pub scatter & Pub Chalker!)
+  // LEVEL 4: 301 / Under-260 Chalk & Countdown (Mix of Your Throw w/ 3-Beat Oche Rhythm & Pub Chalker!)
   if (stageId === 'LEVEL_4') {
     if (state.leg301.score <= 120) resetLeg301();
     const visitMode = state.ghostMode ? 'chalker' : state.leg301.nextMode;
@@ -4483,7 +5038,8 @@ function nextChallengeForStage(stageId) {
       startScore: state.leg301.score,
       visitMode,
       visit,
-      speedMs: visitMode === 'throw' ? 9500 : 6500,
+      speedMs: visitMode === 'throw' ? 16000 : 13500,
+      chalkSpeedMs: 13500,
     };
   }
 
@@ -4525,7 +5081,7 @@ function nextChallengeForStage(stageId) {
     return { kind: 'tonplus', item, speedMs: 4400 };
   }
 
-  // LEVEL 7: Championship 501 vs. Big Dave + Live Board-Management Auditor
+  // LEVEL 7: Championship 501 vs. 5 Physics Bots + Live Board-Management Auditor
   if (stageId === 'LEVEL_7') {
     if (state.match501.finished) resetMatch501();
     return {
@@ -4533,7 +5089,8 @@ function nextChallengeForStage(stageId) {
       id: 'L7_V' + state.match501.visitNum,
       startScore: state.match501.playerScore,
       rivalScore: state.match501.rivalScore,
-      speedMs: 12000,
+      speedMs: 18000,
+      chalkSpeedMs: 14500,
     };
   }
 
@@ -4634,6 +5191,8 @@ function loadChallenge(ch) {
     ch.dartCoords = [];
     ch.visitTotal = 0;
     ch.expectedRem = ch.startScore;
+    ch.bogeyWatchRem = null;
+    ch.subMethod = null;
     if (ch.visitMode === 'throw') {
       ch.phase = 'throw';
       state.dartsLeft = 3;
@@ -4642,9 +5201,10 @@ function loadChallenge(ch) {
       elScoreBig.textContent = String(ch.startScore);
       elPromptTask.textContent = `${V} 3 darts on the board — then chalk & subtract!`;
       showNumpad(false);
-      renderChalkboard({
-        header: '301 · YOUR THROW', big: ch.startScore, sub: state.useAimGauge ? 'Lock bed -> release on GREEN!' : 'Throw 3 darts (auto scatter)',
-        lines: ['Aim T20, T19, Bull or any bed', 'Then chalk visit & subtract!'],
+      draw301Slate({
+        startOverride: ch.startScore,
+        footer: 'YOUR THROW · 3 DARTS',
+        footer2: state.aimMode === '3beat' ? '1·Focus → 2·Line → 3·Height' : state.aimMode === '2beat' ? '1·Line → 2·Height' : 'Throw 3 darts, then chalk!',
       });
     } else {
       ch.phase = 'chalk_visit';
@@ -4662,9 +5222,11 @@ function loadChallenge(ch) {
         ch.dartCoords.push({ code, x: p.x, y: p.y });
         throwDartTo(p.x, p.y, { kind: code === 'BULL' ? 'BULL' : code[0], delay: idx * 0.13, accent: idx === v.oddIdx ? 0x2b4a69 : 0x8f231e });
       });
-      renderChalkboard({
-        header: '301 · PUB CHALKER', big: ch.startScore, sub: 'Step 1: Call visit total',
-        lines: [tier === 1 ? v.cue : 'Snap 2 known darts first, then add the 3rd!'],
+      draw301Slate({
+        startOverride: ch.startScore,
+        pending: { scored: '?', rem: '…' },
+        footer: `DARTS: ${v.darts.join(' + ')}`,
+        footer2: tier === 1 ? v.cue : 'Step 1: Call the 3-dart visit total!',
       });
       if (tier === 1) applyChallengeHint(true);
     }
@@ -4749,6 +5311,11 @@ function loadChallenge(ch) {
     ch.visitTotal = 0;
     ch.liveRem = ch.startScore;
     ch.expectedRem = ch.startScore;
+    ch.noPeekFdi = null;
+    ch.missExpected = null;
+    ch.missPromptFrom = null;
+    ch.missSingle = null;
+    ch.subMethod = null;
     state.remainingScore = ch.startScore;
     state.dartsLeft = 3;
     elRivalTag.style.display = 'inline-block';
@@ -4761,17 +5328,17 @@ function loadChallenge(ch) {
     if (ch.startScore <= 40 || ch.startScore === 50) {
       taskMsg = `Double-Out zone (${ch.startScore}) — ${V.toLowerCase()} the winning double!`;
     } else if (ch.startScore <= 100 && !BOGEY_NUMBERS.has(ch.startScore)) {
-      taskMsg = `2-dart checkout zone (${ch.startScore}) — Trev is auditing board management!`;
+      taskMsg = `2-dart checkout zone (${ch.startScore}) — No-Peek 25/30/35 FDIs & Board IQ live!`;
     } else if (ch.startScore <= 170 && !BOGEY_NUMBERS.has(ch.startScore)) {
-      taskMsg = `Ton-Plus zone (${ch.startScore}) — dodge splash traps & use 25/30/35 FDIs!`;
+      taskMsg = `Ton-Plus zone (${ch.startScore}) — dodge splash traps & bridge into FDIs!`;
     } else if (ch.startScore <= 219) {
       taskMsg = `Approaching checkout (${ch.startScore}) — watch out for Bogey leaves (159–169)!`;
     }
     elPromptTask.textContent = taskMsg;
     showNumpad(false);
-    renderChalkboard({
-      header: 'CHAMPIONSHIP 501', big: ch.startScore, sub: `YOU ${m.playerScore} · ${rv.short} ${m.rivalScore}`,
-      lines: [m.lastDaveNote || 'Double Out · Board IQ Live!', state.useAimGauge ? 'Click bed to lock aim -> release on GREEN!' : 'Instant throw · Auditor active!'],
+    draw501Slate({
+      footer: m.lastDaveNote || 'Double Out · Board IQ Live!',
+      footer2: state.aimMode === '3beat' ? '1·Focus → 2·Line → 3·Height' : state.aimMode === '2beat' ? '1·Line → 2·Height' : 'Instant throw · Auditor active!',
     });
   }
 
@@ -4808,13 +5375,20 @@ function applyChallengeHint(auto = false) {
       setFeedback(`Cue: ${subtractionShortcut(ch.startScore, ch.visitTotal)} (${ch.startScore} - ${ch.visitTotal})`, 'cue');
     }
   } else if (ch.kind === 'match501') {
-    if (ch.phase === 'chalk_visit') {
+    if (ch.phase === 'miss_check') {
+      const sv = bedValue(ch.missSingle);
+      setFeedback(`Miss Rule Cue: ${ch.missPromptFrom} - ${sv} = ${ch.missExpected} (-20, +${20 - sv})`, 'cue');
+    } else if (ch.phase === 'chalk_visit') {
       const info = buildVisitCue(ch.darts);
       const rings = ch.dartCoords.map((dc, idx) => ({ x: dc.x, y: dc.y, color: idx === info.oddIdx ? 0x7ba3c4 : 0xf3cc7d }));
       showBoardOverlays({ groupRings: rings });
       setFeedback(`Cue: ${info.cue}`, 'cue');
     } else if (ch.phase === 'chalk_rem') {
       setFeedback(`Cue: ${subtractionShortcut(ch.startScore, ch.visitTotal)}`, 'cue');
+    } else if (ch.noPeekFdi) {
+      const nf = ch.noPeekFdi;
+      showBoardOverlays({ highlights: [{ code: nf.dbl, color: 0x79d499, opacity: 0.56 }] });
+      setFeedback(`Cue (Rule of ${nf.sum}): ${nf.tNum} + ${nf.dNum} = ${nf.sum} -> finish on ${nf.dbl}!`, 'cue');
     } else {
       const rem = ch.liveRem;
       const tp = TON_PLUS_ITEMS.find(x => x.score === rem);
@@ -5006,6 +5580,8 @@ function startSpectatorMatch(botAId = null, botBId = null) {
     botB: chosenB,
     scores: [501, 501],
     d1Darts: [0, 0],
+    rowsA: [{ scored: null, rem: 501 }],
+    rowsB: [{ scored: null, rem: 501 }],
     turn: 0,
     visitNum: 1,
     timerId: null,
@@ -5020,9 +5596,14 @@ function startSpectatorMatch(botAId = null, botBId = null) {
   elPromptSub.textContent = 'LIVE 3D PUB SPECTATOR · 501';
   elScoreBig.textContent = '501';
   elPromptTask.textContent = `${bA.name} vs ${bB.name} — click board anytime to grab the darts!`;
-  renderChalkboard({
-    header: 'PUB NIGHT EXHIBITION', big: '501', sub: `${bA.short} 501 · ${bB.short} 501`,
-    lines: [`${bA.name} (${bA.avgLabel})`, `vs ${bB.name} (${bB.avgLabel})`],
+  renderMatchChalkboard({
+    title: 'PUB NIGHT EXHIBITION',
+    leftName: bA.short,
+    rightName: bB.short,
+    leftRows: state.spectator.rowsA,
+    rightRows: state.spectator.rowsB,
+    footer: `${bA.name} (${bA.avgLabel})`,
+    footer2: `vs ${bB.name} (${bB.avgLabel})`,
   });
   trev.say(`Grab a pint, sunshine! Live pub exhibition: ${bA.name} taking on ${bB.name} — real board physics, watch every arrow!`, {
     mood: 'toast', holdMs: 3200, forceOpen: true, speak: true, allowInGhost: true,
@@ -5051,6 +5632,8 @@ function stepSpectatorTurn() {
   });
   sp.scores[idx] = visit.endScore;
   sp.d1Darts[idx] += visit.d1Darts;
+  const targetRows = idx === 0 ? sp.rowsA : sp.rowsB;
+  targetRows.push({ scored: visit.busted ? 'BUST' : visit.visitTotal, rem: visit.endScore });
 
   const landedCodes = visit.throws.map(t => t.landed.code);
   const missedMatchDart = visit.throws.some(t => t.isMatchDart && !t.isWin);
@@ -5085,10 +5668,14 @@ function stepSpectatorTurn() {
   elPromptSub.textContent = `BOT VS BOT · VISIT #${Math.floor(sp.turn / 2) + 1}`;
   elScoreBig.textContent = String(visit.endScore);
   elPromptTask.textContent = `${note} · Click board to take over`;
-  renderChalkboard({
-    header: `${bot.name.toUpperCase()}`, big: visit.endScore,
-    sub: `${BOT_PROFILES[sp.botA].short} ${sp.scores[0]} · ${BOT_PROFILES[sp.botB].short} ${sp.scores[1]}`,
-    lines: [note, visit.won ? `${bot.name} wins the leg!` : `${oppBot.name} stepping up on ${sp.scores[opp]}...`],
+  renderMatchChalkboard({
+    title: 'PUB NIGHT EXHIBITION',
+    leftName: BOT_PROFILES[sp.botA].short,
+    rightName: BOT_PROFILES[sp.botB].short,
+    leftRows: sp.rowsA,
+    rightRows: sp.rowsB,
+    footer: note,
+    footer2: visit.won ? `${bot.name} wins the leg!` : `${oppBot.name} stepping up on ${sp.scores[opp]}...`,
   });
   setFeedback(`${note} — Tap/click the 3D board anytime to play 501 yourself!`, visit.won ? 'ok' : 'cue');
   updateHudStats();
@@ -5157,6 +5744,8 @@ function runBigDaveTurn() {
   const daveWon = visit.won;
   m.rivalScore = visit.endScore;
   m.rivalD1Darts = (m.rivalD1Darts || 0) + visit.d1Darts;
+  m.rivalRows = m.rivalRows || [{ scored: null, rem: 501 }];
+  m.rivalRows.push({ scored: visit.busted ? 'BUST' : daveScored, rem: m.rivalScore });
   const landedCodes = visit.throws.map(t => t.landed.code);
   const missedMatchDart = visit.throws.some(t => t.isMatchDart && !t.isWin);
 
@@ -5193,9 +5782,9 @@ function runBigDaveTurn() {
     daveWon ? `${rv.short} CHECKS OUT!` : visit.busted ? `${rv.short} BUSTS!` : daveScored === 180 ? `${rv.short}: 180!!` : daveScored === 26 ? `${rv.short}: 26 BREAKFAST!` : `${rv.short}: ${daveScored}!`,
     { x: 0, y: 0.4, style: daveWon || visit.busted || daveScored === 26 ? 'warn' : daveScored >= 100 ? 'gold' : 'ok', center: daveScored === 180 }
   );
-  renderChalkboard({
-    header: `${rv.name.toUpperCase()}'S TURN`, big: m.rivalScore, sub: `${bo3Tag}YOU ${m.playerScore} · ${rv.short} ${m.rivalScore}`,
-    lines: [m.lastDaveNote, daveWon ? `${rv.name} takes the leg!` : `Your throw on ${m.playerScore}!`],
+  draw501Slate({
+    footer: m.lastDaveNote,
+    footer2: daveWon ? `${rv.name} takes the leg!` : `Your throw on ${m.playerScore}!`,
   });
   updateHudStats();
 
@@ -5289,12 +5878,9 @@ function finish501Leg(playerWon) {
     const cupTxt = state.matchFormat === 'bo3' ? `PUB NIGHT CUP (${m.legsYou}-${m.legsRival})!!` : 'GAME SHOT & THE LEG!!';
     spawnCallout(cupTxt, { center: true, style: 'big' });
     trev.say(TREV_PINT_LINE, { mood: 'pint', holdMs: 9500, forceOpen: true, speak: true });
-    renderChalkboard({
-      header: state.matchFormat === 'bo3' ? 'PUB NIGHT WINNER!' : 'GAME SHOT · 501!', big: `IQ ${iqGrade}`, sub: `${m.dartsThrown} darts · Avg ${avg3}`,
-      lines: [
-        { text: `Beat ${rv.name} · Board IQ: ${iqPct}% (${m.auditGood}/${m.auditTotal})`, kind: 'ok' },
-        { text: `Chalk Accuracy: ${chalkPct}% · ${formatStars(stars)}`, kind: 'ok' },
-      ],
+    draw501Slate({
+      footer: `GAME SHOT! ${m.dartsThrown}d · Avg ${avg3}`,
+      footer2: `Board IQ ${iqGrade} (${iqPct}%) · Chalk ${chalkPct}%`,
     });
     const rIdx = RIVAL_LADDER.indexOf(rv.id);
     const nextRivalId = rIdx >= 0 && rIdx < RIVAL_LADDER.length - 1 ? RIVAL_LADDER[rIdx + 1] : null;
@@ -5482,9 +6068,27 @@ function commit301Dart(aimedBed, landedBed, pt, zone = null) {
   const driftNote = pulled
     ? `${zoneTag}Aimed ${aimedBed.code} -> landed ${bedPretty(landed.code)}`
     : `${zoneTag}Nailed ${bedPretty(landed.code)}!`;
-  renderChalkboard({
-    header: '301 · YOUR THROW', big: ch.startScore, sub: `${ch.darts.length}/3 darts thrown`,
-    lines: [ch.darts.map(d => `${d}(${bedValue(d)})`).join(' + '), state.dartsLeft ? `${state.dartsLeft} dart(s) left` : 'Now chalk the visit!'],
+
+  // Level 4 Bogey Watch (Dart 2 -> Dart 3 Teen Cover grading!)
+  if (ch.darts.length === 3 && ch.bogeyWatchRem && !state.ghostMode) {
+    if (BOGEY_NUMBERS.has(liveAfter)) {
+      spawnCallout(`BOGEY TRAP (${liveAfter})!`, { x: 0, y: 0.32, style: 'warn' });
+      trev.say(`Ooh, left bogey ${liveAfter}! Needed Teen Cover S${ch.bogeyWatchRem - 170} from ${ch.bogeyWatchRem} to leave 170!`, { mood: 'wince', holdMs: 2600, speak: true });
+    } else if (liveAfter >= 100 && liveAfter <= 170) {
+      mastery.data.xp = (mastery.data.xp || 0) + 20;
+      mastery.save();
+      audio.playSweetSpot();
+      spawnCallout('TEEN COVER ✓ +20 XP', { x: 0, y: 0.38, style: 'gold' });
+      trev.say(`Textbook Teen Cover, sunshine! Left a clean ${liveAfter} — no bogey in sight!`, { mood: 'cheer', holdMs: 2200, speak: true });
+    }
+    setMethodBadge(null);
+  }
+
+  draw301Slate({
+    startOverride: ch.startScore,
+    pending: { scored: '…', rem: '…' },
+    footer: ch.darts.map(d => `${d}(${bedValue(d)})`).join(' + '),
+    footer2: state.dartsLeft ? `${state.dartsLeft} dart(s) left` : 'Step 1: Chalk your visit!',
   });
   setFeedback(driftNote, !pulled ? 'ok' : zone === 'red' ? 'warn' : 'cue');
 
@@ -5495,7 +6099,9 @@ function commit301Dart(aimedBed, landedBed, pt, zone = null) {
   } else if (!state.ghostMode && zone === 'red' && pulled && landed.sector !== aimedBed.sector) {
     trev.say(`Oooh, pulled it across the wire into ${landed.code}, mate — proper pub dart! Chalk it up!`, { mood: 'wince', holdMs: 1800, speak: true });
   } else if (state.dartsLeft === 1 && liveAfter >= 179 && liveAfter <= 189) {
-    trev.say(`Oi, Bogey Watch on ${liveAfter}! Watch yer don't leave 169, 168, 166, 165, 163, 162 or 159!`, { mood: 'toast', holdMs: 2200, speak: true });
+    ch.bogeyWatchRem = liveAfter;
+    setMethodBadge(`BOGEY WATCH (${liveAfter}) · Teen Cover S${liveAfter - 170}!`, 'fdi-80');
+    trev.say(`Oi, Bogey Watch on ${liveAfter}! Throw Teen Cover S${liveAfter - 170} so yer don't leave a bogey!`, { mood: 'toast', holdMs: 2400, speak: true });
   }
 
   if (ch.darts.length >= 3) {
@@ -5511,12 +6117,15 @@ function commit301Dart(aimedBed, landedBed, pt, zone = null) {
       state.hintShown = false;
       state.challengeStartMs = performance.now();
       state.bellChimed = false;
+      setMethodBadge('Method: Group 2 Known Darts + 3rd', 'fdi-60');
       elPromptSub.textContent = `${state.inTrial ? 'Pub Trial' : 'Level 4'} · Step 1: Chalk Visit`;
       elPromptTask.textContent = `Darts: ${dartList} — add them & press CALL!`;
       showNumpad(true);
-      renderChalkboard({
-        header: 'STEP 1 · VISIT TOTAL', big: ch.startScore, sub: `Darts: ${dartList}`,
-        lines: ['Add your 3 darts & press CALL!', '(Press Cue [H] for grouping help)'],
+      draw301Slate({
+        startOverride: ch.startScore,
+        pending: { scored: '?', rem: '…' },
+        footer: `DARTS: ${dartList}`,
+        footer2: 'Step 1: Add your 3 darts & CALL!',
       });
     }, 480);
   }
@@ -5553,15 +6162,18 @@ function commit501Dart(aimedBed, landedBed, pt, zone = null) {
 
   if (isBust) {
     elRelockPill.classList.remove('visible');
+    ch.noPeekFdi = null;
     throwDartTo(dartPt.x, dartPt.y, { kind: landed.ring === 'MISS' ? 'S' : landed.ring, wireTink: true });
     audio.playPubGroan();
     spawnCallout('BUST!!', { center: true, style: 'warn' });
     state.dartsLeft = 0;
+    m.playerRows = m.playerRows || [{ scored: null, rem: 501 }];
+    m.playerRows.push({ scored: 'BUST', rem: ch.startScore });
     setFeedback(`BUST! ${bedPretty(landed.code)} on ${remBefore} — score stays ${ch.startScore}!`, 'warn');
     trev.say(`Ooh, BUST! Score goes right back to ${ch.startScore}, mate — ${rv.name}'s steppin' up!`, { mood: 'wince', holdMs: 2400, speak: true });
-    renderChalkboard({
-      header: 'BUST!', big: ch.startScore, sub: `${landed.code} busted from ${remBefore}`,
-      lines: [{ text: `Score reverts to ${ch.startScore}`, kind: 'warn' }, `${rv.name}'s turn next...`],
+    draw501Slate({
+      footer: `BUST! ${landed.code} on ${remBefore}`,
+      footer2: `Reverts to ${ch.startScore} · ${rv.short}'s throw`,
     });
     state.busy = true;
     state.advanceTimerId = setTimeout(() => { state.advanceTimerId = null; runBigDaveTurn(); }, 1250);
@@ -5596,20 +6208,49 @@ function commit501Dart(aimedBed, landedBed, pt, zone = null) {
 
   if (isWin) {
     elRelockPill.classList.remove('visible');
+    if (ch.noPeekFdi && landed.code === ch.noPeekFdi.dbl && !state.ghostMode) {
+      mastery.data.xp = (mastery.data.xp || 0) + 25;
+      mastery.save();
+      spawnCallout(`RULE OF ${ch.noPeekFdi.sum} ✓ +25 XP`, { x: 0, y: 0.48, style: 'gold' });
+    }
+    ch.noPeekFdi = null;
     m.totalScored += ch.visitTotal;
     m.playerScore = 0;
+    m.playerRows = m.playerRows || [{ scored: null, rem: 501 }];
+    m.playerRows.push({ scored: ch.visitTotal, rem: 0 });
     updateHudStats();
     finish501Leg(true);
     return;
   }
+
+  // Clear prior No-Peek lock if player threw at double and missed without busting
+  if (ch.noPeekFdi) ch.noPeekFdi = null;
+
+  // Check if player just hit a 25/30/35 FDI treble on 61-90 with >=1 dart left -> activate live NO-PEEK FDI!
+  const fdiHit = state.dartsLeft >= 1 ? getFdiRule(remBefore) : null;
+  const triggeredNoPeek = !!(fdiHit && landed.code === fdiHit.treble && newRem === bedValue(fdiHit.dbl));
+  if (triggeredNoPeek) {
+    ch.noPeekFdi = fdiHit;
+  }
+
+  // Check if player aimed at a Golden 44 checkout treble and slipped into its same-sector Single -> LIVE MISS-RULE POP-CHECK!
+  const g44Before = G44_BY_SCORE[remBefore];
+  const triggeredMissCheck = !state.ghostMode && !triggeredNoPeek && state.dartsLeft >= 1
+    && g44Before && aimedBed.ring === 'T' && aimedBed.code === g44Before.route[0]
+    && landed.ring === 'S' && landed.sector === aimedBed.sector;
 
   if (audit) {
     const landTag = pulled ? ` (landed ${landed.code})` : '';
     setFeedback(`[${audit.tag}] ${audit.msg}${landTag}`, audit.grade === 'great' ? 'ok' : 'warn');
     if (audit.grade === 'bad') {
       trev.say(`Oi, Board Management check! ${audit.msg}`, { mood: 'wince', holdMs: 2600, speak: true });
-    } else if (audit.tag === 'BOGEY COVER' || audit.tag === '1-DART SWITCH' || audit.tag === 'FDI BRIDGE' || audit.tag === 'RIVAL PRESSURE') {
-      trev.say(`Lovely jubbly — proper match brain! ${audit.msg}`, { mood: 'cheer', holdMs: 2000, speak: true });
+    } else if (audit.grade === 'great' && !state.ghostMode) {
+      if (audit.tag === 'BOGEY COVER' || audit.tag === '1-DART SWITCH' || audit.tag === 'FDI BRIDGE' || audit.tag === 'RIVAL PRESSURE' || audit.tag === 'SPLASH DODGE') {
+        mastery.data.xp = (mastery.data.xp || 0) + 15;
+        mastery.save();
+        spawnCallout(`${audit.tag} ✓ +15 XP`, { x: 0, y: 0.42, style: 'gold' });
+        trev.say(`Lovely jubbly — proper match brain! ${audit.msg}`, { mood: 'cheer', holdMs: 2000, speak: true });
+      }
     }
   } else {
     const zoneTag = zone === 'green' ? 'DEAD ON! ' : zone === 'red' ? 'WIRE PULL! ' : '';
@@ -5626,14 +6267,55 @@ function commit501Dart(aimedBed, landedBed, pt, zone = null) {
     }
   }
 
+  if (triggeredNoPeek) {
+    // Hold displayed score at remBefore so player uses Rule of 25/30/35 WITHOUT arithmetic peeking!
+    elScoreBig.textContent = String(remBefore);
+    setBridgeBadge(fdiHit, 'NO PEEK!');
+    elPromptTask.textContent = `${fdiHit.treble} hits! Solve ${fdiHit.tNum} + D(?) = ${fdiHit.sum} — hit the double!`;
+    if (!state.ghostMode) spawnCallout(`NO PEEK · RULE OF ${fdiHit.sum}!`, { x: 0, y: 0.36, style: 'gold' });
+    draw501Slate({
+      pendingLeft: { scored: '…', rem: '…' },
+      footer: `${fdiHit.treble} HIT · NO PEEK!`,
+      footer2: `Solve ${fdiHit.tNum} + D(?) = ${fdiHit.sum}!`,
+    });
+    updateHudStats();
+    return;
+  }
+
+  if (triggeredMissCheck) {
+    elRelockPill.classList.remove('visible');
+    ch.phase = 'miss_check';
+    ch.missExpected = newRem;
+    ch.missPromptFrom = remBefore;
+    ch.missSingle = landed.code;
+    state.numInput = '';
+    renderNumpadDisplay();
+    state.challengeStartMs = performance.now();
+    state.bellChimed = false;
+    setMethodBadge("SOD'S LAW · MISS RULE CHECK", 'fdi-80');
+    elPromptSub.textContent = "Level 7 · Sod's Law Miss Rule!";
+    elScoreBig.textContent = `${remBefore} - ${landed.code}`;
+    elPromptTask.textContent = `${aimedBed.code} slipped into ${landed.code}! Call what's left before Dart ${ch.darts.length + 1}!`;
+    showNumpad(true);
+    draw501Slate({
+      pendingLeft: { scored: landed.value, rem: '?' },
+      footer: `MISS RULE: ${remBefore} - ${landed.code} = ?`,
+      footer2: 'Call new score to throw next dart!',
+    });
+    setFeedback(`Sod's Law! ${aimedBed.code} dropped into ${landed.code} — call ${remBefore} - ${landed.value} (+15 XP)!`, 'cue');
+    trev.say(`Sod's Law, mate — ${aimedBed.code} dropped into ${landed.code}! Quick, call what's left on the slate before yer next arrow!`, { mood: 'toast', holdMs: 2400, speak: true });
+    updateHudStats();
+    return;
+  }
+
   if (newRem <= 189) {
     elScoreBig.textContent = String(newRem);
     setBridgeBadge(newRem <= 90 ? getFdiRule(newRem) : null);
   }
-  renderChalkboard({
-    header: 'CHAMPIONSHIP 501', big: newRem <= 189 ? newRem : ch.startScore,
-    sub: `YOU ${ch.startScore} · ${rv.short} ${m.rivalScore}`,
-    lines: [ch.darts.map(d => `${d}(${bedValue(d)})`).join(' + '), audit ? `${audit.tag}: ${audit.grade === 'great' ? 'Smart ✓' : 'Check!'}` : `${state.dartsLeft} dart(s) left`],
+  draw501Slate({
+    pendingLeft: { scored: '…', rem: '…' },
+    footer: ch.darts.map(d => `${d}(${bedValue(d)})`).join(' + '),
+    footer2: audit ? `${audit.tag}: ${audit.grade === 'great' ? 'Smart ✓' : 'Check!'}` : `${state.dartsLeft} dart(s) left`,
   });
   updateHudStats();
 
@@ -5650,13 +6332,15 @@ function commit501Dart(aimedBed, landedBed, pt, zone = null) {
       state.hintShown = false;
       state.challengeStartMs = performance.now();
       state.bellChimed = false;
+      setMethodBadge('Method: Group 2 Known Darts + 3rd', 'fdi-60');
       elScoreBig.textContent = String(ch.startScore);
       elPromptSub.textContent = `Level 7 · Chalk Visit #${m.visitNum}`;
       elPromptTask.textContent = `Darts: ${dartList} — add them & press CALL!`;
       showNumpad(true);
-      renderChalkboard({
-        header: 'CHALK YOUR VISIT', big: ch.startScore, sub: `Darts: ${dartList}`,
-        lines: [`YOU ${ch.startScore} · ${rv.short} ${m.rivalScore}`, 'Step 1: Add your 3 darts & CALL!'],
+      draw501Slate({
+        pendingLeft: { scored: '?', rem: '…' },
+        footer: `DARTS: ${dartList}`,
+        footer2: 'Step 1: Add your 3 darts & CALL!',
       });
     }, 520);
   }
@@ -5810,6 +6494,9 @@ function handleBoardClick(bed, rawXY) {
         if (!state.ghostMode && !state.inTrial && firstIsTreble && state.stage === 'LEVEL_5' && Math.random() < 0.35) {
           ch.missPrompt = true;
           ch.missAns = it.miss;
+          ch.chalkSpeedMs = 9500;
+          state.challengeStartMs = performance.now();
+          state.bellChimed = false;
           const singleName = 'S' + it.route[0].slice(1);
           elPromptSub.textContent = 'Miss Rule Check';
           elScoreBig.textContent = `${it.score} - ${singleName}`;
@@ -6071,9 +6758,11 @@ function submitNumericAnswer(rawStr) {
 
   if (ch.kind === 'double_val' || ch.kind === 'treble_val') {
     if (val === ch.val) {
+      recordMathFlowStep(ch, { isFinal: true, silent: true });
       showNumpad(false);
       completeChallenge(true, `Instant! ${ch.cue}`, [{ text: ch.cue, kind: 'ok' }]);
     } else {
+      ch.mathWrongCount = (ch.mathWrongCount || 0) + 1;
       if (!state.inTrial) applyChallengeHint(false);
       state.numInput = ''; renderNumpadDisplay();
       completeChallenge(false, `${val} isn't right — ${ch.cue}`);
@@ -6083,11 +6772,13 @@ function submitNumericAnswer(rawStr) {
 
   if (ch.missPrompt) {
     if (val === ch.missAns) {
+      recordMathFlowStep(ch, { isFinal: true, silent: true });
       showNumpad(false);
       ch.missPrompt = false;
       completeChallenge(true, `Locked in! ${ch.item.score} (${ch.item.route.join(' ')}) · Miss -> ${ch.missAns}`,
         [{ text: `${ch.item.score} + Miss ${ch.missAns}`, kind: 'ok' }, ch.item.cue]);
     } else {
+      ch.mathWrongCount = (ch.mathWrongCount || 0) + 1;
       state.numInput = ''; renderNumpadDisplay();
       completeChallenge(false, `Check subtraction: ${ch.item.score} - ${bedValue('S' + ch.item.route[0].slice(1))} = ${ch.missAns}`);
     }
@@ -6097,11 +6788,13 @@ function submitNumericAnswer(rawStr) {
   if (ch.kind === 'marking') {
     const it = ch.item;
     if (val === it.total) {
+      recordMathFlowStep(ch, { isFinal: true, silent: true });
       elScoreBig.textContent = String(it.total);
       showNumpad(false);
       applyChallengeHint(true);
       completeChallenge(true, `GAME ON! ${it.total} — ${it.cue}`, [{ text: `Called ${it.total}!`, kind: 'ok' }, it.cue]);
     } else {
+      ch.mathWrongCount = (ch.mathWrongCount || 0) + 1;
       if (!state.inTrial) applyChallengeHint(false);
       state.numInput = ''; renderNumpadDisplay();
       completeChallenge(false, `Not ${val}! Group the amber darts first: ${it.cue}`);
@@ -6113,21 +6806,27 @@ function submitNumericAnswer(rawStr) {
   if (ch.kind === 'countdown301') {
     if (ch.phase === 'chalk_visit') {
       if (val === ch.visitTotal) {
+        recordMathFlowStep(ch, { isFinal: false });
         audio.playChalk();
         ch.phase = 'chalk_rem';
         state.numInput = ''; renderNumpadDisplay();
         state.challengeStartMs = performance.now();
         state.bellChimed = false;
-        const trick = subtractionShortcut(ch.startScore, ch.visitTotal);
+        const method = subtractionMethodInfo(ch.startScore, ch.visitTotal);
+        ch.subMethod = method;
+        setMethodBadge(state.inTrial ? null : method.badge, 'fdi-70');
         elPromptSub.textContent = `${state.inTrial ? 'Pub Trial' : 'Level 4'} · Step 2: Subtract!`;
         elScoreBig.textContent = `${ch.startScore} - ${ch.visitTotal}`;
         elPromptTask.textContent = `Take ${ch.visitTotal} off ${ch.startScore} & press CALL!`;
-        renderChalkboard({
-          header: 'STEP 2 · SUBTRACT', big: `${ch.startScore} - ${ch.visitTotal}`, sub: `Visit = ${ch.visitTotal} ✓`,
-          lines: [state.inTrial ? 'Call the new score!' : trick],
+        draw301Slate({
+          startOverride: ch.startScore,
+          pending: { scored: ch.visitTotal, rem: '?' },
+          footer: `${ch.startScore} - ${ch.visitTotal} = ?`,
+          footer2: state.inTrial ? 'Call the new score!' : method.badge,
         });
-        setFeedback(`Visit = ${ch.visitTotal} ✓! Now take ${ch.visitTotal} off ${ch.startScore}!`, 'ok');
+        setFeedback(`Visit = ${ch.visitTotal} ✓! Now take ${ch.visitTotal} off ${ch.startScore} (${method.badge})!`, 'ok');
       } else {
+        ch.mathWrongCount = (ch.mathWrongCount || 0) + 1;
         if (!state.inTrial) applyChallengeHint(false);
         state.numInput = ''; renderNumpadDisplay();
         const breakdown = ch.darts.map(d => `${d}(${bedValue(d)})`).join(' + ');
@@ -6138,20 +6837,42 @@ function submitNumericAnswer(rawStr) {
     }
     if (ch.phase === 'chalk_rem') {
       if (val === ch.expectedRem) {
+        const mf = recordMathFlowStep(ch, { isFinal: true });
         showNumpad(false);
+        setMethodBadge(null);
         elScoreBig.textContent = String(ch.expectedRem);
         if (state.stage !== 'CALIBRATION') {
           state.leg301.score = ch.expectedRem;
           state.leg301.visitsDone++;
+          state.leg301.rows = state.leg301.rows || [{ scored: null, rem: ch.startScore }];
+          state.leg301.rows.push({ scored: ch.visitTotal, rem: ch.expectedRem });
+        }
+        if (!state.ghostMode && !state.usedHint && ch.subMethod) {
+          mastery.data.xp = (mastery.data.xp || 0) + 10;
+          mastery.save();
+          spawnCallout(`${ch.subMethod.tag} ✓ +10`, { x: 0, y: 0.44, style: 'gold' });
+        }
+        if (state.stage === 'CALIBRATION') {
+          renderMatchChalkboard({
+            title: 'PLACEMENT · 301',
+            leftName: 'YOU',
+            leftRows: [{ scored: null, rem: ch.startScore }, { scored: ch.visitTotal, rem: ch.expectedRem }],
+            rightRows: null,
+            footer: `${ch.startScore} - ${ch.visitTotal} = ${ch.expectedRem} ✓`,
+            footer2: 'Clean chalk!',
+          });
+        } else {
+          draw301Slate({
+            footer: `${ch.startScore} - ${ch.visitTotal} = ${ch.expectedRem} ✓`,
+            footer2: ch.expectedRem <= 120 ? 'Checkout zone reached!' : (mf && mf.pill ? mf.pill : 'Clean chalk!'),
+          });
         }
         const legNote = ch.expectedRem <= 120
           ? `Checkout zone (${ch.expectedRem}) reached! Fresh countdown next!`
           : `Chalkboard updated: ${ch.startScore} - ${ch.visitTotal} = ${ch.expectedRem}!`;
-        completeChallenge(true, legNote, [
-          { text: `${ch.startScore} - ${ch.visitTotal} = ${ch.expectedRem}`, kind: 'ok' },
-          ch.expectedRem <= 120 ? 'Reached checkout zone!' : 'Ready for next visit!',
-        ]);
+        completeChallenge(true, legNote, null);
       } else {
+        ch.mathWrongCount = (ch.mathWrongCount || 0) + 1;
         state.numInput = ''; renderNumpadDisplay();
         completeChallenge(false, `Not ${val}! ${subtractionShortcut(ch.startScore, ch.visitTotal)}`);
       }
@@ -6159,29 +6880,74 @@ function submitNumericAnswer(rawStr) {
     }
   }
 
-  // Level 7 — Championship 501 (Step 1: Chalk Visit -> Step 2: Subtract -> Pub Rival's Turn!)
+  // Level 7 — Championship 501 (Miss Rule Check + Step 1: Chalk Visit -> Step 2: Subtract -> Pub Rival's Turn!)
   if (ch.kind === 'match501') {
     const m = state.match501;
     const rv = currentRival();
+    if (ch.phase === 'miss_check') {
+      m.chalkAttempts++;
+      if (val === ch.missExpected) {
+        m.chalkOk++;
+        const mf = recordMathFlowStep(ch, { isFinal: true });
+        ch.mathRatios = [];
+        ch.mathWrongCount = 0;
+        ch.mathTimedOut = false;
+        ch.phase = 'throw';
+        showNumpad(false);
+        state.numInput = ''; renderNumpadDisplay();
+        if (!state.ghostMode && !state.usedHint) {
+          mastery.data.xp = (mastery.data.xp || 0) + 15;
+          mastery.save();
+        }
+        audio.playBell('ok');
+        if (!state.ghostMode) spawnCallout('MISS RULE ✓ +15 XP', { x: 0, y: 0.38, style: 'gold' });
+        elScoreBig.textContent = String(ch.liveRem);
+        setBridgeBadge(ch.liveRem <= 90 ? getFdiRule(ch.liveRem) : null);
+        elPromptSub.textContent = `Level 7 · 501 Visit #${m.visitNum}`;
+        elPromptTask.textContent = `${ch.liveRem} left (${state.dartsLeft} dart${state.dartsLeft > 1 ? 's' : ''} in hand) — finish or set up!`;
+        draw501Slate({
+          pendingLeft: { scored: '…', rem: '…' },
+          footer: `${ch.darts.join(' + ')} -> ${ch.liveRem} left`,
+          footer2: mf && mf.pill ? `Miss Rule ✓ · ${mf.pill}` : 'Miss Rule ✓ · Throw next dart!',
+        });
+        setFeedback(`Miss Rule spot on (${ch.liveRem} left)! ${mf && mf.pill ? mf.pill + ' · ' : ''}Throw Dart ${ch.darts.length + 1}!`, 'ok');
+        state.challengeStartMs = performance.now();
+        state.bellChimed = false;
+        updateHudStats();
+        updateRelockPill();
+      } else {
+        ch.mathWrongCount = (ch.mathWrongCount || 0) + 1;
+        audio.playWireTink(false);
+        state.numInput = ''; renderNumpadDisplay();
+        const sv = bedValue(ch.missSingle);
+        setFeedback(`Check Miss Rule: ${ch.missPromptFrom} - ${sv} (use -20, +${20 - sv}!)`, 'warn');
+      }
+      return;
+    }
     if (ch.phase === 'chalk_visit') {
       m.chalkAttempts++;
       if (val === ch.visitTotal) {
         m.chalkOk++;
+        recordMathFlowStep(ch, { isFinal: false });
         audio.playChalk();
         ch.phase = 'chalk_rem';
         state.numInput = ''; renderNumpadDisplay();
         state.challengeStartMs = performance.now();
         state.bellChimed = false;
-        const trick = subtractionShortcut(ch.startScore, ch.visitTotal);
+        const method = subtractionMethodInfo(ch.startScore, ch.visitTotal);
+        ch.subMethod = method;
+        setMethodBadge(method.badge, 'fdi-70');
         elPromptSub.textContent = `Level 7 · Subtract from ${ch.startScore}`;
         elScoreBig.textContent = `${ch.startScore} - ${ch.visitTotal}`;
         elPromptTask.textContent = `Take ${ch.visitTotal} off ${ch.startScore} & press CALL!`;
-        renderChalkboard({
-          header: '501 · SUBTRACT', big: `${ch.startScore} - ${ch.visitTotal}`, sub: `YOU ${ch.startScore} · ${rv.short} ${m.rivalScore}`,
-          lines: [trick, 'Call your new remaining score!'],
+        draw501Slate({
+          pendingLeft: { scored: ch.visitTotal, rem: '?' },
+          footer: `${ch.startScore} - ${ch.visitTotal} = ?`,
+          footer2: method.badge,
         });
-        setFeedback(`Chalked ${ch.visitTotal} ✓! Now take ${ch.visitTotal} off ${ch.startScore}!`, 'ok');
+        setFeedback(`Chalked ${ch.visitTotal} ✓! Now take ${ch.visitTotal} off ${ch.startScore} (${method.badge})!`, 'ok');
       } else {
+        ch.mathWrongCount = (ch.mathWrongCount || 0) + 1;
         audio.playWireTink(false);
         applyChallengeHint(false);
         state.numInput = ''; renderNumpadDisplay();
@@ -6195,21 +6961,34 @@ function submitNumericAnswer(rawStr) {
       m.chalkAttempts++;
       if (val === ch.expectedRem) {
         m.chalkOk++;
+        const mf = recordMathFlowStep(ch, { isFinal: true });
         m.totalScored += ch.visitTotal;
         m.playerScore = ch.expectedRem;
         m.visitNum++;
+        m.playerRows = m.playerRows || [{ scored: null, rem: 501 }];
+        m.playerRows.push({ scored: ch.visitTotal, rem: ch.expectedRem });
         showNumpad(false);
+        setMethodBadge(null);
         elScoreBig.textContent = String(ch.expectedRem);
         audio.playBell('ok');
-        if (!state.ghostMode) spawnCallout(`CHALKED ${ch.expectedRem}!`, { x: 0, y: 0.35, style: 'ok' });
-        setFeedback(`Chalked! ${ch.startScore} - ${ch.visitTotal} = ${ch.expectedRem} — ${rv.name} steps up!`, 'ok');
-        renderChalkboard({
-          header: '501 CHALKED', big: ch.expectedRem, sub: `${ch.startScore} - ${ch.visitTotal} = ${ch.expectedRem}`,
-          lines: [{ text: `Clean chalk!`, kind: 'ok' }, `${rv.name}'s throw next...`],
+        if (!state.ghostMode) {
+          if (!state.usedHint && ch.subMethod) {
+            mastery.data.xp = (mastery.data.xp || 0) + 10;
+            mastery.save();
+            spawnCallout(`${ch.subMethod.tag} ✓ +10`, { x: 0, y: 0.44, style: 'gold' });
+          }
+          spawnCallout(`CHALKED ${ch.expectedRem}!`, { x: 0, y: 0.30, style: 'ok' });
+        }
+        const flowTxt = mf && mf.pill && mf.cls !== 'neutral' ? ` · ${mf.pill}` : '';
+        setFeedback(`Chalked! ${ch.startScore} - ${ch.visitTotal} = ${ch.expectedRem}${flowTxt} — ${rv.name} steps up!`, 'ok');
+        draw501Slate({
+          footer: `${ch.startScore} - ${ch.visitTotal} = ${ch.expectedRem} ✓`,
+          footer2: mf && mf.pill && mf.cls !== 'neutral' ? mf.pill : `${rv.name}'s throw next...`,
         });
         state.busy = true;
         state.advanceTimerId = setTimeout(() => { state.advanceTimerId = null; runBigDaveTurn(); }, 860);
       } else {
+        ch.mathWrongCount = (ch.mathWrongCount || 0) + 1;
         audio.playWireTink(false);
         state.numInput = ''; renderNumpadDisplay();
         setFeedback(`Check subtraction: ${subtractionShortcut(ch.startScore, ch.visitTotal)}`, 'warn');
@@ -6247,6 +7026,8 @@ function tickGhost(dt) {
       else if (rem <= 40 && rem % 2 === 0) code = 'D' + (rem / 2);
       else if (G44_BY_SCORE[rem]) code = G44_BY_SCORE[rem].route[0];
       handleBoardClick({ code, ring: code === 'BULL' ? 'BULL' : code[0], sector: parseInt(code.slice(1), 10) || 20, value: bedValue(code) });
+    } else if (ch.phase === 'miss_check') {
+      submitNumericAnswer(String(ch.missExpected));
     } else if (ch.phase === 'chalk_visit') {
       submitNumericAnswer(String(ch.visitTotal));
     } else if (ch.phase === 'chalk_rem') {
@@ -6592,11 +7373,19 @@ function renderDrawer() {
           <button class="seg-btn ${state.fdiBridgesOnly ? 'active' : ''}" data-fdi="1">25/30/35 Bridges</button>
         </div>
       </div>
-      <div class="setting-row">
-        <span>3-Dart Throw Aim (Levels 4 &amp; 7)</span>
+      <div class="setting-row" style="flex-wrap:wrap">
+        <div>
+          <div><span>3-Dart Throw Aim (Levels 4 &amp; 7)</span></div>
+          <div style="font-size:11px;color:var(--chalk-dim);margin-top:2px">${
+            state.aimMode === '3beat' ? '1·Focus/Grip → 2·Horizontal Line → 3·Vertical Height'
+            : state.aimMode === '2beat' ? 'Quick 2-Beat: 1·Horizontal Line → 2·Vertical Height'
+            : 'Instant throw with automatic pub scatter'
+          }</div>
+        </div>
         <div class="seg-group">
-          <button class="seg-btn ${state.useAimGauge ? 'active' : ''}" data-aimgauge="1">Accuracy Gauge</button>
-          <button class="seg-btn ${!state.useAimGauge ? 'active' : ''}" data-aimgauge="0">Instant Scatter</button>
+          <button class="seg-btn ${state.aimMode === '3beat' ? 'active' : ''}" data-aimmode="3beat">3-Beat Rhythm</button>
+          <button class="seg-btn ${state.aimMode === '2beat' ? 'active' : ''}" data-aimmode="2beat">2-Beat Line+Ht</button>
+          <button class="seg-btn ${state.aimMode === 'scatter' ? 'active' : ''}" data-aimmode="scatter">Instant Scatter</button>
         </div>
       </div>
       <div class="setting-row" style="flex-wrap:wrap">
@@ -6683,8 +7472,9 @@ function renderDrawer() {
       state.fdiBridgesOnly = b.dataset.fdi === '1'; renderDrawer();
       if (state.stage === 'LEVEL_6') loadChallenge(nextChallengeForStage('LEVEL_6'));
     }));
-    elDrawerBody.querySelectorAll('[data-aimgauge]').forEach(b => b.addEventListener('click', () => {
-      state.useAimGauge = b.dataset.aimgauge === '1';
+    elDrawerBody.querySelectorAll('[data-aimmode]').forEach(b => b.addEventListener('click', () => {
+      state.aimMode = b.dataset.aimmode;
+      state.useAimGauge = state.aimMode !== 'scatter';
       if (!state.useAimGauge) cancelAimGauge();
       renderDrawer();
     }));
@@ -6738,7 +7528,8 @@ function renderDrawer() {
           <li><strong>Oche Ghost Demo:</strong> Plays automatically on load so you can watch worked shots. Click or tap the board anytime to grab the darts!</li>
           <li><strong>Desktop / Mouse:</strong> Hover any segment on the 3D dartboard to preview it (e.g., <em>T14 · 42</em>), then click to throw.</li>
           <li><strong>Phone / Touch:</strong> <strong>Press and slide your finger</strong> across the dartboard — a floating fingertip badge previews the exact bed. <strong>Lift to throw</strong> (slide off board to cancel).</li>
-          <li><strong>3-Dart Accuracy Gauge (Levels 4 &amp; 7):</strong> Click/tap a bed to lock your aim, then click/tap (or press <strong>Space</strong>) when the swaying brass needle hits the <strong>green sweet spot</strong>! Press <strong>Space</strong> (or tap the quick re-aim pill) to instantly re-lock your last bed for smooth 3-dart rhythm! Slip into <strong>amber</strong> to drop into the single, or pull into <strong>crimson</strong> to drift into a neighbouring sector (like <code>5</code> or <code>1</code> next to <code>20</code>)!</li>
+          <li><strong>3-Beat Oche Rhythm (Levels 4 &amp; 7):</strong> Click/tap a bed to anchor your target, then lock <strong>1·Focus/Grip</strong> (green widens &amp; slows your throw; red snatches it!), <strong>2·Horizontal Line</strong> (stay inside the spider wire or stray into neighbouring <code>5</code>/<code>1</code>!), and <strong>3·Vertical Height</strong> (LOW &harr; HI) via click or <strong>Space</strong>! Prefer faster darts? Switch to <strong>2-Beat Line+Ht</strong> or <strong>Instant Scatter</strong> in the Pub Ladder. Press <strong>Space</strong> (or tap the quick re-aim pill) between darts to re-lock your last bed!</li>
+          <li><strong>Maths Flow &rarr; Aim Ease:</strong> Fast, clean chalking puts you <strong>⚡ IN FLOW</strong> — slowing your aiming bars and widening the green sweet spots up to <strong>+26%</strong>! Taking too long or exceeding the brass bell puts you <strong>🔔 RATTLED</strong> — speeding up the needles and tightening the wires (<strong>&minus;30%</strong>)!</li>
           <li><strong>Flow Streaks &amp; Lightning Bonus:</strong> Chain clean shots to unlock <strong>&times;2 / &times;3 / &times;4 Flow Multipliers</strong>, golden lightning speed bonuses, and pub crowd roars!</li>
           <li><strong>Chalk &amp; Value Calls:</strong> Type numbers on your keyboard + <strong>Enter</strong>, or tap the slate numpad + <strong>CALL</strong>.</li>
         </ul>
@@ -6848,6 +7639,7 @@ function onResize() {
   }
   camera.updateProjectionMatrix();
   postMat.uniforms.uFar.value = camera.far;
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   renderer.setSize(w, h);
   if (postRT) postRT.dispose();
   postRT = createPostTarget(w, h);
@@ -6856,6 +7648,7 @@ function onResize() {
   postMat.uniforms.uResolution.value.set(postRT.width, postRT.height);
 }
 window.addEventListener('resize', onResize);
+document.addEventListener('fullscreenchange', () => setTimeout(onResize, 60));
 onResize();
 
 // Show non-blocking Quick-Start welcome banner on first visit (never blocks frame-1 Ghost Demo!)
@@ -6896,9 +7689,11 @@ function animate(now) {
     }
   }
 
-  // Live Difficulty-Scaled Countdown Timer & Brass Bell Gate (pauses cleanly while aiming the Accuracy Gauge or Spectating!)
+  // Live Difficulty-Scaled Countdown Timer & Brass Bell Gate (pauses cleanly while aiming the Oche Rhythm Gauge or Spectating!)
   if (state.challenge && !state.busy && !pausedByOverlay && !aimGauge.active && !state.spectator.active) {
-    const baseMs = state.challenge.speedMs || 3200;
+    const ch = state.challenge;
+    const isMathPhase = ch.missPrompt || ((ch.kind === 'countdown301' || ch.kind === 'match501') && ch.phase !== 'throw');
+    const baseMs = isMathPhase ? (ch.chalkSpeedMs || (ch.missPrompt ? 9500 : 14000)) : (ch.speedMs || 3200);
     const targetMs = baseMs * prof.timerMult * (state.ghostMode ? 1.55 : 1.0);
     const elapsed = now - state.challengeStartMs;
     const remMs = Math.max(0, targetMs - elapsed);

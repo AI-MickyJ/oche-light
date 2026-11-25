@@ -447,6 +447,25 @@ export function subtractionShortcut(start, visit) {
   return `Clean tens: ${start} - ${visit}`;
 }
 
+export function subtractionMethodInfo(start, visit) {
+  if (visit >= 80 && visit < 100) {
+    return { tag: 'ROUND-100 (+)', badge: `Method: -100, +?`, fullTrick: subtractionShortcut(start, visit) };
+  }
+  if (visit >= 101 && visit < 120) {
+    return { tag: 'ROUND-100 (-)', badge: `Method: -100, -?`, fullTrick: subtractionShortcut(start, visit) };
+  }
+  const ones = visit % 10;
+  if (ones >= 6) {
+    const up = Math.ceil(visit / 10) * 10;
+    return { tag: 'ROUND-UP TENS', badge: `Method: -${up}, +?`, fullTrick: subtractionShortcut(start, visit) };
+  }
+  if (ones > 0) {
+    const dn = Math.floor(visit / 10) * 10;
+    return { tag: 'SPLIT TENS', badge: `Method: -${dn}, -?`, fullTrick: subtractionShortcut(start, visit) };
+  }
+  return { tag: 'CLEAN TENS', badge: `Method: Clean Tens`, fullTrick: subtractionShortcut(start, visit) };
+}
+
 export function buildVisitCue(darts) {
   const vals = darts.map(bedValue);
   const total = vals[0] + vals[1] + vals[2];
@@ -639,6 +658,255 @@ export function computeAimDrop(aimBed, aimXY, u, v, cfg, allowOutsideMiss = fals
 
   const landed = xyToBed(x, y) || { code: 'MISS', ring: 'MISS', sector: 0, value: 0, sub: 'MISS' };
   return { x, y, bed: landed, zone };
+}
+
+// 3-Beat / 2-Beat Multi-Axis Aiming Configuration (harder, realistic stray-bed lateral drift!)
+export function multiAxisConfigForDifficulty(diff = 'league') {
+  if (diff === 'relaxed') {
+    return {
+      focusSpeed: 2.30, horizSpeed: 2.55, vertSpeed: 2.45,
+      focusSweet: 0.24, focusAmber: 0.56,
+      horizSweet: 0.20, horizAmber: 0.44,
+      vertSweet:  0.22, vertAmber:  0.54,
+    };
+  }
+  if (diff === 'pro') {
+    return {
+      focusSpeed: 3.85, horizSpeed: 4.25, vertSpeed: 4.05,
+      focusSweet: 0.12, focusAmber: 0.40,
+      horizSweet: 0.10, horizAmber: 0.26,
+      vertSweet:  0.12, vertAmber:  0.38,
+    };
+  }
+  return {
+    focusSpeed: 3.05, horizSpeed: 3.35, vertSpeed: 3.18,
+    focusSweet: 0.17, focusAmber: 0.48,
+    horizSweet: 0.14, horizAmber: 0.34,
+    vertSweet:  0.16, vertAmber:  0.46,
+  };
+}
+
+// Beat 1: Overall Focus / Grip Steadiness — scales speed, corridor width & dispersion on Beats 2 & 3!
+export function evaluateFocusBeat(focusU, cfg) {
+  const af = Math.abs(focusU);
+  if (af <= cfg.focusSweet) {
+    return { zone: 'green', label: 'LOCKED IN', speedMult: 0.88, zoneMult: 1.12, jitter: 0.016 };
+  }
+  if (af <= cfg.focusAmber) {
+    return { zone: 'amber', label: 'LOOSE GRIP', speedMult: 1.16, zoneMult: 0.88, jitter: 0.055 };
+  }
+  return { zone: 'red', label: 'SNATCHED!', speedMult: 1.44, zoneMult: 0.68, jitter: 0.118 };
+}
+
+// Maths-Speed -> Oche Flow Coupling: faster mental maths slows & widens your aiming bars; slow/expired maths tightens them!
+export const DEFAULT_MATH_FLOW = Object.freeze({
+  tier: 'steady',
+  label: 'FRESH OCHE',
+  pill: '',
+  callout: '',
+  speedMult: 1.0,
+  zoneMult: 1.0,
+  jitterMult: 1.0,
+  cls: 'neutral',
+  ratio: 0.5,
+});
+
+export function computeMathFlowModifier(ratio, { wrongCount = 0, usedHint = false, timedOut = false } = {}) {
+  const baseRatio = Math.max(0, Number.isFinite(ratio) ? ratio : 0.5);
+  const penalty = (wrongCount * 0.18) + (usedHint ? 0.16 : 0);
+  const effRatio = timedOut ? Math.max(1.06, baseRatio + penalty) : (baseRatio + penalty);
+
+  if (effRatio <= 0.30) {
+    return {
+      tier: 'in_flow',
+      label: 'IN FLOW',
+      pill: '⚡ FLOW · +26% AIM',
+      callout: '⚡ IN FLOW! EASIER AIM',
+      speedMult: 0.78,
+      zoneMult: 1.26,
+      jitterMult: 0.65,
+      cls: 'flow-hot',
+      ratio: effRatio,
+    };
+  }
+  if (effRatio <= 0.55) {
+    return {
+      tier: 'sharp',
+      label: 'SHARP RHYTHM',
+      pill: '✦ SHARP · +12% AIM',
+      callout: '✦ SHARP MATHS! SMOOTH AIM',
+      speedMult: 0.90,
+      zoneMult: 1.12,
+      jitterMult: 0.85,
+      cls: 'flow-warm',
+      ratio: effRatio,
+    };
+  }
+  if (effRatio <= 0.85) {
+    return {
+      tier: 'steady',
+      label: 'STEADY',
+      pill: 'STEADY PACE',
+      callout: '',
+      speedMult: 1.0,
+      zoneMult: 1.0,
+      jitterMult: 1.0,
+      cls: 'neutral',
+      ratio: effRatio,
+    };
+  }
+  if (effRatio <= 1.00) {
+    return {
+      tier: 'rushed',
+      label: 'OFF RHYTHM',
+      pill: '⏱ SLOW · -16% AIM',
+      callout: '⏱ OFF RHYTHM · TIGHTER AIM',
+      speedMult: 1.16,
+      zoneMult: 0.84,
+      jitterMult: 1.25,
+      cls: 'flow-slow',
+      ratio: effRatio,
+    };
+  }
+  return {
+    tier: 'cold',
+    label: 'RATTLED!',
+    pill: '🔔 RATTLED · -30% AIM',
+    callout: '🔔 CLOCK EXCEEDED! SHAKY AIM',
+    speedMult: 1.32,
+    zoneMult: 0.70,
+    jitterMult: 1.55,
+    cls: 'flow-cold',
+    ratio: effRatio,
+  };
+}
+
+export function applyMathFlowToConfig(cfg, flow = DEFAULT_MATH_FLOW) {
+  const f = flow || DEFAULT_MATH_FLOW;
+  const sm = f.speedMult || 1.0;
+  const zm = f.zoneMult || 1.0;
+  const clampPair = (sw, am) => {
+    const nSw = Math.max(0.06, Math.min(0.36, sw * zm));
+    const nAm = Math.max(nSw + 0.10, Math.min(0.72, am * zm));
+    return [nSw, nAm];
+  };
+  const [focusSweet, focusAmber] = clampPair(cfg.focusSweet, cfg.focusAmber);
+  const [horizSweet, horizAmber] = clampPair(cfg.horizSweet, cfg.horizAmber);
+  const [vertSweet,  vertAmber]  = clampPair(cfg.vertSweet,  cfg.vertAmber);
+  return {
+    focusSpeed: cfg.focusSpeed * sm,
+    horizSpeed: cfg.horizSpeed * sm,
+    vertSpeed:  cfg.vertSpeed  * sm,
+    focusSweet, focusAmber,
+    horizSweet, horizAmber,
+    vertSweet,  vertAmber,
+    jitterMult: f.jitterMult || 1.0,
+  };
+}
+
+// Pure 2D Multi-Axis Drop: maps Beat 1 (focus) + Beat 2 (horizU in [-1,1]) + Beat 3 (vertV in [-1,1], + = HIGH) to exact board coords!
+export function computeMultiAxisDrop(aimBed, aimXY, focusRes, horizU, vertV, cfg, allowOutsideMiss = false, jitterXY = null) {
+  const f = focusRes || { zone: 'amber', speedMult: 1.0, zoneMult: 1.0, jitter: 0.04 };
+  const hSweet = Math.min(0.45, cfg.horizSweet * f.zoneMult);
+  const hAmber = Math.min(0.68, cfg.horizAmber * f.zoneMult);
+  const vSweet = Math.min(0.42, cfg.vertSweet * f.zoneMult);
+  const vAmber = Math.min(0.70, cfg.vertAmber * f.zoneMult);
+
+  const au = Math.abs(horizU);
+  const su = horizU < 0 ? -1 : 1;
+  const av = Math.abs(vertV);
+  const sv = vertV < 0 ? -1 : 1;
+  let x, y;
+
+  if (aimBed.code === 'BULL' || aimBed.code === '25') {
+    const mapAxis = (u, sw, am) => {
+      const a = Math.abs(u), s = u < 0 ? -1 : 1;
+      const inR = aimBed.code === 'BULL' ? R_INNER_BULL * 0.72 : (R_INNER_BULL + R_OUTER_BULL) * 0.52;
+      if (a <= sw) return (u / Math.max(0.01, sw)) * inR;
+      if (a <= am) {
+        const t = (a - sw) / Math.max(0.01, am - sw);
+        return s * (R_INNER_BULL + 0.02 + t * (R_OUTER_BULL - R_INNER_BULL + 0.06));
+      }
+      const t = (a - am) / Math.max(0.01, 1 - am);
+      return s * (R_OUTER_BULL + 0.08 + t * 0.44);
+    };
+    x = mapAxis(horizU, hSweet, hAmber);
+    y = mapAxis(vertV, vSweet, vAmber);
+  } else {
+    const idx = SECTOR_INDEX[aimBed.sector];
+    const secCenterAng = idx * (Math.PI / 10);
+    const dirSign = (aimXY && aimXY.y < -0.01) ? -1 : 1; // screen-left/right matches neighbor labels
+    const radialUpSign = (aimXY && aimXY.y < -0.01) ? -1 : 1; // +vertV ALWAYS moves physically HIGHER (+Y) on screen!
+    const rawR = aimXY ? Math.hypot(aimXY.x, aimXY.y) : 1.01;
+    const baseR = aimBed.ring === 'T' ? (R_TREBLE_IN + R_TREBLE_OUT) * 0.5
+      : aimBed.ring === 'D' ? (R_DOUBLE_IN + R_DOUBLE_OUT) * 0.5
+      : Math.max(0.40, Math.min(1.42, rawR));
+
+    // Horizontal angle: crosses spider wire (+/- 0.157 rad) as soon as |horizU| > hAmber!
+    let dAng = 0;
+    if (au <= hSweet) {
+      dAng = (horizU / Math.max(0.01, hSweet)) * 0.056;
+    } else if (au <= hAmber) {
+      const t = (au - hSweet) / Math.max(0.01, hAmber - hSweet);
+      dAng = su * (0.056 + t * 0.092); // stays right inside the wire (0.056..0.148 rad)
+    } else {
+      const t = (au - hAmber) / Math.max(0.01, 1 - hAmber);
+      dAng = su * (0.172 + t * 0.28); // cleanly into neighbor sector (5/1) — or 2 sectors over at extreme!
+    }
+    const ang = secCenterAng + dAng * dirSign;
+
+    // Vertical radial offset: +vertV = higher on wall!
+    let dR = 0;
+    if (aimBed.ring === 'T') {
+      if (av <= vSweet) dR = (vertV / Math.max(0.01, vSweet)) * 0.058;
+      else if (av <= vAmber) {
+        const t = (av - vSweet) / Math.max(0.01, vAmber - vSweet);
+        dR = sv * (0.105 + t * 0.21); // drops cleanly into outer or inner single
+      } else {
+        const t = (av - vAmber) / Math.max(0.01, 1 - vAmber);
+        dR = sv * (0.33 + t * 0.34); // wide high/low miss (can reach double or near bull!)
+      }
+    } else if (aimBed.ring === 'D') {
+      if (av <= vSweet) dR = (vertV / Math.max(0.01, vSweet)) * 0.058;
+      else if (av <= vAmber) {
+        const t = (av - vSweet) / Math.max(0.01, vAmber - vSweet);
+        dR = sv * (0.105 + t * 0.18); // outside wire MISS or inside single
+      } else {
+        const t = (av - vAmber) / Math.max(0.01, 1 - vAmber);
+        dR = sv * (0.30 + t * 0.28);
+      }
+    } else {
+      dR = vertV * 0.50;
+    }
+
+    let r = Math.max(0.06, baseR + dR * radialUpSign);
+    if (!allowOutsideMiss) r = Math.min(r, R_DOUBLE_OUT - 0.02);
+    x = Math.sin(ang) * r;
+    y = Math.cos(ang) * r;
+  }
+
+  if (jitterXY) {
+    x += jitterXY.x;
+    y += jitterXY.y;
+    if (!allowOutsideMiss) {
+      const rr = Math.hypot(x, y);
+      if (rr > R_DOUBLE_OUT - 0.02) {
+        const sc = (R_DOUBLE_OUT - 0.02) / rr;
+        x *= sc; y *= sc;
+      }
+    }
+  }
+
+  const landed = xyToBed(x, y) || { code: 'MISS', ring: 'MISS', sector: 0, value: 0, sub: 'MISS' };
+  const horizZone = au <= hSweet ? 'green' : au <= hAmber ? 'amber' : 'red';
+  const vertZone = av <= vSweet ? 'green' : av <= vAmber ? 'amber' : 'red';
+  const zone = landed.code === aimBed.code
+    ? 'green'
+    : (landed.code === 'MISS' || (aimBed.sector !== 25 && landed.sector !== aimBed.sector))
+      ? 'red'
+      : 'amber';
+
+  return { x, y, bed: landed, zone, horizZone, vertZone, hSweet, hAmber, vSweet, vAmber };
 }
 
 export function isCheckoutable1Dart(score) {

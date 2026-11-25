@@ -122,7 +122,40 @@ async function run() {
   assert(engine.computeAimDrop(t20, t20xy, 0.82, 0.4, cfg, true).bed.sector === 1, 'T20 right neighbor 1');
   const d16 = engine.parseBedCode('D16');
   assert(engine.computeAimDrop(d16, engine.bedToXY('D16'), 0.92, 0.5, cfg, true).bed.code === 'MISS', 'D16 outside wire miss');
-  console.log('PASS: Curriculum, auditor & aim-physics assertions (all green)');
+
+  // Phase 3: 3-Beat Multi-Axis Oche Rhythm & Subtraction Method assertions
+  const mCfg = engine.multiAxisConfigForDifficulty('league');
+  const fGreen = engine.evaluateFocusBeat(0.05, mCfg);
+  const fRed = engine.evaluateFocusBeat(0.85, mCfg);
+  assert(fGreen.zone === 'green' && fGreen.speedMult < 1 && fGreen.zoneMult > 1, 'Focus green boost');
+  assert(fRed.zone === 'red' && fRed.speedMult > 1.3 && fRed.zoneMult < 0.75, 'Focus red penalty');
+  assert(engine.computeMultiAxisDrop(t20, t20xy, fGreen, 0.0, 0.0, mCfg, true).bed.code === 'T20', '3-beat T20 green hit');
+  assert(engine.computeMultiAxisDrop(t20, t20xy, fGreen, -0.55, 0.0, mCfg, true).bed.sector === 5, '3-beat T20 horizontal wire pull left -> 5');
+  assert(engine.computeMultiAxisDrop(t20, t20xy, fGreen, 0.55, 0.0, mCfg, true).bed.sector === 1, '3-beat T20 horizontal wire pull right -> 1');
+  assert(engine.computeMultiAxisDrop(t20, t20xy, fGreen, 0.0, 0.36, mCfg, true).bed.code === 'S20', '3-beat T20 high vertical miss -> S20');
+  assert(engine.computeMultiAxisDrop(t20, t20xy, fGreen, 0.0, -0.36, mCfg, true).bed.code === 'S20', '3-beat T20 low vertical miss -> S20');
+  const d20 = engine.parseBedCode('D20');
+  assert(engine.computeMultiAxisDrop(d20, engine.bedToXY('D20'), fGreen, 0.0, 0.65, mCfg, true).bed.code === 'MISS', '3-beat D20 high outside wire miss');
+  assert(engine.computeMultiAxisDrop(d20, engine.bedToXY('D20'), fGreen, 0.0, -0.45, mCfg, true).bed.code === 'S20', '3-beat D20 low inside wire -> S20');
+  assert(engine.computeMultiAxisDrop(d16, engine.bedToXY('D16'), fGreen, 0.0, -0.65, mCfg, true).bed.code === 'MISS', '3-beat D16 low outside bottom wire miss');
+  assert(engine.computeMultiAxisDrop(d16, engine.bedToXY('D16'), fGreen, 0.0, 0.45, mCfg, true).bed.code === 'S16', '3-beat D16 high inside wire -> S16');
+  assert(engine.subtractionMethodInfo(301, 85).badge === 'Method: -100, +?', 'Round-100 subtraction method badge');
+  assert(engine.subtractionMethodInfo(301, 57).badge === 'Method: -60, +?', 'Round-up tens subtraction method badge');
+  for (const domId of ['aim-row-focus', 'aim-row-horiz', 'aim-row-vert', 'aim-f-needle', 'aim-h-needle', 'aim-v-needle', 'aim-flow-pill']) {
+    assert(idxHtml.includes(`id="${domId}"`), `Missing 3-beat DOM element #${domId}`);
+  }
+  // Maths-Speed -> Oche Flow Aim Difficulty assertions
+  const mfFast = engine.computeMathFlowModifier(0.22);
+  const mfSlow = engine.computeMathFlowModifier(0.92);
+  const mfExpired = engine.computeMathFlowModifier(0.40, { timedOut: true });
+  assert(mfFast.tier === 'in_flow' && mfFast.speedMult < 0.85 && mfFast.zoneMult > 1.2, 'Fast maths triggers IN FLOW easier aim');
+  assert(mfSlow.tier === 'rushed' && mfSlow.speedMult > 1.1 && mfSlow.zoneMult < 0.9, 'Slow maths tightens aim');
+  assert(mfExpired.tier === 'cold' && mfExpired.speedMult > 1.25 && mfExpired.zoneMult < 0.75, 'Expired timer triggers RATTLED harder aim');
+  const cfgFlow = engine.applyMathFlowToConfig(mCfg, mfFast);
+  const cfgCold = engine.applyMathFlowToConfig(mCfg, mfExpired);
+  assert(cfgFlow.horizSpeed < mCfg.horizSpeed && cfgFlow.horizSweet > mCfg.horizSweet, 'IN FLOW slows & widens horiz corridor');
+  assert(cfgCold.horizSpeed > mCfg.horizSpeed && cfgCold.horizSweet < mCfg.horizSweet, 'RATTLED speeds up & narrows horiz corridor');
+  console.log('PASS: Curriculum, auditor, 3-beat physics, subtraction method & maths-flow assertions (all green)');
 
   // 4. Smoke test all 5 physics bots
   const rng = engine.createSeededRng(42);
