@@ -451,58 +451,269 @@ export const MARKING_ITEMS = [
 ];
 
 export function subtractionShortcut(start, visit) {
-  if (visit >= 80 && visit < 100) return `Trick: -${visit} = -100, +${100 - visit}`;
-  if (visit >= 101 && visit < 120) return `Trick: -${visit} = -100, -${visit - 100}`;
-  const ones = visit % 10;
+  const ch = buildSubtractionChunk(start, visit);
+  return ch.fullTrick;
+}
+
+export function buildSubtractionChunk(start, subVal) {
+  const expected = start - subVal;
+  const reverseCheck = `${expected} + ${subVal} = ${start} ✓`;
+  if (subVal <= 0) {
+    return {
+      canHop: false, tag: 'NO CHANGE', badge: 'Method: Subtract 0',
+      hopChunk: 0, hopMid: start, adjustVal: 0, adjustText: '',
+      hopLabel: '', hopPrompt: `${start} - 0 = ?`, expected, reverseCheck,
+      fullTrick: `${start} - 0 = ${start}`,
+    };
+  }
+  // Rule of 40 (T20 = 60) & Rule of 43 (T19 = 57) specifically for 101-199 ("drop the leading 1, add 40 / 43"!)
+  if (subVal === 60 && start >= 101 && start <= 199) {
+    const mid = start - 100;
+    return {
+      canHop: true, tag: 'RULE OF 40', badge: 'Method: -100, +40 (Rule of 40)',
+      hopChunk: 100, hopMid: mid, adjustVal: 40, adjustText: '+40',
+      hopLabel: 'Hop -100', hopPrompt: `${mid} + 40 = ?`, expected, reverseCheck,
+      fullTrick: `Rule of 40: -60 = -100, +40 (${mid} + 40 = ${expected})`,
+    };
+  }
+  if (subVal === 57 && start >= 101 && start <= 199) {
+    const mid = start - 100;
+    return {
+      canHop: true, tag: 'RULE OF 43', badge: 'Method: -100, +43 (+40, +3)',
+      hopChunk: 100, hopMid: mid, adjustVal: 43, adjustText: '+43',
+      hopLabel: 'Hop -100', hopPrompt: `${mid} + 43 = ?`, expected, reverseCheck,
+      fullTrick: `Rule of 43: -57 = -100, +43 (${mid} + 40 + 3 = ${expected})`,
+    };
+  }
+  // 80..99 -> -100, +addBack
+  if (subVal >= 80 && subVal < 100 && start >= 100) {
+    const adj = 100 - subVal;
+    const mid = start - 100;
+    return {
+      canHop: true, tag: 'ROUND-100 (+)', badge: 'Method: -100, +?',
+      hopChunk: 100, hopMid: mid, adjustVal: adj, adjustText: `+${adj}`,
+      hopLabel: 'Hop -100', hopPrompt: `${mid} + ${adj} = ?`, expected, reverseCheck,
+      fullTrick: `Trick: -${subVal} = -100, +${adj} (${mid} + ${adj} = ${expected})`,
+    };
+  }
+  // 101..179 -> -100, -(subVal - 100) (includes Two-T19 114 -> -100, -14!)
+  if (subVal >= 101 && start >= 100) {
+    const adj = subVal - 100;
+    const mid = start - 100;
+    const tag = subVal === 114 ? 'TWO-T19 (-14)' : 'ROUND-100 (-)';
+    return {
+      canHop: true, tag, badge: 'Method: -100, -?',
+      hopChunk: 100, hopMid: mid, adjustVal: -adj, adjustText: `-${adj}`,
+      hopLabel: 'Hop -100', hopPrompt: `${mid} - ${adj} = ?`, expected, reverseCheck,
+      fullTrick: `Trick: -${subVal} = -100, -${adj} (${mid} - ${adj} = ${expected})`,
+    };
+  }
+  // Clean multiples of 10 (10, 20, 30, 40, 50, 70, 100)
+  if (subVal % 10 === 0) {
+    return {
+      canHop: false, tag: 'CLEAN TENS', badge: 'Method: Clean Tens',
+      hopChunk: subVal, hopMid: expected, adjustVal: 0, adjustText: '',
+      hopLabel: '', hopPrompt: `${start} - ${subVal} = ?`, expected, reverseCheck,
+      fullTrick: `Clean tens: ${start} - ${subVal} = ${expected}`,
+    };
+  }
+  // @yourdarts "-20 + Add-Back" (15..19) and stray neighbor trebles 21..24 (-20, -1..-4)
+  if (subVal >= 15 && subVal <= 19) {
+    const adj = 20 - subVal;
+    const mid = start - 20;
+    return {
+      canHop: true, tag: '-20 ADD-BACK', badge: `Method: -20, +${adj}`,
+      hopChunk: 20, hopMid: mid, adjustVal: adj, adjustText: `+${adj}`,
+      hopLabel: 'Hop -20', hopPrompt: `${mid} + ${adj} = ?`, expected, reverseCheck,
+      fullTrick: `Trick: -${subVal} = -20, +${adj} (${mid} + ${adj} = ${expected})`,
+    };
+  }
+  if (subVal >= 21 && subVal <= 24) {
+    const adj = subVal - 20;
+    const mid = start - 20;
+    return {
+      canHop: true, tag: '-20 SPLIT', badge: `Method: -20, -${adj}`,
+      hopChunk: 20, hopMid: mid, adjustVal: -adj, adjustText: `-${adj}`,
+      hopLabel: 'Hop -20', hopPrompt: `${mid} - ${adj} = ?`, expected, reverseCheck,
+      fullTrick: `Trick: -${subVal} = -20, -${adj} (${mid} - ${adj} = ${expected})`,
+    };
+  }
+  // 7..9 -> -10, +addBack (e.g. S7, S8, S9, T3=9)
+  if (subVal >= 7 && subVal <= 9) {
+    const adj = 10 - subVal;
+    const mid = start - 10;
+    return {
+      canHop: true, tag: '-10 ADD-BACK', badge: `Method: -10, +${adj}`,
+      hopChunk: 10, hopMid: mid, adjustVal: adj, adjustText: `+${adj}`,
+      hopLabel: 'Hop -10', hopPrompt: `${mid} + ${adj} = ?`, expected, reverseCheck,
+      fullTrick: `Trick: -${subVal} = -10, +${adj} (${mid} + ${adj} = ${expected})`,
+    };
+  }
+  // 1..6 -> direct quick drop (or crossing ten if ones > start%10)
+  if (subVal >= 1 && subVal <= 6) {
+    return {
+      canHop: false, tag: 'QUICK DROP', badge: `Quick Drop: -${subVal}`,
+      hopChunk: subVal, hopMid: expected, adjustVal: 0, adjustText: '',
+      hopLabel: '', hopPrompt: `${start} - ${subVal} = ?`, expected, reverseCheck,
+      fullTrick: `Quick drop: ${start} - ${subVal} = ${expected}`,
+    };
+  }
+  const ones = subVal % 10;
   if (ones >= 6) {
-    const up = Math.ceil(visit / 10) * 10;
-    return `Trick: -${visit} = -${up}, +${up - visit}`;
+    const up = Math.ceil(subVal / 10) * 10;
+    const adj = up - subVal;
+    const mid = start - up;
+    return {
+      canHop: true, tag: 'ROUND-UP TENS', badge: `Method: -${up}, +?`,
+      hopChunk: up, hopMid: mid, adjustVal: adj, adjustText: `+${adj}`,
+      hopLabel: `Hop -${up}`, hopPrompt: `${mid} + ${adj} = ?`, expected, reverseCheck,
+      fullTrick: `Trick: -${subVal} = -${up}, +${adj} (${mid} + ${adj} = ${expected})`,
+    };
   }
-  if (ones > 0) {
-    const dn = Math.floor(visit / 10) * 10;
-    return `Trick: -${visit} = -${dn}, -${ones}`;
-  }
-  return `Clean tens: ${start} - ${visit}`;
+  const dn = Math.floor(subVal / 10) * 10;
+  const mid = start - dn;
+  return {
+    canHop: true, tag: 'SPLIT TENS', badge: `Method: -${dn}, -?`,
+    hopChunk: dn, hopMid: mid, adjustVal: -ones, adjustText: `-${ones}`,
+    hopLabel: `Hop -${dn}`, hopPrompt: `${mid} - ${ones} = ?`, expected, reverseCheck,
+    fullTrick: `Trick: -${subVal} = -${dn}, -${ones} (${mid} - ${ones} = ${expected})`,
+  };
 }
 
 export function subtractionMethodInfo(start, visit) {
-  if (visit >= 80 && visit < 100) {
-    return { tag: 'ROUND-100 (+)', badge: `Method: -100, +?`, fullTrick: subtractionShortcut(start, visit) };
-  }
-  if (visit >= 101 && visit < 120) {
-    return { tag: 'ROUND-100 (-)', badge: `Method: -100, -?`, fullTrick: subtractionShortcut(start, visit) };
-  }
-  const ones = visit % 10;
-  if (ones >= 6) {
-    const up = Math.ceil(visit / 10) * 10;
-    return { tag: 'ROUND-UP TENS', badge: `Method: -${up}, +?`, fullTrick: subtractionShortcut(start, visit) };
-  }
-  if (ones > 0) {
-    const dn = Math.floor(visit / 10) * 10;
-    return { tag: 'SPLIT TENS', badge: `Method: -${dn}, -?`, fullTrick: subtractionShortcut(start, visit) };
-  }
-  return { tag: 'CLEAN TENS', badge: `Method: Clean Tens`, fullTrick: subtractionShortcut(start, visit) };
+  const ch = buildSubtractionChunk(start, visit);
+  return { tag: ch.tag, badge: ch.badge, fullTrick: ch.fullTrick, chunk: ch };
 }
 
-export function buildVisitCue(darts) {
+export function buildCroupierSnap(darts) {
   const vals = darts.map(bedValue);
   const total = vals[0] + vals[1] + vals[2];
   let g = [0, 1], odd = 2;
   const pairs = [[0, 1, 2], [0, 2, 1], [1, 2, 0]];
   let bestScore = -1;
+  let bestTag = 'Known Pair';
   for (const [a, b, c] of pairs) {
     let sc = 0;
-    if (darts[a] === darts[b]) sc += 5;
-    if ((darts[a] === 'BULL' || darts[a] === '25') && (darts[b] === 'BULL' || darts[b] === '25')) sc += 5;
-    if (darts[a].slice(1) === darts[b].slice(1) && darts[a] !== '25' && darts[a] !== 'BULL') sc += 4;
-    if ((vals[a] + vals[b]) % 10 === 0) sc += 3;
-    if (vals[a] + vals[b] >= 50) sc += 1;
-    if (sc > bestScore) { bestScore = sc; g = [a, b]; odd = c; }
+    let tag = 'Known Pair';
+    const da = darts[a], db = darts[b];
+    const va = vals[a], vb = vals[b];
+    if (da === db) { sc += 6; tag = da[0] === 'T' ? '6× Double Treble' : 'Matched Pair'; }
+    else if ((da === 'BULL' || da === '25') && (db === 'BULL' || db === '25')) { sc += 6; tag = 'Bull/25 Anchor'; }
+    else if (da.slice(1) === db.slice(1) && da !== '25' && da !== 'BULL' && db !== '25' && db !== 'BULL') {
+      sc += 5;
+      tag = (da[0] === 'T' || db[0] === 'T') ? '4× Core Shape' : 'Same-Bed Pair';
+    } else if ((da === 'T20' && vb >= 51 && vb <= 57) || (db === 'T20' && va >= 51 && va <= 57)) {
+      sc += 5; tag = 'Steal Last Digit (11_)';
+    } else if (va >= 51 && va <= 57 && vb >= 51 && vb <= 57) {
+      sc += 5; tag = 'Both 50s (+Units)';
+    } else if ((va + vb) % 10 === 0 && (va + vb) > 0) {
+      sc += 4; tag = 'Clean-10 Pair';
+    }
+    if (va + vb >= 50) sc += 1;
+    if (sc > bestScore) { bestScore = sc; g = [a, b]; odd = c; bestTag = tag; }
   }
   const pairSum = vals[g[0]] + vals[g[1]];
+  const oddVal = vals[odd];
+  const oddCode = darts[odd];
+  // Nearest-10/20 rounding nudge for awkward odd 3rd dart (Mark Pt 3!)
+  let roundTip = '';
+  if (oddVal >= 15 && oddVal <= 19) roundTip = ` (+20, -${20 - oddVal})`;
+  else if (oddVal >= 7 && oddVal <= 9) roundTip = ` (+10, -${10 - oddVal})`;
   return {
-    groupIdx: g, oddIdx: odd, total,
-    cue: `Snap ${darts[g[0]]}+${darts[g[1]]} (${pairSum}) + ${darts[odd]} (${vals[odd]}) = ${total}!`,
+    groupIdx: g,
+    oddIdx: odd,
+    pairSum,
+    oddVal,
+    total,
+    shapeTag: bestTag,
+    snapPrompt: `${darts[g[0]]}+${darts[g[1]]} = ${pairSum}  +  ${oddCode} (${oddVal})${roundTip}`,
+    cue: `Snap ${darts[g[0]]}+${darts[g[1]]} (${pairSum}) + ${oddCode} (${oddVal}) = ${total}!`,
+  };
+}
+
+export function buildVisitCue(darts) {
+  const s = buildCroupierSnap(darts);
+  return { groupIdx: s.groupIdx, oddIdx: s.oddIdx, total: s.total, cue: s.cue };
+}
+
+// Universal Live Slip-Recovery Engine (<=170 Treble/Bull -> Big Single, Neighbor Single, Neighbor Treble, or 25!)
+export function slipRecoveryInfo(remBefore, aimedBed, landedBed, dartsLeftAfter = 1) {
+  if (!aimedBed || !landedBed || remBefore > 170 || remBefore <= 40 || dartsLeftAfter < 1) return null;
+  if (aimedBed.ring !== 'T' && aimedBed.code !== 'BULL') return null;
+  if (landedBed.code === aimedBed.code || landedBed.code === 'MISS' || landedBed.value <= 0) return null;
+  const newRem = remBefore - landedBed.value;
+  if (newRem <= 1) return null;
+
+  let kind = null;
+  let headline = '';
+  let badge = '';
+  let cue = '';
+  const chunk = buildSubtractionChunk(remBefore, landedBed.value);
+
+  const fdiBefore = getFdiRule(remBefore);
+  if (aimedBed.ring === 'T' && landedBed.ring === 'S' && landedBed.sector === aimedBed.sector) {
+    if (fdiBefore && aimedBed.code === fdiBefore.treble) {
+      kind = 'fdi_single';
+      headline = `${fdiBefore.decade} FDI MISS · ${landedBed.code} (${landedBed.value})`;
+      badge = `${fdiBefore.decade} FDI Miss Rule: Constant 10s!`;
+      cue = `${fdiBefore.decade} FDI single miss ALWAYS leaves ${fdiBefore.miss}! (${remBefore} - ${landedBed.value} = ${newRem})`;
+    } else {
+      kind = 'big_single';
+      headline = `BIG SINGLE SLIP · ${landedBed.code} (${landedBed.value})`;
+      badge = chunk.badge;
+      cue = chunk.fullTrick;
+    }
+  } else if (aimedBed.ring === 'T' && landedBed.ring === 'T' && landedBed.sector !== aimedBed.sector) {
+    kind = 'neighbor_treble';
+    headline = `STRAY TREBLE! ${landedBed.code} (${landedBed.value})`;
+    badge = `Stray ${landedBed.code} (${landedBed.value}): ${chunk.badge.replace(/^Method:\s*/, '')}`;
+    cue = `Stray treble ${landedBed.code} = ${landedBed.value}! ${chunk.fullTrick}`;
+  } else if (aimedBed.ring === 'T' && landedBed.ring === 'S' && landedBed.sector !== aimedBed.sector) {
+    kind = 'neighbor_single';
+    headline = `NEIGHBOR SLIP! ${landedBed.code} (${landedBed.value})`;
+    badge = `Neighbor ${landedBed.code}: ${chunk.badge.replace(/^Method:\s*/, '')}`;
+    cue = `Neighbor slip ${landedBed.code} (${landedBed.value}): ${chunk.fullTrick}`;
+  } else if (aimedBed.code === 'BULL' && landedBed.code === '25') {
+    kind = 'outer_bull';
+    headline = 'OUTER BULL · 25';
+    if (remBefore >= 90 && remBefore <= 95) {
+      badge = '90–95 Bull Miss: +5 to last digit -> 60s FDI!';
+      cue = `90–95 Bull Miss shortcut: add 5 to last digit -> ${newRem} (60s FDI)!`;
+    } else {
+      badge = 'Bull Miss (-25): -20, -5';
+      cue = `Outer Bull (25): ${remBefore} - 20 - 5 = ${newRem}`;
+    }
+  } else {
+    return null;
+  }
+
+  // Tactical recovery readout after solving!
+  let followUp = `${newRem} left — adapt & set up cleanly!`;
+  if (isCheckoutable1Dart(newRem)) {
+    const out = newRem === 50 ? 'BULL' : 'D' + (newRem / 2);
+    followUp = `1-dart finish left: ${out} (${newRem})!`;
+  } else if (dartsLeftAfter === 2 && !isCheckoutable2Dart(newRem)) {
+    followUp = `Splash trap (${newRem} has no 2-dart out) — set up a clean double!`;
+  } else if (dartsLeftAfter === 2 && G44_BY_SCORE[newRem]) {
+    followUp = `Still alive! ${newRem} -> ${G44_BY_SCORE[newRem].route.join(' ')}!`;
+  } else if (dartsLeftAfter === 1 && newRem >= 62 && newRem <= 70) {
+    followUp = `1 dart left on ${newRem} — bin FDI, play T10/setup!`;
+  } else if (newRem <= 70) {
+    followUp = `Below 70 (${newRem}) — safe setup zone!`;
+  }
+
+  return {
+    kind,
+    remBefore,
+    newRem,
+    aimedCode: aimedBed.code,
+    landedCode: landedBed.code,
+    landedVal: landedBed.value,
+    headline,
+    badge,
+    cue,
+    chunk,
+    followUp,
   };
 }
 
@@ -594,12 +805,35 @@ export function aimConfigForDifficulty(diff = 'league') {
 }
 
 export function getScreenSideNeighbors(bed, xy) {
-  if (!bed || bed.code === 'BULL' || bed.code === '25') return { left: '25', right: '25', dirSign: 1 };
-  const idx = SECTOR_INDEX[bed.sector];
-  const ccw = SECTORS[(idx + 19) % 20];
-  const cw = SECTORS[(idx + 1) % 20];
-  const dirSign = (xy && xy.y < -0.01) ? -1 : 1;
-  return dirSign === 1 ? { left: String(ccw), right: String(cw), dirSign } : { left: String(cw), right: String(ccw), dirSign };
+  const labels = getScreenAxisLabels(bed, xy);
+  return { left: labels.left, right: labels.right, dirSign: (xy && xy.y < -0.01) ? -1 : 1 };
+}
+
+// Dynamic true-screen Left/Right and Low/High neighbor labels for any bed around the 360-degree dartboard!
+export function getScreenAxisLabels(bed, xy) {
+  if (!bed) return { left: 'L', right: 'R', low: 'LOW', high: 'HI' };
+  const pt = xy || bedToXY(bed.code);
+  if (bed.code === 'BULL' || bed.code === '25') {
+    return { left: '11', right: '6', low: '3', high: '20' };
+  }
+  const probeLabel = (dx, dy, fallback) => {
+    const px = pt.x + dx;
+    const py = pt.y + dy;
+    const r = Math.hypot(px, py);
+    if (r > R_DOUBLE_OUT + 0.04) return 'OUT';
+    const b = xyToBed(px, py);
+    if (!b) return 'OUT';
+    if (b.code === 'BULL' || b.code === '25') return '25';
+    if (b.sector !== bed.sector) return String(b.sector);
+    return fallback;
+  };
+  const step = bed.ring === 'D' ? 0.36 : 0.30;
+  return {
+    left:  probeLabel(-step, 0, String(bed.sector)),
+    right: probeLabel( step, 0, String(bed.sector)),
+    low:   probeLabel(0, -step, 'LOW'),
+    high:  probeLabel(0,  step, 'HI'),
+  };
 }
 
 // Physically maps gauge needle u in [-1, 1] + subtle vertical breath v in [-1, 1] to exact 3D board coords & true bed!
@@ -678,42 +912,42 @@ export function computeAimDrop(aimBed, aimXY, u, v, cfg, allowOutsideMiss = fals
   return { x, y, bed: landed, zone };
 }
 
-// 3-Beat / 2-Beat Multi-Axis Aiming Configuration (harder, realistic stray-bed lateral drift!)
+// 3-Beat / 2-Beat Multi-Axis Aiming Configuration (tuned against 7,200-leg human-timing sim for authentic pub averages & real stray beds!)
 export function multiAxisConfigForDifficulty(diff = 'league') {
   if (diff === 'relaxed') {
     return {
-      focusSpeed: 2.30, horizSpeed: 2.55, vertSpeed: 2.45,
-      focusSweet: 0.24, focusAmber: 0.56,
-      horizSweet: 0.20, horizAmber: 0.44,
-      vertSweet:  0.22, vertAmber:  0.54,
+      focusSpeed: 2.95, horizSpeed: 3.25, vertSpeed: 3.10,
+      focusSweet: 0.185, focusAmber: 0.49,
+      horizSweet: 0.14, horizAmber: 0.35,
+      vertSweet:  0.16, vertAmber:  0.45,
     };
   }
   if (diff === 'pro') {
     return {
-      focusSpeed: 3.85, horizSpeed: 4.25, vertSpeed: 4.05,
-      focusSweet: 0.12, focusAmber: 0.40,
-      horizSweet: 0.10, horizAmber: 0.26,
-      vertSweet:  0.12, vertAmber:  0.38,
+      focusSpeed: 5.10, horizSpeed: 5.65, vertSpeed: 5.35,
+      focusSweet: 0.10, focusAmber: 0.34,
+      horizSweet: 0.082, horizAmber: 0.22,
+      vertSweet:  0.092, vertAmber:  0.30,
     };
   }
   return {
-    focusSpeed: 3.05, horizSpeed: 3.35, vertSpeed: 3.18,
-    focusSweet: 0.17, focusAmber: 0.48,
-    horizSweet: 0.14, horizAmber: 0.34,
-    vertSweet:  0.16, vertAmber:  0.46,
+    focusSpeed: 3.92, horizSpeed: 4.35, vertSpeed: 4.12,
+    focusSweet: 0.135, focusAmber: 0.41,
+    horizSweet: 0.105, horizAmber: 0.285,
+    vertSweet:  0.12, vertAmber:  0.37,
   };
 }
 
-// Beat 1: Overall Focus / Grip Steadiness — scales speed, corridor width & dispersion on Beats 2 & 3!
+// Beat 1: Overall Focus / Grip Steadiness — scales speed, corridor width & organic oche dispersion on Beats 2 & 3!
 export function evaluateFocusBeat(focusU, cfg) {
   const af = Math.abs(focusU);
   if (af <= cfg.focusSweet) {
-    return { zone: 'green', label: 'LOCKED IN', speedMult: 0.88, zoneMult: 1.12, jitter: 0.016 };
+    return { zone: 'green', label: 'LOCKED IN', speedMult: 0.89, zoneMult: 1.11, jitter: 0.040 };
   }
   if (af <= cfg.focusAmber) {
-    return { zone: 'amber', label: 'LOOSE GRIP', speedMult: 1.16, zoneMult: 0.88, jitter: 0.055 };
+    return { zone: 'amber', label: 'LOOSE GRIP', speedMult: 1.13, zoneMult: 0.89, jitter: 0.078 };
   }
-  return { zone: 'red', label: 'SNATCHED!', speedMult: 1.44, zoneMult: 0.68, jitter: 0.118 };
+  return { zone: 'red', label: 'SNATCHED!', speedMult: 1.37, zoneMult: 0.71, jitter: 0.138 };
 }
 
 // Maths-Speed -> Oche Flow Coupling: faster mental maths slows & widens your aiming bars; slow/expired maths tightens them!
@@ -738,11 +972,11 @@ export function computeMathFlowModifier(ratio, { wrongCount = 0, usedHint = fals
     return {
       tier: 'in_flow',
       label: 'IN FLOW',
-      pill: '⚡ FLOW · +26% AIM',
+      pill: '⚡ FLOW · +18% AIM',
       callout: '⚡ IN FLOW! EASIER AIM',
-      speedMult: 0.78,
-      zoneMult: 1.26,
-      jitterMult: 0.65,
+      speedMult: 0.84,
+      zoneMult: 1.18,
+      jitterMult: 0.72,
       cls: 'flow-hot',
       ratio: effRatio,
     };
@@ -751,11 +985,11 @@ export function computeMathFlowModifier(ratio, { wrongCount = 0, usedHint = fals
     return {
       tier: 'sharp',
       label: 'SHARP RHYTHM',
-      pill: '✦ SHARP · +12% AIM',
+      pill: '✦ SHARP · +9% AIM',
       callout: '✦ SHARP MATHS! SMOOTH AIM',
-      speedMult: 0.90,
-      zoneMult: 1.12,
-      jitterMult: 0.85,
+      speedMult: 0.92,
+      zoneMult: 1.09,
+      jitterMult: 0.86,
       cls: 'flow-warm',
       ratio: effRatio,
     };
@@ -777,10 +1011,10 @@ export function computeMathFlowModifier(ratio, { wrongCount = 0, usedHint = fals
     return {
       tier: 'rushed',
       label: 'OFF RHYTHM',
-      pill: '⏱ SLOW · -16% AIM',
+      pill: '⏱ SLOW · -14% AIM',
       callout: '⏱ OFF RHYTHM · TIGHTER AIM',
-      speedMult: 1.16,
-      zoneMult: 0.84,
+      speedMult: 1.14,
+      zoneMult: 0.86,
       jitterMult: 1.25,
       cls: 'flow-slow',
       ratio: effRatio,
@@ -789,11 +1023,11 @@ export function computeMathFlowModifier(ratio, { wrongCount = 0, usedHint = fals
   return {
     tier: 'cold',
     label: 'RATTLED!',
-    pill: '🔔 RATTLED · -30% AIM',
+    pill: '🔔 RATTLED · -26% AIM',
     callout: '🔔 CLOCK EXCEEDED! SHAKY AIM',
-    speedMult: 1.32,
-    zoneMult: 0.70,
-    jitterMult: 1.55,
+    speedMult: 1.28,
+    zoneMult: 0.74,
+    jitterMult: 1.50,
     cls: 'flow-cold',
     ratio: effRatio,
   };
@@ -822,85 +1056,101 @@ export function applyMathFlowToConfig(cfg, flow = DEFAULT_MATH_FLOW) {
   };
 }
 
-// Pure 2D Multi-Axis Drop: maps Beat 1 (focus) + Beat 2 (horizU in [-1,1]) + Beat 3 (vertV in [-1,1], + = HIGH) to exact board coords!
+// Pure 2D True Screen-Space Multi-Axis Drop:
+// Beat 2 (horizU in [-1, 1]) ALWAYS moves Screen Left (-X) <-> Right (+X),
+// Beat 3 (vertV in [-1, 1]) ALWAYS moves Screen Down (-Y, LOW) <-> Up (+Y, HI) at EVERY sector 1..20 & Bull!
 export function computeMultiAxisDrop(aimBed, aimXY, focusRes, horizU, vertV, cfg, allowOutsideMiss = false, jitterXY = null) {
   const f = focusRes || { zone: 'amber', speedMult: 1.0, zoneMult: 1.0, jitter: 0.04 };
   const hSweet = Math.min(0.45, cfg.horizSweet * f.zoneMult);
-  const hAmber = Math.min(0.68, cfg.horizAmber * f.zoneMult);
-  const vSweet = Math.min(0.42, cfg.vertSweet * f.zoneMult);
-  const vAmber = Math.min(0.70, cfg.vertAmber * f.zoneMult);
+  const hAmber = Math.min(0.70, cfg.horizAmber * f.zoneMult);
+  const vSweet = Math.min(0.45, cfg.vertSweet * f.zoneMult);
+  const vAmber = Math.min(0.72, cfg.vertAmber * f.zoneMult);
 
   const au = Math.abs(horizU);
-  const su = horizU < 0 ? -1 : 1;
   const av = Math.abs(vertV);
-  const sv = vertV < 0 ? -1 : 1;
   let x, y;
 
   if (aimBed.code === 'BULL' || aimBed.code === '25') {
-    const mapAxis = (u, sw, am) => {
+    const mapBullAxis = (u, sw, am) => {
       const a = Math.abs(u), s = u < 0 ? -1 : 1;
-      const inR = aimBed.code === 'BULL' ? R_INNER_BULL * 0.72 : (R_INNER_BULL + R_OUTER_BULL) * 0.52;
+      const inR = aimBed.code === 'BULL' ? R_INNER_BULL * 0.62 : (R_INNER_BULL + R_OUTER_BULL) * 0.48;
       if (a <= sw) return (u / Math.max(0.01, sw)) * inR;
       if (a <= am) {
         const t = (a - sw) / Math.max(0.01, am - sw);
-        return s * (R_INNER_BULL + 0.02 + t * (R_OUTER_BULL - R_INNER_BULL + 0.06));
+        return s * (R_INNER_BULL + 0.02 + t * (R_OUTER_BULL - R_INNER_BULL + 0.07));
       }
       const t = (a - am) / Math.max(0.01, 1 - am);
-      return s * (R_OUTER_BULL + 0.08 + t * 0.44);
+      return s * (R_OUTER_BULL + 0.09 + t * 0.48);
     };
-    x = mapAxis(horizU, hSweet, hAmber);
-    y = mapAxis(vertV, vSweet, vAmber);
+    const bx = aimBed.code === '25' && aimXY ? aimXY.x * 0.55 : 0;
+    const by = aimBed.code === '25' && aimXY ? aimXY.y * 0.55 : 0;
+    x = bx + mapBullAxis(horizU, hSweet, hAmber);
+    y = by + mapBullAxis(vertV, vSweet, vAmber);
   } else {
     const idx = SECTOR_INDEX[aimBed.sector];
-    const secCenterAng = idx * (Math.PI / 10);
-    const dirSign = (aimXY && aimXY.y < -0.01) ? -1 : 1; // screen-left/right matches neighbor labels
-    const radialUpSign = (aimXY && aimXY.y < -0.01) ? -1 : 1; // +vertV ALWAYS moves physically HIGHER (+Y) on screen!
+    const theta = idx * (Math.PI / 10);
     const rawR = aimXY ? Math.hypot(aimXY.x, aimXY.y) : 1.01;
     const baseR = aimBed.ring === 'T' ? (R_TREBLE_IN + R_TREBLE_OUT) * 0.5
       : aimBed.ring === 'D' ? (R_DOUBLE_IN + R_DOUBLE_OUT) * 0.5
-      : Math.max(0.40, Math.min(1.42, rawR));
+      : Math.max(0.42, Math.min(1.42, rawR));
+    // Anchor on the exact radial/angular center of T/D beds (or clicked spot on Singles)
+    const baseX = aimBed.ring === 'S' && aimXY ? aimXY.x : Math.sin(theta) * baseR;
+    const baseY = aimBed.ring === 'S' && aimXY ? aimXY.y : Math.cos(theta) * baseR;
 
-    // Horizontal angle: crosses spider wire (+/- 0.157 rad) as soon as |horizU| > hAmber!
-    let dAng = 0;
-    if (au <= hSweet) {
-      dAng = (horizU / Math.max(0.01, hSweet)) * 0.056;
-    } else if (au <= hAmber) {
-      const t = (au - hSweet) / Math.max(0.01, hAmber - hSweet);
-      dAng = su * (0.056 + t * 0.092); // stays right inside the wire (0.056..0.148 rad)
+    const absSin = Math.abs(Math.sin(theta));
+    const absCos = Math.abs(Math.cos(theta));
+    let edgeX, edgeY, hitsRingX = false, hitsRingY = false;
+    if (aimBed.ring === 'T' || aimBed.ring === 'D') {
+      const hR = 0.078; // half thickness of T (0.16) and D (0.16) rings
+      const hT = baseR * (Math.PI / 20); // half angular arc width to spider wire
+      const dRingX = hR / Math.max(0.08, absSin);
+      const dSecX  = hT / Math.max(0.08, absCos);
+      const dRingY = hR / Math.max(0.08, absCos);
+      const dSecY  = hT / Math.max(0.08, absSin);
+      hitsRingX = dRingX <= dSecX;
+      hitsRingY = dRingY <= dSecY;
+      edgeX = Math.min(dRingX, dSecX);
+      edgeY = Math.min(dRingY, dSecY);
     } else {
-      const t = (au - hAmber) / Math.max(0.01, 1 - hAmber);
-      dAng = su * (0.172 + t * 0.28); // cleanly into neighbor sector (5/1) — or 2 sectors over at extreme!
-    }
-    const ang = secCenterAng + dAng * dirSign;
-
-    // Vertical radial offset: +vertV = higher on wall!
-    let dR = 0;
-    if (aimBed.ring === 'T') {
-      if (av <= vSweet) dR = (vertV / Math.max(0.01, vSweet)) * 0.058;
-      else if (av <= vAmber) {
-        const t = (av - vSweet) / Math.max(0.01, vAmber - vSweet);
-        dR = sv * (0.105 + t * 0.21); // drops cleanly into outer or inner single
-      } else {
-        const t = (av - vAmber) / Math.max(0.01, 1 - vAmber);
-        dR = sv * (0.33 + t * 0.34); // wide high/low miss (can reach double or near bull!)
-      }
-    } else if (aimBed.ring === 'D') {
-      if (av <= vSweet) dR = (vertV / Math.max(0.01, vSweet)) * 0.058;
-      else if (av <= vAmber) {
-        const t = (av - vSweet) / Math.max(0.01, vAmber - vSweet);
-        dR = sv * (0.105 + t * 0.18); // outside wire MISS or inside single
-      } else {
-        const t = (av - vAmber) / Math.max(0.01, 1 - vAmber);
-        dR = sv * (0.30 + t * 0.28);
-      }
-    } else {
-      dR = vertV * 0.50;
+      edgeX = 0.21;
+      edgeY = 0.21;
     }
 
-    let r = Math.max(0.06, baseR + dR * radialUpSign);
-    if (!allowOutsideMiss) r = Math.min(r, R_DOUBLE_OUT - 0.02);
-    x = Math.sin(ang) * r;
-    y = Math.cos(ang) * r;
+    const mapScreenAxis = (val, sw, am, edge, hitsRing) => {
+      const a = Math.abs(val);
+      const s = val < 0 ? -1 : 1;
+      if (a <= sw) {
+        // Safely inside bed even at diagonal Green+Green corners (0.58 * sqrt(2) = 0.82 < 1.0)!
+        return (val / Math.max(0.01, sw)) * (edge * 0.58);
+      }
+      const amberEnd = hitsRing ? (edge * 1.18 + 0.17) : (edge * 0.97);
+      if (a <= am) {
+        const t = (a - sw) / Math.max(0.01, am - sw);
+        if (hitsRing) {
+          // Ring-wire axis (Vertical on T20/D20, Horizontal on D6/D11, both on D16): amber slips across ring wire into single/outside!
+          return s * (edge * 1.18 + t * 0.17);
+        }
+        // Sector-wire axis (Horizontal on T20, Vertical on D6/D11): amber hugs the inside of the spider wire
+        return s * (edge * (0.58 + t * 0.39));
+      }
+      // Red zone: strictly monotonic continuation across spider wire into neighboring sector or outside wire!
+      const t = (a - am) / Math.max(0.01, 1 - am);
+      const redStart = Math.max(amberEnd + 0.02, edge * 1.16, 0.16);
+      return s * (redStart + t * 0.32);
+    };
+
+    const dx = mapScreenAxis(horizU, hSweet, hAmber, edgeX, hitsRingX);
+    const dy = mapScreenAxis(vertV, vSweet, vAmber, edgeY, hitsRingY);
+    x = baseX + dx;
+    y = baseY + dy;
+
+    if (!allowOutsideMiss) {
+      const rr = Math.hypot(x, y);
+      if (rr > R_DOUBLE_OUT - 0.02) {
+        const sc = (R_DOUBLE_OUT - 0.02) / rr;
+        x *= sc; y *= sc;
+      }
+    }
   }
 
   if (jitterXY) {

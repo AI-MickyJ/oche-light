@@ -323,9 +323,36 @@
   /* Compact Slate Numpad (shown only for numeric input modes) */
   .numpad-panel {
     position: fixed; right: 20px; bottom: 64px; z-index: 26;
-    width: 208px; padding: 11px; display: none; flex-direction: column; gap: 8px;
+    width: 218px; padding: 10px; display: none; flex-direction: column; gap: 7px;
+  }
+  @media (min-width: 1080px) and (min-height: 760px) {
+    /* Dock numpad cleanly on the open dark left cabinet door so both dartboard & right chalkboard stay 100% unobstructed! */
+    .numpad-panel { left: 18px; right: auto; top: 132px; bottom: auto; width: 224px; }
   }
   .numpad-panel.visible { display: flex; }
+  .chalk-assist {
+    display: none; flex-direction: column; gap: 4px;
+    padding: 5px 6px; border-radius: 5px;
+    background: rgba(201, 161, 90, 0.11);
+    border: 1px solid rgba(232, 198, 130, 0.42);
+  }
+  .chalk-assist.visible { display: flex; }
+  .chalk-assist-btn {
+    width: 100%; padding: 5px 7px; border-radius: 4px; cursor: pointer;
+    background: linear-gradient(135deg, rgba(212,164,74,0.34), rgba(145,100,32,0.46));
+    border: 1px solid var(--brass-bright); color: #fff6dc;
+    font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+    font-size: 10.5px; font-weight: 700; letter-spacing: 0.45px; text-transform: uppercase;
+  }
+  .chalk-assist-btn:hover { filter: brightness(1.16); }
+  .chalk-assist-btn.used {
+    background: rgba(46, 134, 78, 0.28); border-color: #7ae09f; color: #dcfce7;
+  }
+  .chalk-assist-readout {
+    display: none; font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+    font-size: 10.5px; line-height: 1.3; color: #ffe8a8; text-align: center;
+  }
+  .chalk-assist-readout.visible { display: block; }
   .numpad-display {
     background: rgba(6, 9, 12, 0.85);
     border: 1px solid rgba(201, 161, 90, 0.36);
@@ -1103,7 +1130,7 @@
   </div>
   <div id="aim-row-vert" class="aim-row waiting-row">
     <span class="aim-row-tag">3·Height</span>
-    <span class="aim-edge-lbl neutral">LOW</span>
+    <span id="aim-low-lbl" class="aim-edge-lbl neutral">LOW</span>
     <div class="aim-track">
       <div class="aim-zone red"></div>
       <div id="aim-v-amber" class="aim-zone amber" style="left:27%;width:46%"></div>
@@ -1111,7 +1138,7 @@
       <div class="aim-center-tick"></div>
       <div id="aim-v-needle" class="aim-needle"></div>
     </div>
-    <span class="aim-edge-lbl neutral">HI</span>
+    <span id="aim-high-lbl" class="aim-edge-lbl neutral">HI</span>
   </div>
   <div class="aim-actions">
     <button id="aim-throw-btn" class="aim-throw-btn">1/3 Lock Focus [Click / Space]</button>
@@ -1119,8 +1146,12 @@
   </div>
 </div>
 
-<!-- Compact Slate Numpad (Numeric modes: Doubles/Trebles values, Miss Rule check, Croupier Marking) -->
+<!-- Compact Slate Numpad (Numeric modes + @yourdarts Croupier Snap & Chunk Hop!) -->
 <div id="numpad-panel" class="plate numpad-panel">
+  <div id="chalk-assist" class="chalk-assist">
+    <button id="chalk-assist-btn" class="chalk-assist-btn" type="button">Snap Pair [Tab]</button>
+    <span id="chalk-assist-readout" class="chalk-assist-readout"></span>
+  </div>
   <div id="numpad-display" class="numpad-display placeholder">Type score…</div>
   <div class="numpad-grid">
     <button class="np-key" data-k="7">7</button><button class="np-key" data-k="8">8</button><button class="np-key" data-k="9">9</button>
@@ -1176,8 +1207,8 @@ import {
   sectorNumberXY, xyToSectorNumber,
   GOLDEN_44, G44_BY_SCORE, FDI_SCORES, getFdiRule,
   HALVING_CHAINS, BELOW_60_ITEMS, SODS_LAW_ITEMS, TON_PLUS_ITEMS, TON_PLUS_BY_SCORE, BOGEY_ITEMS, MARKING_ITEMS,
-  subtractionShortcut, subtractionMethodInfo, buildVisitCue, generatePub3DartVisit, applyPubScatter,
-  aimConfigForDifficulty as engineAimConfigForDifficulty, getScreenSideNeighbors, computeAimDrop,
+  subtractionShortcut, subtractionMethodInfo, buildSubtractionChunk, buildCroupierSnap, buildVisitCue, slipRecoveryInfo, generatePub3DartVisit, applyPubScatter,
+  aimConfigForDifficulty as engineAimConfigForDifficulty, getScreenSideNeighbors, getScreenAxisLabels, computeAimDrop,
   multiAxisConfigForDifficulty, evaluateFocusBeat, computeMultiAxisDrop,
   DEFAULT_MATH_FLOW, computeMathFlowModifier, applyMathFlowToConfig,
   resolve501Dart, clamp301Dart, audit501Decision,
@@ -4160,6 +4191,7 @@ const state = {
   difficulty: mastery.data.difficulty || 'league',
   fdiPairsOnly: false,
   fdiBridgesOnly: false,
+  liveSlipChecks: true,
   rivalPressure: false,
   aimMode: '3beat', // '3beat' | '2beat' | 'scatter'
   useAimGauge: true,
@@ -4296,8 +4328,11 @@ const elPaceBtn     = document.getElementById('pace-btn');
 const elTierBadge   = document.getElementById('tier-badge');
 const elPromptPlate = document.querySelector('.prompt-plate');
 const elRelockPill  = document.getElementById('relock-pill');
-const elNumpad      = document.getElementById('numpad-panel');
-const elNumDisp     = document.getElementById('numpad-display');
+const elNumpad        = document.getElementById('numpad-panel');
+const elNumDisp       = document.getElementById('numpad-display');
+const elChalkAssist   = document.getElementById('chalk-assist');
+const elChalkAssistBtn = document.getElementById('chalk-assist-btn');
+const elChalkAssistOut = document.getElementById('chalk-assist-readout');
 const elSoundPill   = document.getElementById('sound-pill');
 const elDrawerBg    = document.getElementById('drawer-backdrop');
 const elDrawerBody  = document.getElementById('drawer-body');
@@ -4318,6 +4353,8 @@ const elAimFlowPill  = document.getElementById('aim-flow-pill');
 const elAimLive      = document.getElementById('aim-live-bed');
 const elAimLeft      = document.getElementById('aim-left-lbl');
 const elAimRight     = document.getElementById('aim-right-lbl');
+const elAimLow       = document.getElementById('aim-low-lbl');
+const elAimHigh      = document.getElementById('aim-high-lbl');
 const elAimRowFocus  = document.getElementById('aim-row-focus');
 const elAimRowHoriz  = document.getElementById('aim-row-horiz');
 const elAimRowVert   = document.getElementById('aim-row-vert');
@@ -4358,15 +4395,18 @@ function recordMathFlowStep(ch, { isFinal = true, silent = false } = {}) {
   if (!ch || state.ghostMode) return state.mathFlow;
   const isMathPhase = ch.missPrompt || ((ch.kind === 'countdown301' || ch.kind === 'match501') && ch.phase !== 'throw');
   const baseMs = isMathPhase ? (ch.chalkSpeedMs || (ch.missPrompt ? 9500 : 14000)) : (ch.speedMs || 5200);
-  const targetMs = Math.max(1000, baseMs * currentProfile().timerMult);
+  const bonusMs = (ch.phase === 'chalk_rem' && ch.chalkChainBonusMs) ? ch.chalkChainBonusMs : 0;
+  const targetMs = Math.max(1000, baseMs * currentProfile().timerMult + bonusMs);
   const stepRatio = Math.max(0, (performance.now() - state.challengeStartMs) / targetMs);
   ch.mathRatios = ch.mathRatios || [];
   ch.mathRatios.push(stepRatio);
   if (state.bellChimed || stepRatio > 1.0) ch.mathTimedOut = true;
-  if (!isFinal) return state.mathFlow;
+  if (!isFinal) return { ...state.mathFlow, lastStepRatio: stepRatio };
 
   const avgRatio = ch.mathRatios.reduce((a, b) => a + b, 0) / ch.mathRatios.length;
-  const mf = computeMathFlowModifier(avgRatio, {
+  // Using Croupier Snap / Chunk Hop teaches the method with zero failure penalty, gently capping max flow at SHARP while pure unassisted calls unlock peak IN FLOW!
+  const effectiveAvg = ch.usedMethodAssist ? Math.max(avgRatio, 0.34) : avgRatio;
+  const mf = computeMathFlowModifier(effectiveAvg, {
     wrongCount: ch.mathWrongCount || 0,
     usedHint: state.usedHint,
     timedOut: !!ch.mathTimedOut,
@@ -4389,15 +4429,15 @@ function setAimLineGuide3D(drop) {
     aimLineGuide.visible = false;
     return;
   }
+  // True screen-space vertical plumb line through locked Horizontal X!
+  // Beat 3 (3·Height) slides straight up & down this exact vertical line everywhere on the 360-degree board!
   const pos = aimLineGuide.geometry.attributes.position;
-  if (aimGauge.aimedBed.code === 'BULL' || aimGauge.aimedBed.code === '25') {
-    pos.setXYZ(0, drop.x, -0.82, 0);
-    pos.setXYZ(1, drop.x, 0.82, 0);
-  } else {
-    const ang = Math.atan2(drop.x, drop.y);
-    pos.setXYZ(0, Math.sin(ang) * 0.16, Math.cos(ang) * 0.16, 0);
-    pos.setXYZ(1, Math.sin(ang) * 1.78, Math.cos(ang) * 1.78, 0);
-  }
+  const cx = Math.max(-R_DOUBLE_OUT, Math.min(R_DOUBLE_OUT, drop.x));
+  const halfSpan = Math.max(0.45, Math.sqrt(Math.max(0.04, R_DOUBLE_OUT * R_DOUBLE_OUT - cx * cx)));
+  const yMin = Math.max(-halfSpan, drop.y - 0.92);
+  const yMax = Math.min( halfSpan, drop.y + 0.92);
+  pos.setXYZ(0, drop.x, yMin, 0);
+  pos.setXYZ(1, drop.x, yMax, 0);
   pos.needsUpdate = true;
   aimLineMat.color.setHex(drop.horizZone === 'green' ? 0x7ae09f : drop.horizZone === 'amber' ? 0xf3cc7d : 0xf0685e);
   aimLineGuide.visible = true;
@@ -4489,7 +4529,7 @@ function startAimGauge(mode, bed, rawXY) {
   const pt = rawXY ? { x: rawXY.x, y: rawXY.y } : bedToXY(bed.code);
   const mf = state.mathFlow || DEFAULT_MATH_FLOW;
   const cfg = applyMathFlowToConfig(multiAxisConfigForDifficulty(state.difficulty), mf);
-  const sides = getScreenSideNeighbors(bed, pt);
+  const sides = getScreenAxisLabels(bed, pt);
   const is2Beat = state.aimMode === '2beat';
   const now = performance.now();
 
@@ -4506,7 +4546,7 @@ function startAimGauge(mode, bed, rawXY) {
   aimGauge.startedAt = now;
   aimGauge.lastLockAt = now;
   aimGauge.focusU = 0;
-  aimGauge.focusRes = is2Beat ? { zone: 'amber', label: '2-BEAT', speedMult: 1.0, zoneMult: 1.0, jitter: 0.032 } : null;
+  aimGauge.focusRes = is2Beat ? { zone: 'amber', label: '2-BEAT', speedMult: 1.0, zoneMult: 1.0, jitter: 0.056 } : null;
   aimGauge.horizU = 0;
   aimGauge.vertV = 0;
   aimGauge.curDrop = null;
@@ -4532,6 +4572,8 @@ function startAimGauge(mode, bed, rawXY) {
   }
   elAimLeft.textContent = sides.left;
   elAimRight.textContent = sides.right;
+  if (elAimLow)  elAimLow.textContent = sides.low;
+  if (elAimHigh) elAimHigh.textContent = sides.high;
   elAimFStat.textContent = 'GRP';
   elAimFNeedle.style.left = '50%';
   elAimHNeedle.style.left = '50%';
@@ -4662,7 +4704,7 @@ function releaseAimGauge() {
   // Beat 3: Final Vertical Height Release + Focus Grip & Maths-Flow Dispersion Jitter!
   const mode = aimGauge.mode;
   const aimedBed = aimGauge.aimedBed;
-  const f = aimGauge.focusRes || { zone: 'amber', label: '2-BEAT', speedMult: 1.0, zoneMult: 1.0, jitter: 0.032 };
+  const f = aimGauge.focusRes || { zone: 'amber', label: '2-BEAT', speedMult: 1.0, zoneMult: 1.0, jitter: 0.056 };
   const ja = Math.random() * Math.PI * 2;
   const jr = Math.random() * f.jitter * (cfg.jitterMult || 1.0);
   const jitterXY = { x: Math.cos(ja) * jr, y: Math.sin(ja) * jr };
@@ -5019,11 +5061,134 @@ function updateHudStats() {
   updateRelockPill();
 }
 
+function getChalkAssistSpec() {
+  const ch = state.challenge;
+  if (!ch || state.inTrial || state.hintMode === 'blind') return null;
+  if (ch.kind === 'marking' || ((ch.kind === 'countdown301' || ch.kind === 'match501') && ch.phase === 'chalk_visit')) {
+    const darts = ch.kind === 'marking' ? ch.item?.darts : ch.darts;
+    if (!darts || darts.length !== 3) return null;
+    const snap = buildCroupierSnap(darts);
+    return {
+      mode: 'snap',
+      btnLabel: ch.snappedPair ? `✓ ${snap.shapeTag}` : 'Snap Known Pair [Tab]',
+      used: !!ch.snappedPair,
+      readout: ch.snappedPair ? snap.snapPrompt : '',
+      snap,
+    };
+  }
+  if ((ch.kind === 'countdown301' || ch.kind === 'match501') && ch.phase === 'chalk_rem') {
+    const chunk = buildSubtractionChunk(ch.startScore, ch.visitTotal);
+    if (!chunk.canHop) return null;
+    return {
+      mode: 'hop',
+      btnLabel: ch.hopped ? `✓ Hopped -${chunk.hopChunk}` : `${chunk.hopLabel} [Tab]`,
+      used: !!ch.hopped,
+      readout: ch.hopped ? chunk.hopPrompt : `${chunk.tag} · tap to hop!`,
+      chunk,
+    };
+  }
+  if (ch.kind === 'match501' && ch.phase === 'miss_check') {
+    const sv = bedValue(ch.missSingle);
+    const chunk = buildSubtractionChunk(ch.missPromptFrom, sv);
+    if (!chunk.canHop) return null;
+    return {
+      mode: 'hop_miss',
+      btnLabel: ch.hopped ? `✓ Hopped -${chunk.hopChunk}` : `${chunk.hopLabel} [Tab]`,
+      used: !!ch.hopped,
+      readout: ch.hopped ? chunk.hopPrompt : `${chunk.tag} · tap to hop!`,
+      chunk,
+    };
+  }
+  if (ch.missPrompt && ch.item) {
+    const sv = bedValue('S' + ch.item.route[0].slice(1));
+    const chunk = buildSubtractionChunk(ch.item.score, sv);
+    if (!chunk.canHop) return null;
+    return {
+      mode: 'hop_g44',
+      btnLabel: ch.hopped ? `✓ Hopped -${chunk.hopChunk}` : `${chunk.hopLabel} [Tab]`,
+      used: !!ch.hopped,
+      readout: ch.hopped ? chunk.hopPrompt : `${chunk.tag} · tap to hop!`,
+      chunk,
+    };
+  }
+  return null;
+}
+
+function syncChalkAssistUI() {
+  if (!elChalkAssist) return;
+  const spec = elNumpad.classList.contains('visible') ? getChalkAssistSpec() : null;
+  if (!spec) {
+    elChalkAssist.classList.remove('visible');
+    return;
+  }
+  elChalkAssist.classList.add('visible');
+  if (elChalkAssistBtn.textContent !== spec.btnLabel && document.activeElement === elChalkAssistBtn) {
+    elChalkAssistBtn.blur();
+  }
+  elChalkAssistBtn.textContent = spec.btnLabel;
+  elChalkAssistBtn.classList.toggle('used', !!spec.used);
+  if (spec.readout) {
+    elChalkAssistOut.textContent = spec.readout;
+    elChalkAssistOut.classList.add('visible');
+  } else {
+    elChalkAssistOut.textContent = '';
+    elChalkAssistOut.classList.remove('visible');
+  }
+}
+
+function triggerChalkAssist() {
+  const ch = state.challenge;
+  const spec = getChalkAssistSpec();
+  if (!ch || !spec) return;
+  claimPlayerControl();
+  if (!audio.ctx) { audio.unlock(); elSoundPill.textContent = 'Sound: On'; elSoundPill.classList.add('on'); }
+  ch.usedMethodAssist = true;
+
+  if (spec.mode === 'snap') {
+    ch.snappedPair = true;
+    const snap = spec.snap;
+    audio.playBeatLock('green');
+    if (ch.dartCoords && ch.dartCoords.length === 3) {
+      const rings = ch.dartCoords.map((dc, idx) => ({
+        x: dc.x, y: dc.y, color: idx === snap.oddIdx ? 0x7ba3c4 : 0xffe082,
+      }));
+      showBoardOverlays({ groupRings: rings });
+    }
+    setFeedback(`Croupier Snap (${snap.shapeTag}): ${snap.snapPrompt} = ?`, 'cue');
+    if (ch.kind === 'countdown301') {
+      draw301Slate({ startOverride: ch.startScore, pending: { scored: '?', rem: '…' }, footer: snap.snapPrompt, footer2: `${snap.shapeTag} — add the 3rd dart!` });
+    } else if (ch.kind === 'match501') {
+      draw501Slate({ pendingLeft: { scored: '?', rem: '…' }, footer: snap.snapPrompt, footer2: `${snap.shapeTag} — add the 3rd dart!` });
+    }
+    syncChalkAssistUI();
+    return;
+  }
+
+  // Tactile Chunk Hop (-100, -60, -20, -10) -> slides the score cleanly on screen!
+  ch.hopped = true;
+  const c = spec.chunk;
+  audio.playChalk();
+  elScoreBig.textContent = `${c.hopMid} ${c.adjustText}`;
+  elPromptTask.textContent = `Hopped -${c.hopChunk} to ${c.hopMid}! Now ${c.hopPrompt} & press CALL!`;
+  setFeedback(`Chunk Hop (${c.tag}): -${c.hopChunk} -> ${c.hopMid}, now ${c.adjustText}!`, 'cue');
+  if (spec.mode === 'hop' && ch.kind === 'countdown301') {
+    draw301Slate({ startOverride: ch.startScore, pending: { scored: ch.visitTotal, rem: '?' }, footer: `${ch.startScore} -> ${c.hopMid} (${c.adjustText})`, footer2: c.hopPrompt });
+  } else if (spec.mode === 'hop' && ch.kind === 'match501') {
+    draw501Slate({ pendingLeft: { scored: ch.visitTotal, rem: '?' }, footer: `${ch.startScore} -> ${c.hopMid} (${c.adjustText})`, footer2: c.hopPrompt });
+  } else if (spec.mode === 'hop_miss' && ch.kind === 'match501') {
+    draw501Slate({ pendingLeft: { scored: bedValue(ch.missSingle), rem: '?' }, footer: `${ch.missPromptFrom} -> ${c.hopMid} (${c.adjustText})`, footer2: c.hopPrompt });
+  } else if (spec.mode === 'hop_g44') {
+    renderChalkboard({ header: 'MISS RULE · HOPPED', big: `${c.hopMid} ${c.adjustText}`, sub: `Hopped -${c.hopChunk} from ${ch.item.score}`, lines: [c.hopPrompt] });
+  }
+  syncChalkAssistUI();
+}
+
 function showNumpad(show) {
   elNumpad.classList.toggle('visible', show);
   document.body.classList.toggle('numpad-open', show);
   state.numInput = '';
   renderNumpadDisplay();
+  syncChalkAssistUI();
 }
 
 function renderNumpadDisplay() {
@@ -5506,7 +5671,7 @@ function applyChallengeHint(auto = false) {
   } else if (ch.kind === 'match501') {
     if (ch.phase === 'miss_check') {
       const sv = bedValue(ch.missSingle);
-      setFeedback(`Miss Rule Cue: ${ch.missPromptFrom} - ${sv} = ${ch.missExpected} (-20, +${20 - sv})`, 'cue');
+      setFeedback(ch.slipInfo ? `Recovery Cue: ${ch.slipInfo.cue}` : `Miss Rule Cue: ${ch.missPromptFrom} - ${sv} = ${ch.missExpected}`, 'cue');
     } else if (ch.phase === 'chalk_visit') {
       const info = buildVisitCue(ch.darts);
       const rings = ch.dartCoords.map((dc, idx) => ({ x: dc.x, y: dc.y, color: idx === info.oddIdx ? 0x7ba3c4 : 0xf3cc7d }));
@@ -6261,6 +6426,10 @@ function commit301Dart(aimedBed, landedBed, pt, zone = null) {
       state.advanceTimerId = null;
       state.busy = false;
       ch.phase = 'chalk_visit';
+      ch.snappedPair = false;
+      ch.hopped = false;
+      ch.usedMethodAssist = false;
+      ch.chalkChainBonusMs = 0;
       state.hintShown = false;
       state.challengeStartMs = performance.now();
       state.bellChimed = false;
@@ -6380,11 +6549,10 @@ function commit501Dart(aimedBed, landedBed, pt, zone = null) {
     ch.noPeekFdi = fdiHit;
   }
 
-  // Check if player aimed at a Golden 44 checkout treble and slipped into its same-sector Single -> LIVE MISS-RULE POP-CHECK!
-  const g44Before = G44_BY_SCORE[remBefore];
-  const triggeredMissCheck = !state.ghostMode && !triggeredNoPeek && state.dartsLeft >= 1
-    && g44Before && aimedBed.ring === 'T' && aimedBed.code === g44Before.route[0]
-    && landed.ring === 'S' && landed.sector === aimedBed.sector;
+  // Universal Live Slip-Recovery Check (<=170 Treble/Bull -> Big Single, Neighbor Single, Neighbor Treble, or 25!)
+  const slip = (!state.ghostMode && state.liveSlipChecks && !triggeredNoPeek && state.dartsLeft >= 1)
+    ? slipRecoveryInfo(remBefore, aimedBed, landed, state.dartsLeft)
+    : null;
 
   if (audit) {
     const landTag = pulled ? ` (landed ${landed.code})` : '';
@@ -6430,28 +6598,33 @@ function commit501Dart(aimedBed, landedBed, pt, zone = null) {
     return;
   }
 
-  if (triggeredMissCheck) {
+  if (slip) {
     elRelockPill.classList.remove('visible');
     ch.phase = 'miss_check';
-    ch.missExpected = newRem;
+    ch.slipInfo = slip;
+    ch.missExpected = slip.newRem;
     ch.missPromptFrom = remBefore;
     ch.missSingle = landed.code;
+    ch.usedMethodAssist = false;
+    ch.hopped = false;
     state.numInput = '';
     renderNumpadDisplay();
     state.challengeStartMs = performance.now();
     state.bellChimed = false;
-    setMethodBadge("SOD'S LAW · MISS RULE CHECK", 'fdi-80');
-    elPromptSub.textContent = "Level 7 · Sod's Law Miss Rule!";
+    setMethodBadge(slip.badge, slip.kind === 'neighbor_treble' ? 'fdi-80' : 'fdi-70');
+    elPromptSub.textContent = `Level 7 · ${slip.headline}`;
     elScoreBig.textContent = `${remBefore} - ${landed.code}`;
-    elPromptTask.textContent = `${aimedBed.code} slipped into ${landed.code}! Call what's left before Dart ${ch.darts.length + 1}!`;
+    elPromptTask.textContent = `${aimedBed.code} slipped into ${bedPretty(landed.code)}! Call what's left for Dart ${ch.darts.length + 1}!`;
     showNumpad(true);
     draw501Slate({
       pendingLeft: { scored: landed.value, rem: '?' },
-      footer: `MISS RULE: ${remBefore} - ${landed.code} = ?`,
-      footer2: 'Call new score to throw next dart!',
+      footer: `${slip.headline}: ${remBefore} - ${landed.value} = ?`,
+      footer2: slip.badge,
     });
-    setFeedback(`Sod's Law! ${aimedBed.code} dropped into ${landed.code} — call ${remBefore} - ${landed.value} (+15 XP)!`, 'cue');
-    trev.say(`Sod's Law, mate — ${aimedBed.code} dropped into ${landed.code}! Quick, call what's left on the slate before yer next arrow!`, { mood: 'toast', holdMs: 2400, speak: true });
+    setFeedback(`${slip.headline}! ${slip.badge} — fast call grants IN FLOW for Dart ${ch.darts.length + 1}!`, 'cue');
+    trev.say(slip.kind === 'neighbor_treble'
+      ? `Blimey, stray ${landed.code} (${landed.value}) instead of ${aimedBed.code}! Stay sharp — call what's left to calm yer arm!`
+      : `Sod's Law, mate — ${aimedBed.code} slipped into ${landed.code}! Call what's left quick to stay in flow!`, { mood: 'toast', holdMs: 2400, speak: true });
     updateHudStats();
     return;
   }
@@ -6477,6 +6650,10 @@ function commit501Dart(aimedBed, landedBed, pt, zone = null) {
       state.advanceTimerId = null;
       state.busy = false;
       ch.phase = 'chalk_visit';
+      ch.snappedPair = false;
+      ch.hopped = false;
+      ch.usedMethodAssist = false;
+      ch.chalkChainBonusMs = 0;
       state.hintShown = false;
       state.challengeStartMs = performance.now();
       state.bellChimed = false;
@@ -7041,9 +7218,18 @@ function submitNumericAnswer(rawStr) {
   if (ch.kind === 'countdown301') {
     if (ch.phase === 'chalk_visit') {
       if (val === ch.visitTotal) {
-        recordMathFlowStep(ch, { isFinal: false });
+        const s1 = recordMathFlowStep(ch, { isFinal: false });
+        const fastSmallCalc = !state.ghostMode && !ch.usedMethodAssist && !state.usedHint && s1 && s1.lastStepRatio <= 0.45;
+        ch.chalkChainBonusMs = fastSmallCalc ? 2500 : 0;
+        if (fastSmallCalc) {
+          mastery.data.xp = (mastery.data.xp || 0) + 10;
+          mastery.save();
+          spawnCallout('⚡ SMALL CALC! +10 XP', { x: 0, y: 0.44, style: 'gold' });
+        }
         audio.playChalk();
+        clearGroup(overlayGroup);
         ch.phase = 'chalk_rem';
+        ch.hopped = false;
         state.numInput = ''; renderNumpadDisplay();
         state.challengeStartMs = performance.now();
         state.bellChimed = false;
@@ -7053,13 +7239,14 @@ function submitNumericAnswer(rawStr) {
         elPromptSub.textContent = `${state.inTrial ? 'Pub Trial' : 'Level 4'} · Step 2: Subtract!`;
         elScoreBig.textContent = `${ch.startScore} - ${ch.visitTotal}`;
         elPromptTask.textContent = `Take ${ch.visitTotal} off ${ch.startScore} & press CALL!`;
+        syncChalkAssistUI();
         draw301Slate({
           startOverride: ch.startScore,
           pending: { scored: ch.visitTotal, rem: '?' },
           footer: `${ch.startScore} - ${ch.visitTotal} = ?`,
           footer2: state.inTrial ? 'Call the new score!' : method.badge,
         });
-        setFeedback(`Visit = ${ch.visitTotal} ✓! Now take ${ch.visitTotal} off ${ch.startScore} (${method.badge})!`, 'ok');
+        setFeedback(`${fastSmallCalc ? 'Chalk Chain (+2.5s momentum)! ' : ''}Visit = ${ch.visitTotal} ✓! Now take ${ch.visitTotal} off ${ch.startScore} (${method.badge})!`, 'ok');
       } else {
         ch.mathWrongCount = (ch.mathWrongCount || 0) + 1;
         if (!state.inTrial) applyChallengeHint(false);
@@ -7073,6 +7260,7 @@ function submitNumericAnswer(rawStr) {
     if (ch.phase === 'chalk_rem') {
       if (val === ch.expectedRem) {
         const mf = recordMathFlowStep(ch, { isFinal: true });
+        const chunk = buildSubtractionChunk(ch.startScore, ch.visitTotal);
         showNumpad(false);
         setMethodBadge(null);
         elScoreBig.textContent = String(ch.expectedRem);
@@ -7083,9 +7271,10 @@ function submitNumericAnswer(rawStr) {
           state.leg301.rows.push({ scored: ch.visitTotal, rem: ch.expectedRem });
         }
         if (!state.ghostMode && !state.usedHint && ch.subMethod) {
-          mastery.data.xp = (mastery.data.xp || 0) + 10;
+          const comboBonus = (ch.chalkChainBonusMs > 0 && !ch.usedMethodAssist) ? 15 : 10;
+          mastery.data.xp = (mastery.data.xp || 0) + comboBonus;
           mastery.save();
-          spawnCallout(`${ch.subMethod.tag} ✓ +10`, { x: 0, y: 0.44, style: 'gold' });
+          spawnCallout(comboBonus === 15 ? '🔥 CHALK COMBO! +15' : `${ch.subMethod.tag} ✓ +10`, { x: 0, y: 0.44, style: 'gold' });
         }
         if (state.stage === 'CALIBRATION') {
           renderMatchChalkboard({
@@ -7093,18 +7282,18 @@ function submitNumericAnswer(rawStr) {
             leftName: 'YOU',
             leftRows: [{ scored: null, rem: ch.startScore }, { scored: ch.visitTotal, rem: ch.expectedRem }],
             rightRows: null,
-            footer: `${ch.startScore} - ${ch.visitTotal} = ${ch.expectedRem} ✓`,
+            footer: chunk.reverseCheck,
             footer2: 'Clean chalk!',
           });
         } else {
           draw301Slate({
-            footer: `${ch.startScore} - ${ch.visitTotal} = ${ch.expectedRem} ✓`,
+            footer: chunk.reverseCheck,
             footer2: ch.expectedRem <= 120 ? 'Checkout zone reached!' : (mf && mf.pill ? mf.pill : 'Clean chalk!'),
           });
         }
         const legNote = ch.expectedRem <= 120
-          ? `Checkout zone (${ch.expectedRem}) reached! Fresh countdown next!`
-          : `Chalkboard updated: ${ch.startScore} - ${ch.visitTotal} = ${ch.expectedRem}!`;
+          ? `Checkout zone (${ch.expectedRem}) reached! (${chunk.reverseCheck})`
+          : `Chalked! ${chunk.reverseCheck}`;
         completeChallenge(true, legNote, null);
       } else {
         ch.mathWrongCount = (ch.mathWrongCount || 0) + 1;
@@ -7115,7 +7304,7 @@ function submitNumericAnswer(rawStr) {
     }
   }
 
-  // Level 7 — Championship 501 (Miss Rule Check + Step 1: Chalk Visit -> Step 2: Subtract -> Pub Rival's Turn!)
+  // Level 7 — Championship 501 (Universal Slip Recovery + Step 1: Chalk Visit -> Step 2: Subtract -> Pub Rival's Turn!)
   if (ch.kind === 'match501') {
     const m = state.match501;
     const rv = currentRival();
@@ -7124,6 +7313,10 @@ function submitNumericAnswer(rawStr) {
       if (val === ch.missExpected) {
         m.chalkOk++;
         const mf = recordMathFlowStep(ch, { isFinal: true });
+        const slip = ch.slipInfo;
+        ch.slipInfo = null;
+        ch.hopped = false;
+        ch.usedMethodAssist = false;
         ch.mathRatios = [];
         ch.mathWrongCount = 0;
         ch.mathTimedOut = false;
@@ -7135,17 +7328,18 @@ function submitNumericAnswer(rawStr) {
           mastery.save();
         }
         audio.playBell('ok');
-        if (!state.ghostMode) spawnCallout('MISS RULE ✓ +15 XP', { x: 0, y: 0.38, style: 'gold' });
+        if (!state.ghostMode) spawnCallout('RECOVERY ✓ +15 XP', { x: 0, y: 0.38, style: 'gold' });
         elScoreBig.textContent = String(ch.liveRem);
         setBridgeBadge(ch.liveRem <= 90 ? getFdiRule(ch.liveRem) : null);
         elPromptSub.textContent = `Level 7 · 501 Visit #${m.visitNum}`;
-        elPromptTask.textContent = `${ch.liveRem} left (${state.dartsLeft} dart${state.dartsLeft > 1 ? 's' : ''} in hand) — finish or set up!`;
+        const followUp = slip ? slip.followUp : `${ch.liveRem} left (${state.dartsLeft} dart${state.dartsLeft > 1 ? 's' : ''} in hand) — finish or set up!`;
+        elPromptTask.textContent = followUp;
         draw501Slate({
           pendingLeft: { scored: '…', rem: '…' },
           footer: `${ch.darts.join(' + ')} -> ${ch.liveRem} left`,
-          footer2: mf && mf.pill ? `Miss Rule ✓ · ${mf.pill}` : 'Miss Rule ✓ · Throw next dart!',
+          footer2: mf && mf.pill && mf.cls !== 'neutral' ? `Recovery ✓ · ${mf.pill}` : followUp,
         });
-        setFeedback(`Miss Rule spot on (${ch.liveRem} left)! ${mf && mf.pill ? mf.pill + ' · ' : ''}Throw Dart ${ch.darts.length + 1}!`, 'ok');
+        setFeedback(`Spot on (${ch.liveRem} left)! ${followUp}${mf && mf.pill && mf.cls !== 'neutral' ? ' · ' + mf.pill : ''}`, 'ok');
         state.challengeStartMs = performance.now();
         state.bellChimed = false;
         updateHudStats();
@@ -7154,8 +7348,8 @@ function submitNumericAnswer(rawStr) {
         ch.mathWrongCount = (ch.mathWrongCount || 0) + 1;
         audio.playWireTink(false);
         state.numInput = ''; renderNumpadDisplay();
-        const sv = bedValue(ch.missSingle);
-        setFeedback(`Check Miss Rule: ${ch.missPromptFrom} - ${sv} (use -20, +${20 - sv}!)`, 'warn');
+        const tip = ch.slipInfo ? ch.slipInfo.badge : `Check ${ch.missPromptFrom} - ${bedValue(ch.missSingle)}`;
+        setFeedback(`Not ${val}! ${tip} (tap Hop or Cue [H] for help!)`, 'warn');
       }
       return;
     }
@@ -7163,9 +7357,18 @@ function submitNumericAnswer(rawStr) {
       m.chalkAttempts++;
       if (val === ch.visitTotal) {
         m.chalkOk++;
-        recordMathFlowStep(ch, { isFinal: false });
+        const s1 = recordMathFlowStep(ch, { isFinal: false });
+        const fastSmallCalc = !state.ghostMode && !ch.usedMethodAssist && !state.usedHint && s1 && s1.lastStepRatio <= 0.45;
+        ch.chalkChainBonusMs = fastSmallCalc ? 2500 : 0;
+        if (fastSmallCalc) {
+          mastery.data.xp = (mastery.data.xp || 0) + 10;
+          mastery.save();
+          spawnCallout('⚡ SMALL CALC! +10 XP', { x: 0, y: 0.44, style: 'gold' });
+        }
         audio.playChalk();
+        clearGroup(overlayGroup);
         ch.phase = 'chalk_rem';
+        ch.hopped = false;
         state.numInput = ''; renderNumpadDisplay();
         state.challengeStartMs = performance.now();
         state.bellChimed = false;
@@ -7175,12 +7378,13 @@ function submitNumericAnswer(rawStr) {
         elPromptSub.textContent = `Level 7 · Subtract from ${ch.startScore}`;
         elScoreBig.textContent = `${ch.startScore} - ${ch.visitTotal}`;
         elPromptTask.textContent = `Take ${ch.visitTotal} off ${ch.startScore} & press CALL!`;
+        syncChalkAssistUI();
         draw501Slate({
           pendingLeft: { scored: ch.visitTotal, rem: '?' },
           footer: `${ch.startScore} - ${ch.visitTotal} = ?`,
           footer2: method.badge,
         });
-        setFeedback(`Chalked ${ch.visitTotal} ✓! Now take ${ch.visitTotal} off ${ch.startScore} (${method.badge})!`, 'ok');
+        setFeedback(`${fastSmallCalc ? 'Chalk Chain (+2.5s momentum)! ' : ''}Chalked ${ch.visitTotal} ✓! Now take ${ch.visitTotal} off ${ch.startScore} (${method.badge})!`, 'ok');
       } else {
         ch.mathWrongCount = (ch.mathWrongCount || 0) + 1;
         audio.playWireTink(false);
@@ -7188,7 +7392,7 @@ function submitNumericAnswer(rawStr) {
         state.numInput = ''; renderNumpadDisplay();
         const breakdown = ch.darts.map(d => `${d}(${bedValue(d)})`).join(' + ');
         elPromptTask.textContent = `Try again: ${breakdown} — enter total & CALL!`;
-        setFeedback(`Check your addition — ${breakdown} (press Cue [H] for grouping!)`, 'warn');
+        setFeedback(`Check your addition — ${breakdown} (press Snap Pair [Tab] or Cue [H]!)`, 'warn');
       }
       return;
     }
@@ -7197,6 +7401,7 @@ function submitNumericAnswer(rawStr) {
       if (val === ch.expectedRem) {
         m.chalkOk++;
         const mf = recordMathFlowStep(ch, { isFinal: true });
+        const chunk = buildSubtractionChunk(ch.startScore, ch.visitTotal);
         m.totalScored += ch.visitTotal;
         m.playerScore = ch.expectedRem;
         m.visitNum++;
@@ -7208,16 +7413,17 @@ function submitNumericAnswer(rawStr) {
         audio.playBell('ok');
         if (!state.ghostMode) {
           if (!state.usedHint && ch.subMethod) {
-            mastery.data.xp = (mastery.data.xp || 0) + 10;
+            const comboBonus = (ch.chalkChainBonusMs > 0 && !ch.usedMethodAssist) ? 15 : 10;
+            mastery.data.xp = (mastery.data.xp || 0) + comboBonus;
             mastery.save();
-            spawnCallout(`${ch.subMethod.tag} ✓ +10`, { x: 0, y: 0.44, style: 'gold' });
+            spawnCallout(comboBonus === 15 ? '🔥 CHALK COMBO! +15' : `${ch.subMethod.tag} ✓ +10`, { x: 0, y: 0.44, style: 'gold' });
           }
           spawnCallout(`CHALKED ${ch.expectedRem}!`, { x: 0, y: 0.30, style: 'ok' });
         }
         const flowTxt = mf && mf.pill && mf.cls !== 'neutral' ? ` · ${mf.pill}` : '';
-        setFeedback(`Chalked! ${ch.startScore} - ${ch.visitTotal} = ${ch.expectedRem}${flowTxt} — ${rv.name} steps up!`, 'ok');
+        setFeedback(`Chalked! ${chunk.reverseCheck}${flowTxt} — ${rv.name} steps up!`, 'ok');
         draw501Slate({
-          footer: `${ch.startScore} - ${ch.visitTotal} = ${ch.expectedRem} ✓`,
+          footer: chunk.reverseCheck,
           footer2: mf && mf.pill && mf.cls !== 'neutral' ? mf.pill : `${rv.name}'s throw next...`,
         });
         state.busy = true;
@@ -7460,6 +7666,11 @@ window.addEventListener('keydown', (e) => {
     e.preventDefault();
     claimPlayerControl();
     state.numInput = state.numInput.slice(0, -1); renderNumpadDisplay();
+  } else if (e.key === 'Tab' && elNumpad.classList.contains('visible')) {
+    if (getChalkAssistSpec()) {
+      e.preventDefault();
+      triggerChalkAssist();
+    }
   } else if (e.key === 'Enter' && elNumpad.classList.contains('visible')) {
     e.preventDefault();
     claimPlayerControl();
@@ -7479,9 +7690,11 @@ window.addEventListener('keydown', (e) => {
   }
 });
 
-// Slate Numpad clicks
+// Slate Numpad clicks + Croupier Snap / Chunk Hop tactile button (blur on click so keyboard Enter never re-triggers a focused button!)
+if (elChalkAssistBtn) elChalkAssistBtn.addEventListener('click', () => { elChalkAssistBtn.blur(); triggerChalkAssist(); });
 document.querySelectorAll('.np-key').forEach(btn => {
   btn.addEventListener('click', () => {
+    btn.blur();
     claimPlayerControl();
     if (!audio.ctx) { audio.unlock(); elSoundPill.textContent = 'Sound: On'; elSoundPill.classList.add('on'); }
     const k = btn.dataset.k;
@@ -7667,6 +7880,13 @@ function renderDrawer() {
           <button class="seg-btn ${state.spectator.active ? 'active' : ''}" data-spectate="1">${state.spectator.active ? 'Exit Watch' : 'Watch Bot vs Bot →'}</button>
         </div>
       </div>
+      <div class="setting-row">
+        <span>Level 7 · Live Slip-Recovery Checks (&le;170)</span>
+        <div class="seg-group">
+          <button class="seg-btn ${state.liveSlipChecks ? 'active' : ''}" data-slipchk="1">On (Miss/Stray)</button>
+          <button class="seg-btn ${!state.liveSlipChecks ? 'active' : ''}" data-slipchk="0">Off</button>
+        </div>
+      </div>
       <div class="setting-row" style="flex-wrap:wrap">
         <div>
           <div><span>Coach Trev Voice (Kokoro-82M)</span></div>
@@ -7769,6 +7989,10 @@ function renderDrawer() {
         startSpectatorMatch(a, opp);
       }
     }));
+    elDrawerBody.querySelectorAll('[data-slipchk]').forEach(b => b.addEventListener('click', () => {
+      state.liveSlipChecks = b.dataset.slipchk === '1';
+      renderDrawer();
+    }));
     elDrawerBody.querySelectorAll('[data-kvoice]').forEach(b => b.addEventListener('click', () => {
       const v = b.dataset.kvoice;
       if (v === 'browser') {
@@ -7794,9 +8018,10 @@ function renderDrawer() {
           <li><strong>Desktop / Mouse:</strong> Hover any segment on the 3D dartboard to preview it (e.g., <em>T14 · 42</em>), then click to throw.</li>
           <li><strong>Phone / Touch:</strong> <strong>Press and slide your finger</strong> across the dartboard — a floating fingertip badge previews the exact bed. <strong>Lift to throw</strong> (slide off board to cancel).</li>
           <li><strong>3-Beat Oche Rhythm (Levels 4 &amp; 7):</strong> Click/tap a bed to anchor your target, then lock <strong>1·Focus/Grip</strong> (green widens &amp; slows your throw; red snatches it!), <strong>2·Horizontal Line</strong> (stay inside the spider wire or stray into neighbouring <code>5</code>/<code>1</code>!), and <strong>3·Vertical Height</strong> (LOW &harr; HI) via click or <strong>Space</strong>! Prefer faster darts? Switch to <strong>2-Beat Line+Ht</strong> or <strong>Instant Scatter</strong> in the Pub Ladder. Press <strong>Space</strong> (or tap the quick re-aim pill) between darts to re-lock your last bed!</li>
-          <li><strong>Maths Flow &rarr; Aim Ease:</strong> Fast, clean chalking puts you <strong>⚡ IN FLOW</strong> — slowing your aiming bars and widening the green sweet spots up to <strong>+26%</strong>! Taking too long or exceeding the brass bell puts you <strong>🔔 RATTLED</strong> — speeding up the needles and tightening the wires (<strong>&minus;30%</strong>)!</li>
+          <li><strong>Maths Flow &rarr; Aim Ease:</strong> Fast, clean chalking puts you <strong>⚡ IN FLOW</strong> — slowing your aiming bars and widening the green sweet spots up to <strong>+18%</strong>! Taking too long or exceeding the brass bell puts you <strong>🔔 RATTLED</strong> — speeding up the needles and tightening the wires (<strong>&minus;26%</strong>)!</li>
           <li><strong>Flow Streaks &amp; Lightning Bonus:</strong> Chain clean shots to unlock <strong>&times;2 / &times;3 / &times;4 Flow Multipliers</strong>, golden lightning speed bonuses, and pub crowd roars!</li>
-          <li><strong>Chalk &amp; Value Calls:</strong> Type numbers on your keyboard + <strong>Enter</strong>, or tap the slate numpad + <strong>CALL</strong>.</li>
+          <li><strong>Unified Chalk Chain &amp; Live Slip Recovery:</strong> On 3-dart totals, tap <strong>Snap Known Pair [Tab]</strong> (<em>Croupier Snap</em>) to ring 2 known darts and add the 3rd — or call it unassisted for <strong>⚡ SMALL CALC! (+10 XP)</strong> &amp; carry-over time into subtraction! On subtraction &amp; checkout slips (<code>S19, S5, T5, T7, 25</code>), tap <strong>Hop &minus;100 / &minus;20 / &minus;10 [Tab]</strong> to practice the real <code>@yourdarts</code> chunk-and-adjust jump — or nail it cold to chain <strong>🔥 CHALK COMBO</strong> &amp; unlock peak <strong>⚡ IN FLOW (+18% AIM)</strong>!</li>
+          <li><strong>Chalk &amp; Value Calls:</strong> Type numbers on your keyboard + <strong>Enter</strong> (<strong>Tab</strong> = Snap/Hop), or tap the slate numpad + <strong>CALL</strong>.</li>
         </ul>
       </div>
       <div class="howto-card">
@@ -7959,7 +8184,8 @@ function animate(now) {
     const ch = state.challenge;
     const isMathPhase = ch.missPrompt || ((ch.kind === 'countdown301' || ch.kind === 'match501') && ch.phase !== 'throw');
     const baseMs = isMathPhase ? (ch.chalkSpeedMs || (ch.missPrompt ? 9500 : 14000)) : (ch.speedMs || 3200);
-    const targetMs = baseMs * prof.timerMult * (state.ghostMode ? 1.55 : 1.0);
+    const chainBonus = (ch.phase === 'chalk_rem' && ch.chalkChainBonusMs) ? ch.chalkChainBonusMs : 0;
+    const targetMs = baseMs * prof.timerMult * (state.ghostMode ? 1.55 : 1.0) + chainBonus;
     const elapsed = now - state.challengeStartMs;
     const remMs = Math.max(0, targetMs - elapsed);
     const pct = remMs / targetMs;

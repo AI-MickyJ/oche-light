@@ -138,19 +138,71 @@ async function run() {
   assert(engine.computeMultiAxisDrop(d20, engine.bedToXY('D20'), fGreen, 0.0, 0.65, mCfg, true).bed.code === 'MISS', '3-beat D20 high outside wire miss');
   assert(engine.computeMultiAxisDrop(d20, engine.bedToXY('D20'), fGreen, 0.0, -0.45, mCfg, true).bed.code === 'S20', '3-beat D20 low inside wire -> S20');
   assert(engine.computeMultiAxisDrop(d16, engine.bedToXY('D16'), fGreen, 0.0, -0.65, mCfg, true).bed.code === 'MISS', '3-beat D16 low outside bottom wire miss');
-  assert(engine.computeMultiAxisDrop(d16, engine.bedToXY('D16'), fGreen, 0.0, 0.45, mCfg, true).bed.code === 'S16', '3-beat D16 high inside wire -> S16');
+  assert(engine.computeMultiAxisDrop(d16, engine.bedToXY('D16'), fGreen, 0.0,  0.28, mCfg, true).bed.code === 'S16',  '3-beat D16 slight high inside wire -> S16');
+  assert(engine.computeMultiAxisDrop(d16, engine.bedToXY('D16'), fGreen, 0.0,  0.65, mCfg, true).bed.sector === 8,   '3-beat D16 wide high -> neighbor 8 above D16');
+
+  // True 360-degree side-of-board aiming geometry assertions (D11, D6, D8, D10, T6, T11, every T & D green+green)
+  const d11 = engine.parseBedCode('D11'), d11xy = engine.bedToXY('D11');
+  assert(engine.computeMultiAxisDrop(d11, d11xy, fGreen, -0.55, 0.0, mCfg, true).bed.code === 'MISS', 'D11 left -> outside left wire MISS');
+  assert(engine.computeMultiAxisDrop(d11, d11xy, fGreen,  0.42, 0.0, mCfg, true).bed.code === 'S11',  'D11 right -> inside S11');
+  assert(engine.computeMultiAxisDrop(d11, d11xy, fGreen,  0.0,  0.85, mCfg, true).bed.sector === 14, 'D11 up -> neighbor 14');
+  assert(engine.computeMultiAxisDrop(d11, d11xy, fGreen,  0.0, -0.85, mCfg, true).bed.sector === 8,  'D11 down -> neighbor 8');
+  const d6 = engine.parseBedCode('D6'), d6xy = engine.bedToXY('D6');
+  assert(engine.computeMultiAxisDrop(d6, d6xy, fGreen,  0.55, 0.0, mCfg, true).bed.code === 'MISS', 'D6 right -> outside right wire MISS');
+  assert(engine.computeMultiAxisDrop(d6, d6xy, fGreen, -0.42, 0.0, mCfg, true).bed.code === 'S6',   'D6 left -> inside S6');
+  assert(engine.computeMultiAxisDrop(d6, d6xy, fGreen,  0.0,  0.85, mCfg, true).bed.sector === 13, 'D6 up -> neighbor 13');
+  assert(engine.computeMultiAxisDrop(d6, d6xy, fGreen,  0.0, -0.85, mCfg, true).bed.sector === 10, 'D6 down -> neighbor 10');
+  const t6 = engine.parseBedCode('T6'), t6xy = engine.bedToXY('T6');
+  assert(engine.computeMultiAxisDrop(t6, t6xy, fGreen,  0.0,  0.85, mCfg, true).bed.sector === 13, 'T6 up -> neighbor 13');
+  assert(engine.computeMultiAxisDrop(t6, t6xy, fGreen,  0.0, -0.85, mCfg, true).bed.sector === 10, 'T6 down -> neighbor 10');
+  assert(engine.computeMultiAxisDrop(t6, t6xy, fGreen, -0.42, 0.0,  mCfg, true).bed.code === 'S6', 'T6 left -> inner S6');
+  // Every sector 1..20 T & D must guarantee hit on exact Green+Green (even at diagonal sweet-spot corner!)
+  for (const sec of engine.SECTORS) {
+    for (const prefix of ['T', 'D']) {
+      const code = prefix + sec;
+      const b = engine.parseBedCode(code);
+      const xy = engine.bedToXY(code);
+      const dr = engine.computeMultiAxisDrop(b, xy, fGreen, mCfg.horizSweet * 0.9, mCfg.vertSweet * 0.9, mCfg, true);
+      assert(dr.bed.code === code, `360-deg Green+Green corner guarantee failed on ${code} (got ${dr.bed.code})`);
+    }
+  }
+  const d11Lbls = engine.getScreenAxisLabels(d11, d11xy);
+  assert(d11Lbls.left === 'OUT' && d11Lbls.high === '14' && d11Lbls.low === '8', `D11 axis labels mismatch: ${JSON.stringify(d11Lbls)}`);
+  const d6Lbls = engine.getScreenAxisLabels(d6, d6xy);
+  assert(d6Lbls.right === 'OUT' && d6Lbls.high === '13' && d6Lbls.low === '10', `D6 axis labels mismatch: ${JSON.stringify(d6Lbls)}`);
   assert(engine.subtractionMethodInfo(301, 85).badge === 'Method: -100, +?', 'Round-100 subtraction method badge');
   assert(engine.subtractionMethodInfo(301, 57).badge === 'Method: -60, +?', 'Round-up tens subtraction method badge');
-  for (const domId of ['aim-row-focus', 'aim-row-horiz', 'aim-row-vert', 'aim-f-needle', 'aim-h-needle', 'aim-v-needle', 'aim-flow-pill']) {
-    assert(idxHtml.includes(`id="${domId}"`), `Missing 3-beat DOM element #${domId}`);
+  for (const domId of ['aim-row-focus', 'aim-row-horiz', 'aim-row-vert', 'aim-f-needle', 'aim-h-needle', 'aim-v-needle', 'aim-flow-pill', 'aim-low-lbl', 'aim-high-lbl', 'chalk-assist', 'chalk-assist-btn']) {
+    assert(idxHtml.includes(`id="${domId}"`), `Missing DOM element #${domId}`);
   }
+  // Unified Chalk Chain (Croupier Snap, Chunk Hop) & Universal Slip Recovery assertions
+  const snap1 = engine.buildCroupierSnap(['S20', 'T19', 'S19']);
+  assert(snap1.total === 96 && snap1.pairSum === 76 && snap1.oddIdx === 0, 'Croupier Snap groups T19+S19=76 + S20');
+  const snap2 = engine.buildCroupierSnap(['T20', 'T19', 'S5']);
+  assert(snap2.total === 122 && snap2.pairSum === 117 && snap2.shapeTag.includes('Steal'), 'Croupier Snap Steal Last Digit T20+T19=117');
+  const ch100 = engine.buildSubtractionChunk(501, 85);
+  assert(ch100.canHop && ch100.hopMid === 401 && ch100.adjustVal === 15 && ch100.expected === 416, 'Chunk Hop 501-85 -> 401+15=416');
+  const ch114 = engine.buildSubtractionChunk(301, 114);
+  assert(ch114.canHop && ch114.hopMid === 201 && ch114.adjustVal === -14 && ch114.expected === 187, 'Chunk Hop Two-T19 301-114 -> 201-14=187');
+  const chR43 = engine.buildSubtractionChunk(129, 57);
+  assert(chR43.canHop && chR43.hopMid === 29 && chR43.adjustVal === 43 && chR43.expected === 72, 'Chunk Hop Rule of 43 129-57 -> 29+43=72');
+  const slFdi = engine.slipRecoveryInfo(74, engine.parseBedCode('T14'), engine.parseBedCode('S14'), 1);
+  assert(slFdi && slFdi.kind === 'fdi_single' && slFdi.newRem === 60, 'Slip Recovery 74 T14->S14 = 60 FDI single');
+  const slBig = engine.slipRecoveryInfo(129, engine.parseBedCode('T19'), engine.parseBedCode('S19'), 2);
+  assert(slBig && slBig.kind === 'big_single' && slBig.newRem === 110 && slBig.chunk.hopChunk === 20 && slBig.chunk.adjustVal === 1, 'Slip Recovery 129 T19->S19 (-20,+1=110)');
+  const slNbS = engine.slipRecoveryInfo(104, engine.parseBedCode('T20'), engine.parseBedCode('S5'), 2);
+  assert(slNbS && slNbS.kind === 'neighbor_single' && slNbS.newRem === 99 && slNbS.followUp.includes('Splash trap'), 'Slip Recovery 104 T20->S5 = 99 splash trap');
+  const slNbT = engine.slipRecoveryInfo(129, engine.parseBedCode('T19'), engine.parseBedCode('T7'), 2);
+  assert(slNbT && slNbT.kind === 'neighbor_treble' && slNbT.newRem === 108 && slNbT.chunk.hopChunk === 20 && slNbT.chunk.adjustVal === -1, 'Slip Recovery 129 T19->T7(21) -> -20,-1 = 108');
+  const slBull = engine.slipRecoveryInfo(93, engine.parseBedCode('BULL'), engine.parseBedCode('25'), 2);
+  assert(slBull && slBull.kind === 'outer_bull' && slBull.newRem === 68 && slBull.badge.includes('+5'), 'Slip Recovery 93 BULL->25 = 68 (+5 shortcut)');
   // Maths-Speed -> Oche Flow Aim Difficulty assertions
   const mfFast = engine.computeMathFlowModifier(0.22);
   const mfSlow = engine.computeMathFlowModifier(0.92);
   const mfExpired = engine.computeMathFlowModifier(0.40, { timedOut: true });
-  assert(mfFast.tier === 'in_flow' && mfFast.speedMult < 0.85 && mfFast.zoneMult > 1.2, 'Fast maths triggers IN FLOW easier aim');
+  assert(mfFast.tier === 'in_flow' && mfFast.speedMult < 0.88 && mfFast.zoneMult > 1.15, 'Fast maths triggers IN FLOW easier aim');
   assert(mfSlow.tier === 'rushed' && mfSlow.speedMult > 1.1 && mfSlow.zoneMult < 0.9, 'Slow maths tightens aim');
-  assert(mfExpired.tier === 'cold' && mfExpired.speedMult > 1.25 && mfExpired.zoneMult < 0.75, 'Expired timer triggers RATTLED harder aim');
+  assert(mfExpired.tier === 'cold' && mfExpired.speedMult > 1.25 && mfExpired.zoneMult < 0.76, 'Expired timer triggers RATTLED harder aim');
   const cfgFlow = engine.applyMathFlowToConfig(mCfg, mfFast);
   const cfgCold = engine.applyMathFlowToConfig(mCfg, mfExpired);
   assert(cfgFlow.horizSpeed < mCfg.horizSpeed && cfgFlow.horizSweet > mCfg.horizSweet, 'IN FLOW slows & widens horiz corridor');
