@@ -1122,6 +1122,7 @@ import {
   aimConfigForDifficulty as engineAimConfigForDifficulty, getScreenSideNeighbors, computeAimDrop,
   resolve501Dart, clamp301Dart, audit501Decision,
 } from './src/engine.mjs';
+import { BOT_PROFILES, BOT_IDS, simulateBot501Visit } from './src/bots.mjs';
 
 /* ============================================================================
    1. 7-LEVEL PUB CAREER & CURRICULUM STAGES (Geometry & Data live in src/engine.mjs)
@@ -1141,8 +1142,8 @@ const STAGES = [
     desc: 'Below-60 Double Smiths, The Golden 44 (25/30/35 No-Peek FDIs + Red Outlaws) and Sod\'s Law live miss saves.' },
   { id: 'LEVEL_6', short: 'Level 6 · 3-Dart Finishes', title: 'Level 6 · Three-Dart Finishes (101–170) & Traps', tag: 'FDIs + Bogeys',
     desc: 'Rule of 40 (+40), Rule of 43 (+43), Two-T19 (-14) bridging into 25/30/35 FDIs, Splash-Trap saves & Bogey Dodger!' },
-  { id: 'LEVEL_7', short: 'Level 7 · 501 Match', title: 'Level 7 · Championship 501 (Board Management)', tag: 'Final Boss',
-    desc: 'Play a full leg of 501 (Double Out) vs. Big Dave, "Razor" Rita or The Guv\'nor! Chalk & subtract every visit while Trev audits every decision.' },
+  { id: 'LEVEL_7', short: 'Level 7 · 501 Match', title: 'Level 7 · Championship 501 (Board Management)', tag: '5 Bots · Bo3',
+    desc: 'Play Single Leg or Best-of-3 501 (Double Out) against 5 physics-driven pub bots — or watch Bot vs Bot live in 3D!' },
 ];
 
 const LEVEL_FLOW_ORDER = ['LEVEL_1', 'LEVEL_2', 'LEVEL_3', 'LEVEL_4', 'LEVEL_5', 'LEVEL_6', 'LEVEL_7'];
@@ -3826,29 +3827,40 @@ const state = {
   trialReadyNotified: {},
   // Level 4: 301 / Under-260 Chalk & Countdown running leg
   leg301: { score: 301, startMode: 301, visitsDone: 0, nextMode: 'throw' },
-  // Level 7: Championship 501 vs. Pub Rival + Live Board-Management Auditor
-  rivalId: 'dave',
+  // Level 7: Championship 501 vs. 5 Real-Physics Pub Bots + Best-of-3 + Live 3D Bot-vs-Bot Spectator
+  rivalId: 'big_dave',
+  matchFormat: 'single', // 'single' | 'bo3'
   lastAimBed: null,
   lastAimXY: null,
   match501: {
     playerScore: 501, rivalScore: 501, dartsThrown: 0, totalScored: 0,
     chalkOk: 0, chalkAttempts: 0, auditGood: 0, auditTotal: 0, auditNotes: [],
     visitNum: 1, lastDaveNote: '', finished: false,
+    legsYou: 0, legsRival: 0, legNum: 1, rivalD1Darts: 0,
+  },
+  spectator: {
+    active: false,
+    botA: 'nervy_nigel',
+    botB: 'pub_shark',
+    scores: [501, 501],
+    d1Darts: [0, 0],
+    turn: 0,
+    visitNum: 1,
+    timerId: null,
   },
 };
 
-const PUB_RIVALS = {
-  dave:   { id: 'dave',   name: 'Big Dave',     short: 'DAVE',   avg: '~54 Avg', dblRate: 0.30, flightHex: 0x265685,
-    visits: [['S20','S5','S1'], ['S20','S20','S1'], ['S20','S20','S5'], ['S20','S20','S18'], ['T20','S20','S1'], ['S19','S19','S7'], ['T20','S5','S1'], ['T19','S19','S7'], ['T20','S20','S5'], ['T20','S20','S20']],
-    taunt: "Big Dave's steppin' up with a pint in one hand!" },
-  rita:   { id: 'rita',   name: '"Razor" Rita', short: 'RITA',   avg: '~68 Avg', dblRate: 0.48, flightHex: 0x6b2e75,
-    visits: [['S20','S20','S20'], ['T20','S5','S1'], ['T19','S19','S3'], ['T20','S20','S1'], ['T20','S20','S5'], ['T20','S20','S19'], ['T20','S20','S20'], ['T19','T19','S7'], ['T20','T20','S5']],
-    taunt: "Watch out — Razor Rita's deadly on Double 16!" },
-  guvnor: { id: 'guvnor', name: "The Guv'nor",  short: 'GUV',    avg: '~84 Avg', dblRate: 0.65, flightHex: 0x246b55,
-    visits: [['S20','S20','S20'], ['T20','S20','S5'], ['T20','S20','S19'], ['T20','S20','S20'], ['T19','T19','S19'], ['T20','T20','S5'], ['T20','T20','S20'], ['T20','T19','T19']],
-    taunt: "East End royalty on the oche — The Guv'nor doesn't miss many!" },
-};
-function currentRival() { return PUB_RIVALS[state.rivalId] || PUB_RIVALS.dave; }
+const RIVAL_ALIASES = { dave: 'big_dave', rita: 'pub_shark', guvnor: 'treble_hunter' };
+const RIVAL_LADDER = ['big_dave', 'steady_eddie', 'nervy_nigel', 'treble_hunter', 'pub_shark'];
+function resolveRivalId(id) {
+  const mapped = RIVAL_ALIASES[id] || id;
+  return BOT_PROFILES[mapped] ? mapped : 'big_dave';
+}
+function currentRival() {
+  const id = resolveRivalId(state.rivalId);
+  state.rivalId = id;
+  return BOT_PROFILES[id];
+}
 
 function currentProfile() {
   return DIFFICULTY_PROFILES[state.difficulty] || DIFFICULTY_PROFILES.league;
@@ -3870,12 +3882,17 @@ function resetLeg301(startScore = null) {
   state.leg301 = { score: nextStart, startMode: nextStart, visitsDone: 0, nextMode: 'throw' };
 }
 
-function resetMatch501() {
+function resetMatch501(keepSeries = false) {
   const rv = currentRival();
+  const prev = state.match501 || {};
+  const legsYou = keepSeries ? (prev.legsYou || 0) : 0;
+  const legsRival = keepSeries ? (prev.legsRival || 0) : 0;
+  const legNum = keepSeries ? ((prev.legNum || 1) + 1) : 1;
   state.match501 = {
     playerScore: 501, rivalScore: 501, dartsThrown: 0, totalScored: 0,
     chalkOk: 0, chalkAttempts: 0, auditGood: 0, auditTotal: 0, auditNotes: [],
-    visitNum: 1, lastDaveNote: `${rv.name} (${rv.avg}): 501`, finished: false,
+    visitNum: 1, lastDaveNote: `${rv.name} (${rv.avgLabel}): 501`, finished: false,
+    legsYou, legsRival, legNum, rivalD1Darts: 0,
   };
 }
 
@@ -4264,6 +4281,7 @@ function finishLevelTrial(passed) {
 }
 
 function selectStage(stageId, startAsPlayer = true, forceBriefing = false) {
+  stopSpectatorMode();
   cancelAimGauge();
   if (startAsPlayer) claimPlayerControl();
   dismissWelcome();
@@ -4273,7 +4291,7 @@ function selectStage(stageId, startAsPlayer = true, forceBriefing = false) {
   state.stage = stageId;
   if (stageId === 'CALIBRATION') { state.calibQueue = []; state.calibIndex = 0; }
   if (stageId === 'LEVEL_4') resetLeg301(301);
-  if (stageId === 'LEVEL_7') resetMatch501();
+  if (stageId === 'LEVEL_7') resetMatch501(false);
   loadChallenge(nextChallengeForStage(stageId));
   if (STAGE_BRIEFS[stageId]) {
     const briefTxt = stageId === 'LEVEL_7' ? STAGE_BRIEFS[stageId].replace('Big Dave', currentRival().name) : STAGE_BRIEFS[stageId];
@@ -4306,13 +4324,20 @@ function updateHudStats() {
   const stars = mastery.getStars(state.stage);
   const starTxt = stars > 0 ? ` ${formatStars(stars)}` : '';
   elStageLabel.textContent = st ? `${st.short}${starTxt}` : state.stage;
-  elGhostPill.textContent = state.ghostMode ? 'Ghost Demo' : (state.inTrial ? 'Pub Trial' : 'Your Throw');
+  elGhostPill.textContent = state.spectator.active ? 'Bot vs Bot' : state.ghostMode ? 'Ghost Demo' : (state.inTrial ? 'Pub Trial' : 'Your Throw');
   elGhostPill.classList.toggle('active-player', !state.ghostMode);
   const dartPips = elDartIcons.querySelectorAll('.dart-pip');
   dartPips.forEach((p, idx) => p.classList.toggle('spent', idx >= state.dartsLeft));
 
   // Render Practice Pips / Pub Trial / 501 Scoreboard Bar
-  if (state.stage === 'CALIBRATION') {
+  if (state.spectator.active) {
+    elPipRow.style.display = 'flex';
+    elTrialBtn.style.display = 'none';
+    const bA = BOT_PROFILES[state.spectator.botA];
+    const bB = BOT_PROFILES[state.spectator.botB];
+    elPipDots.innerHTML = '';
+    elPipLabel.textContent = `${bA.short} ${state.spectator.scores[0]} vs ${bB.short} ${state.spectator.scores[1]}`;
+  } else if (state.stage === 'CALIBRATION') {
     elPipRow.style.display = 'flex';
     elTrialBtn.style.display = 'none';
     const done = Math.min(12, state.calibIndex);
@@ -4325,8 +4350,9 @@ function updateHudStats() {
     const rv = currentRival();
     const iqPct = m.auditTotal ? Math.round((m.auditGood / m.auditTotal) * 100) : 100;
     const iqGrade = iqPct >= 90 ? 'S' : iqPct >= 75 ? 'A' : iqPct >= 55 ? 'B' : 'C';
+    const bo3Tag = state.matchFormat === 'bo3' ? `L${m.legsYou}-${m.legsRival} · ` : '';
     elPipDots.innerHTML = '';
-    elPipLabel.textContent = `YOU ${m.playerScore} · ${rv.short} ${m.rivalScore} · IQ ${m.auditTotal ? iqGrade : '—'}`;
+    elPipLabel.textContent = `${bo3Tag}YOU ${m.playerScore} · ${rv.short} ${m.rivalScore} · IQ ${m.auditTotal ? iqGrade : '—'}`;
   } else if (state.inTrial) {
     elPipRow.style.display = 'flex';
     elTrialBtn.style.display = 'none';
@@ -4946,6 +4972,171 @@ function checkStagePromotion(rankUpTitle) {
   return false;
 }
 
+function stopSpectatorMode() {
+  if (state.spectator.timerId) {
+    clearTimeout(state.spectator.timerId);
+    state.spectator.timerId = null;
+  }
+  state.spectator.active = false;
+}
+
+function startSpectatorMatch(botAId = null, botBId = null) {
+  stopSpectatorMode();
+  if (state.advanceTimerId) { clearTimeout(state.advanceTimerId); state.advanceTimerId = null; }
+  cancelAimGauge();
+  closeDrawer();
+  closeStageBriefing();
+  dismissWelcome();
+  elLevelUp.classList.remove('show');
+  showNumpad(false);
+
+  const chosenA = botAId && BOT_PROFILES[botAId] ? botAId : resolveRivalId(state.rivalId);
+  const chosenB = botBId && BOT_PROFILES[botBId] && botBId !== chosenA
+    ? botBId
+    : (BOT_IDS.find(id => id !== chosenA && id !== 'big_dave') || 'pub_shark');
+
+  state.stage = 'LEVEL_7';
+  state.ghostMode = false;
+  state.inTrial = false;
+  state.busy = true;
+  state.challenge = null;
+  state.spectator = {
+    active: true,
+    botA: chosenA,
+    botB: chosenB,
+    scores: [501, 501],
+    d1Darts: [0, 0],
+    turn: 0,
+    visitNum: 1,
+    timerId: null,
+  };
+
+  const bA = BOT_PROFILES[chosenA];
+  const bB = BOT_PROFILES[chosenB];
+  elRivalTag.style.display = 'inline-block';
+  elRivalTag.textContent = `${bA.short} vs ${bB.short}`;
+  elRivalTag.className = 'rival-tag';
+  setBridgeBadge(null);
+  elPromptSub.textContent = 'LIVE 3D PUB SPECTATOR · 501';
+  elScoreBig.textContent = '501';
+  elPromptTask.textContent = `${bA.name} vs ${bB.name} — click board anytime to grab the darts!`;
+  renderChalkboard({
+    header: 'PUB NIGHT EXHIBITION', big: '501', sub: `${bA.short} 501 · ${bB.short} 501`,
+    lines: [`${bA.name} (${bA.avgLabel})`, `vs ${bB.name} (${bB.avgLabel})`],
+  });
+  trev.say(`Grab a pint, sunshine! Live pub exhibition: ${bA.name} taking on ${bB.name} — real board physics, watch every arrow!`, {
+    mood: 'toast', holdMs: 3200, forceOpen: true, speak: true, allowInGhost: true,
+  });
+  updateHudStats();
+  state.spectator.timerId = setTimeout(stepSpectatorTurn, 950);
+}
+
+function stepSpectatorTurn() {
+  if (!state.spectator.active) return;
+  const sp = state.spectator;
+  const idx = sp.turn % 2;
+  const opp = 1 - idx;
+  const bot = BOT_PROFILES[idx === 0 ? sp.botA : sp.botB];
+  const oppBot = BOT_PROFILES[opp === 0 ? sp.botA : sp.botB];
+  const startScore = sp.scores[idx];
+
+  clearDarts();
+  clearGroup(overlayGroup);
+
+  const visit = simulateBot501Visit(bot, {
+    startScore,
+    rivalScore: sp.scores[opp],
+    rivalName: oppBot.name,
+    priorD1Darts: sp.d1Darts[idx],
+  });
+  sp.scores[idx] = visit.endScore;
+  sp.d1Darts[idx] += visit.d1Darts;
+
+  const landedCodes = visit.throws.map(t => t.landed.code);
+  const missedMatchDart = visit.throws.some(t => t.isMatchDart && !t.isWin);
+
+  visit.throws.forEach((t, i) => {
+    const isWireBounce = t.isBust || t.landed.code === 'MISS';
+    const isHot = t.zone === 'green' && (t.landed.ring === 'T' || t.landed.ring === 'D' || t.landed.ring === 'BULL');
+    throwDartTo(t.x, t.y, {
+      kind: t.landed.ring === 'MISS' ? 'S' : t.landed.ring,
+      accent: bot.flightHex,
+      delay: i * 0.28,
+      wireTink: isWireBounce,
+      ringHex: t.isWin ? 0xffe494 : isHot ? 0x7ae09f : null,
+      ringScale: t.isWin ? 4.4 : 2.8,
+      onLand: () => {
+        if (!state.spectator.active) return;
+        if (t.isBust) spawnCallout('BUST!', { x: t.x, y: t.y + 0.16, style: 'warn' });
+        else if (t.landed.code === 'MISS') spawnCallout('WIRE MISS!', { x: t.x, y: t.y + 0.16, style: 'warn' });
+        else if (t.isWin) spawnCallout(`GAME SHOT! ${t.landed.code}`, { x: t.x, y: t.y + 0.2, style: 'gold' });
+        else spawnCallout(`${t.landed.code} (+${t.landed.value})`, { x: t.x, y: t.y + 0.14, style: isHot ? 'gold' : 'ok' });
+      },
+    });
+  });
+
+  const note = visit.won
+    ? `${bot.name} CHECKS OUT ${startScore} (${landedCodes.join('+')})!`
+    : visit.busted
+      ? `${bot.name} BUSTS on ${startScore}!`
+      : `${bot.name}: ${landedCodes.join('+')} (${visit.visitTotal}) -> ${visit.endScore}`;
+
+  audio.playChalk();
+  elPromptSub.textContent = `BOT VS BOT · VISIT #${Math.floor(sp.turn / 2) + 1}`;
+  elScoreBig.textContent = String(visit.endScore);
+  elPromptTask.textContent = `${note} · Click board to take over`;
+  renderChalkboard({
+    header: `${bot.name.toUpperCase()}`, big: visit.endScore,
+    sub: `${BOT_PROFILES[sp.botA].short} ${sp.scores[0]} · ${BOT_PROFILES[sp.botB].short} ${sp.scores[1]}`,
+    lines: [note, visit.won ? `${bot.name} wins the leg!` : `${oppBot.name} stepping up on ${sp.scores[opp]}...`],
+  });
+  setFeedback(`${note} — Tap/click the 3D board anytime to play 501 yourself!`, visit.won ? 'ok' : 'cue');
+  updateHudStats();
+
+  if (visit.visitTotal === 180) {
+    audio.playCrowdRoar(1.3);
+    spawnBurst(0, 0.9, 'gold');
+    spawnCallout(`${bot.short}: ONE HUNDRED & EIGHTY!!`, { center: true, style: 'big' });
+    trev.say(`ONE HUNDRED AND EIGHTY from ${bot.name}! Roof's comin' off the boozer!`, { mood: 'cheer', holdMs: 2800, speak: true, allowInGhost: true });
+  } else if (visit.visitTotal === 26) {
+    audio.playPubGroan();
+    spawnCallout(`${bot.short}: 26 BREAKFAST!`, { center: true, style: 'warn' });
+    trev.say(`Haha! ${bot.name} just served up a 26 Breakfast — sausage, egg an' beans!`, { mood: 'wince', holdMs: 2200, speak: true, allowInGhost: true });
+  } else if (missedMatchDart && !visit.won) {
+    audio.playPubGroan();
+    trev.say(bot.missQuip || `Ooh! ${bot.name} missed a match dart at double — drama at the oche!`, { mood: 'wince', holdMs: 2400, speak: true, allowInGhost: true });
+  }
+
+  if (visit.won) {
+    audio.playCrowdRoar(1.25);
+    spawnBurst(0, 0.25, 'gold');
+    spawnCallout(`${bot.short} TAKES THE LEG!!`, { center: true, style: 'big' });
+    trev.say(`Game shot and the leg to ${bot.name} on ${visit.finishingBed}! Proper pub exhibition, that!`, {
+      mood: 'toast', holdMs: 3600, forceOpen: true, speak: true, allowInGhost: true,
+    });
+    sp.timerId = setTimeout(() => {
+      if (!state.spectator.active) return;
+      showLevelUpBanner(
+        `${bot.name} Wins the Exhibition Leg!`,
+        `Checked out ${startScore} (${landedCodes.join('+')}) while ${oppBot.name} sat on ${sp.scores[opp]}.`,
+        [
+          { label: 'Watch Rematch', onClick: () => startSpectatorMatch(sp.botB, sp.botA) },
+          { label: 'New Bot Matchup', onClick: () => {
+            const nextA = BOT_IDS[(BOT_IDS.indexOf(sp.botA) + 1) % BOT_IDS.length];
+            const nextB = BOT_IDS[(BOT_IDS.indexOf(sp.botB) + 2) % BOT_IDS.length];
+            startSpectatorMatch(nextA, nextB === nextA ? BOT_IDS[0] : nextB);
+          } },
+          { label: `Play 501 vs ${bot.name} →`, ghost: true, onClick: () => { state.rivalId = bot.id; selectStage('LEVEL_7', true, false); } },
+        ]
+      );
+    }, 1350);
+    return;
+  }
+
+  sp.turn++;
+  sp.timerId = setTimeout(stepSpectatorTurn, 1650);
+}
+
 function runBigDaveTurn() {
   const m = state.match501;
   const rv = currentRival();
@@ -4954,80 +5145,78 @@ function runBigDaveTurn() {
   clearDarts();
   clearGroup(overlayGroup);
 
-  let daveScored = 0;
-  let daveWon = false;
-  let rivalDarts = [];
+  const startScore = m.rivalScore;
+  const visit = simulateBot501Visit(rv, {
+    startScore,
+    rivalScore: m.playerScore,
+    rivalName: 'You',
+    priorD1Darts: m.rivalD1Darts || 0,
+  });
 
-  if (m.rivalScore > 170) {
-    const picked = rv.visits[Math.floor(Math.random() * rv.visits.length)];
-    rivalDarts = picked.slice();
-    daveScored = rivalDarts.reduce((s, c) => s + bedValue(c), 0);
-    if (m.rivalScore - daveScored < 40) {
-      rivalDarts = ['S20', 'S20', 'S1'];
-      daveScored = Math.min(41, Math.max(20, m.rivalScore - 40));
-    }
-    m.rivalScore -= daveScored;
-    m.lastDaveNote = `${rv.name}: ${rivalDarts.join('+')} (${daveScored}) -> ${m.rivalScore}`;
-  } else if (m.rivalScore > 40 && m.rivalScore !== 50) {
-    const targetLeave = m.rivalScore > 100 ? (m.rivalScore - (55 + Math.floor(Math.random() * 35))) : (Math.random() < 0.5 ? 32 : 40);
-    const clamped = Math.max(16, targetLeave % 2 === 0 ? targetLeave : targetLeave - 1);
-    daveScored = Math.max(15, m.rivalScore - clamped);
-    const d1 = daveScored >= 60 ? 'T20' : daveScored >= 45 ? 'T15' : 'S20';
-    const left1 = Math.max(1, daveScored - bedValue(d1));
-    const d2 = left1 <= 20 ? 'S' + left1 : 'S20';
-    const left2 = Math.max(0, left1 - bedValue(d2));
-    rivalDarts = left2 > 0 && left2 <= 20 ? [d1, d2, 'S' + left2] : [d1, d2];
-    m.rivalScore -= daveScored;
-    m.lastDaveNote = `${rv.name} scored ${daveScored} -> leaves ${m.rivalScore}!`;
+  const daveScored = visit.visitTotal;
+  const daveWon = visit.won;
+  m.rivalScore = visit.endScore;
+  m.rivalD1Darts = (m.rivalD1Darts || 0) + visit.d1Darts;
+  const landedCodes = visit.throws.map(t => t.landed.code);
+  const missedMatchDart = visit.throws.some(t => t.isMatchDart && !t.isWin);
+
+  if (daveWon) {
+    m.lastDaveNote = `${rv.name} checked out ${startScore} (${landedCodes.join('+')})!`;
+  } else if (visit.busted) {
+    m.lastDaveNote = `${rv.name} BUSTED on ${startScore}!`;
   } else {
-    const outBed = m.rivalScore === 50 ? 'BULL' : (m.rivalScore <= 40 && m.rivalScore % 2 === 0) ? ('D' + (m.rivalScore / 2)) : null;
-    if (outBed && Math.random() < rv.dblRate) {
-      daveScored = m.rivalScore;
-      m.rivalScore = 0;
-      daveWon = true;
-      rivalDarts = [outBed];
-      m.lastDaveNote = `${rv.name} checked out ${daveScored} (${outBed})!`;
-    } else {
-      const chip = m.rivalScore % 2 === 1 ? 1 : (m.rivalScore > 16 ? Math.floor(m.rivalScore / 2) : 0);
-      daveScored = chip;
-      m.rivalScore -= chip;
-      rivalDarts = chip > 0 ? ['S' + Math.min(20, chip)] : [];
-      m.lastDaveNote = chip > 0 ? `${rv.name} split to ${m.rivalScore}!` : `${rv.name} missed 3 at double (${m.rivalScore} left)!`;
-    }
+    m.lastDaveNote = `${rv.name}: ${landedCodes.join('+')} (${daveScored}) -> ${m.rivalScore}`;
   }
 
-  // Physically fly your rival's colored darts into the 3D dartboard one by one!
-  if (rivalDarts.length) {
-    rivalDarts.forEach((code, idx) => {
-      const p = bedToXY(code, { jitter: 0.06 });
-      throwDartTo(p.x, p.y, { kind: code === 'BULL' ? 'BULL' : code[0], accent: rv.flightHex, delay: idx * 0.20 });
+  // Physically fly your rival's colored darts to their EXACT computeAimDrop() coordinates!
+  visit.throws.forEach((t, idx) => {
+    const isWireBounce = t.isBust || t.landed.code === 'MISS';
+    const isHot = t.zone === 'green' && (t.landed.ring === 'T' || t.landed.ring === 'D' || t.landed.ring === 'BULL');
+    throwDartTo(t.x, t.y, {
+      kind: t.landed.ring === 'MISS' ? 'S' : t.landed.ring,
+      accent: rv.flightHex,
+      delay: idx * 0.25,
+      wireTink: isWireBounce,
+      ringHex: t.isWin ? 0xffe494 : isHot ? 0xf3cc7d : null,
+      ringScale: t.isWin ? 4.2 : 2.6,
+      onLand: () => {
+        if (t.isBust) spawnCallout(`${rv.short} BUST!`, { x: t.x, y: t.y + 0.16, style: 'warn' });
+        else if (t.landed.code === 'MISS') spawnCallout('WIRE MISS!', { x: t.x, y: t.y + 0.16, style: 'warn' });
+        else if (t.isWin) spawnCallout(`${rv.short} ${t.landed.code}!`, { x: t.x, y: t.y + 0.18, style: 'warn' });
+      },
     });
-  } else {
-    // Wire miss bounce-out visual when rival misses 3 at double!
-    const dp = bedToXY(m.rivalScore <= 40 ? ('D' + Math.max(1, Math.floor(m.rivalScore / 2))) : 'D16', { jitter: 0.06 });
-    throwDartTo(dp.x, dp.y, { kind: 'D', accent: rv.flightHex, wireTink: true, delay: 0.14 });
-  }
+  });
 
   audio.playChalk();
+  const bo3Tag = state.matchFormat === 'bo3' ? `L${m.legsYou}-${m.legsRival} · ` : '';
   spawnCallout(
-    daveWon ? `${rv.short} CHECKS OUT!` : daveScored === 26 ? `${rv.short}: 26 BREAKFAST!` : `${rv.short}: ${daveScored}!`,
-    { x: 0, y: 0.4, style: daveWon ? 'warn' : daveScored >= 100 ? 'gold' : 'ok' }
+    daveWon ? `${rv.short} CHECKS OUT!` : visit.busted ? `${rv.short} BUSTS!` : daveScored === 180 ? `${rv.short}: 180!!` : daveScored === 26 ? `${rv.short}: 26 BREAKFAST!` : `${rv.short}: ${daveScored}!`,
+    { x: 0, y: 0.4, style: daveWon || visit.busted || daveScored === 26 ? 'warn' : daveScored >= 100 ? 'gold' : 'ok', center: daveScored === 180 }
   );
   renderChalkboard({
-    header: `${rv.name.toUpperCase()}'S TURN`, big: m.rivalScore, sub: `YOU ${m.playerScore} · ${rv.short} ${m.rivalScore}`,
+    header: `${rv.name.toUpperCase()}'S TURN`, big: m.rivalScore, sub: `${bo3Tag}YOU ${m.playerScore} · ${rv.short} ${m.rivalScore}`,
     lines: [m.lastDaveNote, daveWon ? `${rv.name} takes the leg!` : `Your throw on ${m.playerScore}!`],
   });
   updateHudStats();
 
   if (daveWon) {
     audio.playPubGroan();
-    state.advanceTimerId = setTimeout(() => { state.advanceTimerId = null; finish501Leg(false); }, 1450);
+    state.advanceTimerId = setTimeout(() => { state.advanceTimerId = null; finish501Leg(false); }, 1650);
     return;
   }
 
-  if (daveScored === 26) {
+  if (daveScored === 180) {
+    audio.playCrowdRoar(1.1);
+    trev.say(`Blimey! ${rv.name} just banged in a 180! Hold yer nerve an' hit straight back, sunshine!`, { mood: 'wince', holdMs: 2600, speak: true });
+  } else if (daveScored === 26) {
     audio.playPubGroan();
     trev.say(`Haha! ${rv.name}'s just chucked a 26 Breakfast — bury 'em right now, sunshine!`, { mood: 'cheer', holdMs: 2200, speak: true });
+  } else if (visit.busted) {
+    audio.playPubGroan();
+    trev.say(`Wahey! ${rv.name}'s gone and BUSTED on ${startScore}! Door's wide open — step up an' punish 'em!`, { mood: 'cheer', holdMs: 2400, speak: true });
+  } else if (missedMatchDart) {
+    audio.playPubGroan();
+    trev.say(rv.missQuip || `Ooh! ${rv.name} missed at double — here's yer chance to nick this leg, mate!`, { mood: 'toast', holdMs: 2400, speak: true });
   } else if (m.rivalScore <= 50) {
     trev.say(`Heads up, me old china — ${rv.name}'s sittin' on ${m.rivalScore}! Time to show some bottle!`, { mood: 'wince', holdMs: 2200, speak: true });
   }
@@ -5035,7 +5224,7 @@ function runBigDaveTurn() {
   state.advanceTimerId = setTimeout(() => {
     state.advanceTimerId = null;
     loadChallenge(nextChallengeForStage('LEVEL_7'));
-  }, 1500);
+  }, 1650);
 }
 
 function finish501Leg(playerWon) {
@@ -5049,40 +5238,82 @@ function finish501Leg(playerWon) {
   const iqPct = m.auditTotal ? Math.round((m.auditGood / m.auditTotal) * 100) : 100;
   const iqGrade = iqPct >= 90 ? 'S' : iqPct >= 75 ? 'A' : iqPct >= 55 ? 'B' : 'C';
 
+  // Best-of-3 Pub Night series handling
+  if (state.matchFormat === 'bo3') {
+    if (playerWon) m.legsYou = (m.legsYou || 0) + 1;
+    else m.legsRival = (m.legsRival || 0) + 1;
+    const matchOver = m.legsYou >= 2 || m.legsRival >= 2;
+    if (!matchOver) {
+      if (playerWon) {
+        mastery.record501Win(m.dartsThrown);
+        audio.playCrowdRoar(1.15);
+        spawnBurst(0, 0.2, 'gold');
+        spawnCallout(`LEG ${m.legNum} TO YOU! (${m.legsYou}-${m.legsRival})`, { center: true, style: 'big' });
+        trev.say(`Lovely jubbly! That's Leg ${m.legNum} in the bag — ${m.legsYou} to ${m.legsRival} up in this Best-of-3! One more leg for the Pub Night Cup!`, {
+          mood: 'toast', holdMs: 3600, forceOpen: true, speak: true,
+        });
+      } else {
+        audio.playPubGroan();
+        spawnCallout(`${rv.short} TAKES LEG ${m.legNum} (${m.legsYou}-${m.legsRival})`, { center: true, style: 'warn' });
+        trev.say(`${rv.name} nicked Leg ${m.legNum} — ${m.legsYou} to ${m.legsRival}! Dust yerself off an' grab the next leg, sunshine!`, {
+          mood: 'wince', holdMs: 3200, forceOpen: true, speak: true,
+        });
+      }
+      const nextLegNum = (m.legNum || 1) + 1;
+      showLevelUpBanner(
+        playerWon ? `Leg ${m.legNum} Won! (Best of 3: ${m.legsYou}–${m.legsRival})` : `${rv.name} Wins Leg ${m.legNum} (Best of 3: ${m.legsYou}–${m.legsRival})`,
+        `Board IQ: ${iqGrade} (${iqPct}%) · 3-Dart Avg: ${avg3} · Chalk ${chalkPct}%. Ready for Leg ${nextLegNum}?`,
+        [
+          { label: `Start Leg ${nextLegNum} →`, onClick: () => {
+            resetMatch501(true);
+            loadChallenge(nextChallengeForStage('LEVEL_7'));
+            if (nextLegNum === 2) runBigDaveTurn(); // alternate throw-first in Leg 2!
+          } },
+          { label: 'Pub Ladder', ghost: true, onClick: () => openDrawer('stages') },
+        ]
+      );
+      updateHudStats();
+      return;
+    }
+  }
+
   if (playerWon) {
     const stars = starsForDifficulty();
     mastery.awardStars('LEVEL_7', stars);
     mastery.record501Win(m.dartsThrown);
-    mastery.data.xp = (mastery.data.xp || 0) + 100;
+    const bo3Bonus = state.matchFormat === 'bo3' ? 60 : 0;
+    mastery.data.xp = (mastery.data.xp || 0) + 100 + bo3Bonus;
     mastery.save();
     audio.playCrowdRoar(1.35);
     spawnBurst(0, 0.2, 'gold');
-    spawnCallout('GAME SHOT & THE LEG!!', { center: true, style: 'big' });
+    const cupTxt = state.matchFormat === 'bo3' ? `PUB NIGHT CUP (${m.legsYou}-${m.legsRival})!!` : 'GAME SHOT & THE LEG!!';
+    spawnCallout(cupTxt, { center: true, style: 'big' });
     trev.say(TREV_PINT_LINE, { mood: 'pint', holdMs: 9500, forceOpen: true, speak: true });
     renderChalkboard({
-      header: 'GAME SHOT · 501!', big: `IQ ${iqGrade}`, sub: `${m.dartsThrown} darts · Avg ${avg3}`,
+      header: state.matchFormat === 'bo3' ? 'PUB NIGHT WINNER!' : 'GAME SHOT · 501!', big: `IQ ${iqGrade}`, sub: `${m.dartsThrown} darts · Avg ${avg3}`,
       lines: [
         { text: `Beat ${rv.name} · Board IQ: ${iqPct}% (${m.auditGood}/${m.auditTotal})`, kind: 'ok' },
         { text: `Chalk Accuracy: ${chalkPct}% · ${formatStars(stars)}`, kind: 'ok' },
       ],
     });
-    const nextRivalId = state.rivalId === 'dave' ? 'rita' : state.rivalId === 'rita' ? 'guvnor' : null;
+    const rIdx = RIVAL_LADDER.indexOf(rv.id);
+    const nextRivalId = rIdx >= 0 && rIdx < RIVAL_LADDER.length - 1 ? RIVAL_LADDER[rIdx + 1] : null;
     const acts = [{ label: `Play ${rv.name} Again`, onClick: () => selectStage('LEVEL_7', true, false) }];
     if (nextRivalId) {
-      acts.push({ label: `Challenge ${PUB_RIVALS[nextRivalId].name} →`, onClick: () => { state.rivalId = nextRivalId; selectStage('LEVEL_7', true, false); } });
+      acts.push({ label: `Challenge ${BOT_PROFILES[nextRivalId].name} →`, onClick: () => { state.rivalId = nextRivalId; selectStage('LEVEL_7', true, false); } });
     }
     acts.push({ label: 'View Pub Ladder', ghost: true, onClick: () => openDrawer('stages') });
     showLevelUpBanner(
-      `GAME SHOT & THE LEG! (Board IQ: ${iqGrade}) ${formatStars(stars)}`,
-      `You beat ${rv.name} in ${m.dartsThrown} darts (${avg3} 3-dart avg) · Chalk ${chalkPct}% · Board Management ${iqPct}% (${m.auditGood}/${m.auditTotal}) · +100 XP!`,
+      `${state.matchFormat === 'bo3' ? `MATCH WON ${m.legsYou}–${m.legsRival}!` : 'GAME SHOT & THE LEG!'} (Board IQ: ${iqGrade}) ${formatStars(stars)}`,
+      `You beat ${rv.name} in ${m.dartsThrown} darts (${avg3} 3-dart avg) · Chalk ${chalkPct}% · Board Management ${iqPct}% (${m.auditGood}/${m.auditTotal}) · +${100 + bo3Bonus} XP!`,
       acts
     );
   } else {
-    trev.say(`Unlucky, sunshine — ${rv.name} nicked that leg! Your Board IQ was Grade ${iqGrade} (${iqPct}%) — av' a rematch an' send 'em back to the bar!`, {
+    trev.say(`Unlucky, sunshine — ${rv.name} nicked that ${state.matchFormat === 'bo3' ? 'match' : 'leg'}! Your Board IQ was Grade ${iqGrade} (${iqPct}%) — av' a rematch an' send 'em back to the bar!`, {
       mood: 'wince', holdMs: 3600, forceOpen: true, speak: true,
     });
     showLevelUpBanner(
-      `${rv.name} Takes the Leg (Board IQ: ${iqGrade})`,
+      `${rv.name} Takes the ${state.matchFormat === 'bo3' ? `Match (${m.legsRival}–${m.legsYou})` : 'Leg'} (Board IQ: ${iqGrade})`,
       `You reached ${m.playerScore} (${avg3} 3-dart avg) · Chalk ${chalkPct}% · Board Management ${iqPct}% (${m.auditGood}/${m.auditTotal}).`,
       [
         { label: `Rematch ${rv.name}!`, onClick: () => selectStage('LEVEL_7', true, false) },
@@ -6127,6 +6358,13 @@ canvas.addEventListener('pointermove', (e) => {
 });
 
 canvas.addEventListener('pointerdown', (e) => {
+  if (state.spectator.active) {
+    e.preventDefault();
+    if (!audio.ctx) { audio.unlock(); elSoundPill.textContent = 'Sound: On'; elSoundPill.classList.add('on'); }
+    selectStage('LEVEL_7', true, false);
+    setFeedback(`You took over the oche! Throw 3 darts against ${currentRival().name}!`, 'ok');
+    return;
+  }
   if (aimGauge.active) {
     e.preventDefault();
     releaseAimGauge();
@@ -6361,15 +6599,28 @@ function renderDrawer() {
           <button class="seg-btn ${!state.useAimGauge ? 'active' : ''}" data-aimgauge="0">Instant Scatter</button>
         </div>
       </div>
-      <div class="setting-row">
+      <div class="setting-row" style="flex-wrap:wrap">
         <div>
-          <div><span>Level 7 · 501 Pub Rival</span></div>
-          <div style="font-size:11px;color:var(--chalk-dim);margin-top:2px">${currentRival().name} (${currentRival().avg})</div>
+          <div><span>Level 7 · 501 Pub Rival (5 Physics Bots)</span></div>
+          <div style="font-size:11px;color:var(--chalk-dim);margin-top:2px">${currentRival().name} (${currentRival().avgLabel}) — ${currentRival().tagline}</div>
         </div>
-        <div class="seg-group">
-          <button class="seg-btn ${state.rivalId === 'dave' ? 'active' : ''}" data-rivalid="dave">Big Dave</button>
-          <button class="seg-btn ${state.rivalId === 'rita' ? 'active' : ''}" data-rivalid="rita">Razor Rita</button>
-          <button class="seg-btn ${state.rivalId === 'guvnor' ? 'active' : ''}" data-rivalid="guvnor">Guv'nor</button>
+        <div class="seg-group" style="flex-wrap:wrap">
+          <button class="seg-btn ${state.rivalId === 'big_dave' ? 'active' : ''}" data-rivalid="big_dave">Big Dave</button>
+          <button class="seg-btn ${state.rivalId === 'steady_eddie' ? 'active' : ''}" data-rivalid="steady_eddie">Eddie</button>
+          <button class="seg-btn ${state.rivalId === 'nervy_nigel' ? 'active' : ''}" data-rivalid="nervy_nigel">Nigel</button>
+          <button class="seg-btn ${state.rivalId === 'treble_hunter' ? 'active' : ''}" data-rivalid="treble_hunter">Guv'nor</button>
+          <button class="seg-btn ${state.rivalId === 'pub_shark' ? 'active' : ''}" data-rivalid="pub_shark">Rita</button>
+        </div>
+      </div>
+      <div class="setting-row" style="flex-wrap:wrap">
+        <div>
+          <div><span>Level 7 · Format &amp; Spectator</span></div>
+          <div style="font-size:11px;color:var(--chalk-dim);margin-top:2px">${state.spectator.active ? 'Live 3D Bot vs Bot exhibition running' : state.matchFormat === 'bo3' ? 'Pub Night Best-of-3 (first to 2 legs)' : 'Single 501 Double-Out leg'}</div>
+        </div>
+        <div class="seg-group" style="flex-wrap:wrap">
+          <button class="seg-btn ${state.matchFormat === 'single' ? 'active' : ''}" data-mformat="single">Single Leg</button>
+          <button class="seg-btn ${state.matchFormat === 'bo3' ? 'active' : ''}" data-mformat="bo3">Best of 3</button>
+          <button class="seg-btn ${state.spectator.active ? 'active' : ''}" data-spectate="1">${state.spectator.active ? 'Exit Watch' : 'Watch Bot vs Bot →'}</button>
         </div>
       </div>
       <div class="setting-row" style="flex-wrap:wrap">
@@ -6438,11 +6689,29 @@ function renderDrawer() {
       renderDrawer();
     }));
     elDrawerBody.querySelectorAll('[data-rivalid]').forEach(b => b.addEventListener('click', () => {
-      state.rivalId = b.dataset.rivalid;
+      state.rivalId = resolveRivalId(b.dataset.rivalid);
       renderDrawer();
-      if (state.stage === 'LEVEL_7') {
-        resetMatch501();
+      if (state.stage === 'LEVEL_7' && !state.spectator.active) {
+        resetMatch501(false);
         loadChallenge(nextChallengeForStage('LEVEL_7'));
+      }
+    }));
+    elDrawerBody.querySelectorAll('[data-mformat]').forEach(b => b.addEventListener('click', () => {
+      state.matchFormat = b.dataset.mformat === 'bo3' ? 'bo3' : 'single';
+      renderDrawer();
+      if (state.stage === 'LEVEL_7' && !state.spectator.active) {
+        resetMatch501(false);
+        loadChallenge(nextChallengeForStage('LEVEL_7'));
+      }
+    }));
+    elDrawerBody.querySelectorAll('[data-spectate]').forEach(b => b.addEventListener('click', () => {
+      if (state.spectator.active) {
+        closeDrawer();
+        selectStage('LEVEL_7', true, false);
+      } else {
+        const a = resolveRivalId(state.rivalId);
+        const opp = a === 'pub_shark' ? 'nervy_nigel' : 'pub_shark';
+        startSpectatorMatch(a, opp);
       }
     }));
     elDrawerBody.querySelectorAll('[data-kvoice]').forEach(b => b.addEventListener('click', () => {
@@ -6483,7 +6752,7 @@ function renderDrawer() {
           <li><strong>Level 4 · 301 / 260 Chalk &amp; Countdown:</strong> Mix of <em>Your Throw</em> (Accuracy Gauge) &amp; <em>Pub Chalker</em> — add the 3-dart visit, then subtract it live on the chalkboard!</li>
           <li><strong>Level 5 · 2-Dart Finishes:</strong> Below-60 Double Smiths, Golden 44 (<code>25/30/35</code> No-Peek FDIs) &amp; Sod's Law miss saves.</li>
           <li><strong>Level 6 · 3-Dart Finishes:</strong> <code>101–170</code> FDI bridges, splash traps (<code>129, 104, 101</code>) &amp; Bogey Teen Covers.</li>
-          <li><strong>Level 7 · Championship 501:</strong> Full Double-Out legs against 3 animated pub rivals (<em>Big Dave ~54</em>, <em>"Razor" Rita ~68</em> &amp; <em>The Guv'nor ~84</em>) while Trev grades every board-management decision (<strong>Board IQ S / A / B / C</strong>)!</li>
+          <li><strong>Level 7 · Championship 501:</strong> Single-leg or <strong>Best-of-3 Pub Night</strong> Double-Out matches against 5 physics-driven pub bots (<em>Big Dave</em>, <em>Steady Eddie</em>, <em>Nervy Nigel</em>, <em>The Guv'nor</em> &amp; <em>"Razor" Rita</em>) — plus live 3D <strong>Watch Bot vs Bot</strong> exhibition mode and live <strong>Board IQ (S / A / B / C)</strong> grading!</li>
         </ul>
       </div>
       <div class="howto-card">
@@ -6607,8 +6876,8 @@ function animate(now) {
   // Pause inactivity return, hint-on-pause, and countdown clock cleanly while Briefing, Drawer or Level-Up Banner is open!
   const pausedByOverlay = state.briefingOpen || elDrawerBg.classList.contains('open') || elLevelUp.classList.contains('show');
 
-  // Return seamlessly to Oche Ghost after 18s of player inactivity (never interrupt an active 501 match, Pub Trial, or live Aim Gauge!)
-  if (!state.ghostMode && !state.inTrial && !aimGauge.active && state.stage !== 'LEVEL_7' && !touchAim.active && !pausedByOverlay && now - state.lastPlayerInputAt > 18000) {
+  // Return seamlessly to Oche Ghost after 18s of player inactivity (never interrupt an active 501 match, Spectator mode, Pub Trial, or live Aim Gauge!)
+  if (!state.ghostMode && !state.inTrial && !aimGauge.active && !state.spectator.active && state.stage !== 'LEVEL_7' && !touchAim.active && !pausedByOverlay && now - state.lastPlayerInputAt > 18000) {
     state.ghostMode = true;
     ghostRotIdx = (ghostRotIdx + 1) % GHOST_ROTATION.length;
     state.stage = GHOST_ROTATION[ghostRotIdx];
@@ -6619,7 +6888,7 @@ function animate(now) {
 
   // Auto-fade Hint-on-Hesitation (Tier 2): scales smoothly with Difficulty Pace (disabled during Pub Trials!)
   const prof = currentProfile();
-  if (!state.ghostMode && !state.inTrial && !pausedByOverlay && !state.busy && state.challenge && !state.hintShown && state.hintMode === 'auto') {
+  if (!state.ghostMode && !state.inTrial && !state.spectator.active && !pausedByOverlay && !state.busy && state.challenge && !state.hintShown && state.hintMode === 'auto') {
     const id = challengeItemId(state.challenge);
     const tier = mastery.tier(id, state.challenge.speedMs || 3000);
     if (tier === 2 && now - state.challengeStartMs > prof.hintPauseMs) {
@@ -6627,8 +6896,8 @@ function animate(now) {
     }
   }
 
-  // Live Difficulty-Scaled Countdown Timer & Brass Bell Gate (pauses cleanly while aiming the Accuracy Gauge!)
-  if (state.challenge && !state.busy && !pausedByOverlay && !aimGauge.active) {
+  // Live Difficulty-Scaled Countdown Timer & Brass Bell Gate (pauses cleanly while aiming the Accuracy Gauge or Spectating!)
+  if (state.challenge && !state.busy && !pausedByOverlay && !aimGauge.active && !state.spectator.active) {
     const baseMs = state.challenge.speedMs || 3200;
     const targetMs = baseMs * prof.timerMult * (state.ghostMode ? 1.55 : 1.0);
     const elapsed = now - state.challengeStartMs;
