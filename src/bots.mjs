@@ -1,6 +1,7 @@
 /* ============================================================================
    OCHE LIGHT — 5 Real-Physics AI Pub Darts Personalities (src/bots.mjs)
    Every bot chooses real board beds and throws through computeAimDrop() physics.
+   Tuned in Phase 2 against 1,200 simulated 501 matches for authentic pub drama!
    ============================================================================ */
 
 import {
@@ -18,9 +19,18 @@ import {
 } from './engine.mjs';
 
 const CLEAN_DOUBLES = [32, 40, 36, 16, 20, 24, 28, 8, 12];
-const CLEAN_DOUBLE_SET = new Set(CLEAN_DOUBLES);
+const AWKWARD_SPLIT_MAP = {
+  38: 'S6',   // 38 -> S6 leaves D16 (32)
+  34: 'S2',   // 34 -> S2 leaves D16 (32)
+  30: 'S14',  // 30 -> S14 leaves D8 (16)
+  26: 'S10',  // 26 -> S10 leaves D8 (16)
+  22: 'S6',   // 22 -> S6 leaves D8 (16)
+  18: 'S2',   // 18 -> S2 leaves D8 (16)
+  14: 'S6',   // 14 -> S6 leaves D4 (8)
+  10: 'S2',   // 10 -> S2 leaves D4 (8)
+  6:  'S2',   // 6  -> S2 leaves D2 (4)
+};
 
-// Box-Muller normal sample clamped cleanly to [-1, 1] for gauge needle simulation
 function sampleNormal(rng) {
   let u1 = 0, u2 = 0;
   while (u1 <= 1e-7) u1 = rng();
@@ -36,83 +46,94 @@ export const BOT_PROFILES = {
   steady_eddie: {
     id: 'steady_eddie',
     name: 'Steady Eddie',
+    archetype: 'Steady Scorer',
     short: 'EDDIE',
     tagline: 'Methodical T20/S20 rhythm & crisp D16/D20 setups',
-    avgLabel: '~62 Avg',
+    avgLabel: '~67 Avg',
     flightHex: 0x2b6cb0,
-    aimCfg: { sweet: 0.21, amber: 0.66 },
-    sigmaU: 0.42,
-    doubleSigmaU: 0.44,
-    singleSigmaU: 0.34,
-    streakiness: 0.06,
-    nerveBoost: 0.04,
-    tacticalIQ: 0.72,
+    aimCfg: { sweet: 0.13, amber: 0.68 },
+    sigmaU: 0.56,
+    doubleSigmaU: 0.23,
+    singleSigmaU: 0.32,
+    streakiness: 0.08,
+    nerveBoost: 0.13,
+    trailingFocus: 0.16,
+    tacticalIQ: 0.80,
     favoriteDoubles: [32, 40, 16, 20, 8],
     switchAggression: 0.12,
-    bullAggression: 0.15,
-    smartSplit: false, // Phase 1 baseline: raw halving
+    bullAggression: 0.14,
+    smartSplit: true,
     taunt: "Steady Eddie's up — metronomic 20s and clean D16s!",
+    missQuip: "Eddie shakes his head — rare slip off the wire!",
   },
   big_dave: {
     id: 'big_dave',
     name: 'Big Dave',
+    archetype: 'Pub Veteran',
     short: 'DAVE',
-    tagline: 'Streaky pub veteran — big tons mixed with 26 Breakfasts',
-    avgLabel: '~54 Avg',
+    tagline: 'Streaky pub veteran — big tons mixed with 26s, gritty on doubles',
+    avgLabel: '~64 Avg',
     flightHex: 0x265685,
-    aimCfg: { sweet: 0.19, amber: 0.56 },
-    sigmaU: 0.54,
-    doubleSigmaU: 0.64,
-    singleSigmaU: 0.46,
-    streakiness: 0.24,
-    nerveBoost: 0.08,
-    tacticalIQ: 0.35,
+    aimCfg: { sweet: 0.132, amber: 0.56 },
+    sigmaU: 0.62,
+    doubleSigmaU: 0.20,
+    singleSigmaU: 0.33,
+    streakiness: 0.36,
+    nerveBoost: 0.10,
+    trailingFocus: 0.22,
+    tacticalIQ: 0.22,
     favoriteDoubles: [40, 32, 20, 16],
     switchAggression: 0.10,
-    bullAggression: 0.22,
-    smartSplit: false,
+    bullAggression: 0.48,
+    smartSplit: true,
     taunt: "Big Dave's steppin' up with a pint in one hand!",
+    missQuip: "Big Dave laughs it off and takes a sip of bitter!",
   },
   pub_shark: {
     id: 'pub_shark',
     name: '"Razor" Rita',
     archetype: 'Pub Shark',
     short: 'RITA',
-    tagline: 'Tactical pub shark — @yourdarts FDIs, bogey covers & cold doubles',
+    tagline: 'Tactical pub shark — @yourdarts FDIs, bogey covers & ice-cold outs',
     avgLabel: '~70 Avg',
     flightHex: 0x6b2e75,
-    aimCfg: { sweet: 0.22, amber: 0.64 },
-    sigmaU: 0.41,
-    doubleSigmaU: 0.38,
-    singleSigmaU: 0.30,
-    streakiness: 0.05,
-    nerveBoost: 0.02,
-    tacticalIQ: 0.98,
+    aimCfg: { sweet: 0.135, amber: 0.66 },
+    sigmaU: 0.53,
+    doubleSigmaU: 0.21,
+    singleSigmaU: 0.26,
+    streakiness: 0.08,
+    nerveBoost: 0.08,
+    trailingFocus: 0.18,
+    tacticalIQ: 0.99,
     favoriteDoubles: [32, 40, 36, 16, 20, 24],
-    switchAggression: 0.24,
+    switchAggression: 0.26,
     bullAggression: 0.30,
-    smartSplit: false,
+    smartSplit: true,
     taunt: 'Watch out — Pub Shark "Razor" Rita never leaves a bogey!',
+    missQuip: '"Razor" Rita narrows her eyes — already planning the next out!',
   },
   nervy_nigel: {
     id: 'nervy_nigel',
     name: 'Nervy Nigel',
+    archetype: 'Power Scorer',
     short: 'NIGEL',
     tagline: 'Heavy T20 scorer whose arm twitches on match-winning doubles',
-    avgLabel: '~66 Avg',
+    avgLabel: '~72 Avg',
     flightHex: 0xb57a28,
-    aimCfg: { sweet: 0.22, amber: 0.64 },
-    sigmaU: 0.35,
-    doubleSigmaU: 0.78,
-    singleSigmaU: 0.34,
-    streakiness: 0.10,
-    nerveBoost: 0.26,
+    aimCfg: { sweet: 0.155, amber: 0.66 },
+    sigmaU: 0.46,
+    doubleSigmaU: 0.34,
+    singleSigmaU: 0.30,
+    streakiness: 0.16,
+    nerveBoost: 0.32,
+    trailingFocus: 0.16,
     tacticalIQ: 0.68,
     favoriteDoubles: [40, 32, 20, 16],
-    switchAggression: 0.16,
-    bullAggression: 0.12,
-    smartSplit: false,
+    switchAggression: 0.18,
+    bullAggression: 0.14,
+    smartSplit: true,
     taunt: "Nervy Nigel's flying in the trebles — just wait till he gets to a double!",
+    missQuip: "Nigel's arm twitched on the double — the whole pub felt that one!",
   },
   treble_hunter: {
     id: 'treble_hunter',
@@ -120,26 +141,27 @@ export const BOT_PROFILES = {
     archetype: 'Treble Hunter',
     short: 'GUV',
     tagline: 'High-variance aggressor chasing T19/T18 switches & Bull finishes',
-    avgLabel: '~68 Avg',
+    avgLabel: '~69 Avg',
     flightHex: 0x246b55,
-    aimCfg: { sweet: 0.22, amber: 0.58 },
-    sigmaU: 0.44,
-    doubleSigmaU: 0.46,
-    singleSigmaU: 0.38,
-    streakiness: 0.22,
-    nerveBoost: 0.04,
-    tacticalIQ: 0.78,
+    aimCfg: { sweet: 0.15, amber: 0.56 },
+    sigmaU: 0.55,
+    doubleSigmaU: 0.25,
+    singleSigmaU: 0.34,
+    streakiness: 0.30,
+    nerveBoost: 0.13,
+    trailingFocus: 0.22,
+    tacticalIQ: 0.54,
     favoriteDoubles: [40, 36, 32, 50, 24],
-    switchAggression: 0.58,
-    bullAggression: 0.72,
-    smartSplit: false,
+    switchAggression: 0.66,
+    bullAggression: 0.85,
+    smartSplit: true,
     taunt: "Treble Hunter Guv'nor loves switching to T19 and firing at Bull!",
+    missQuip: "The Guv'nor grins — living by the sword on the big trebles!",
   },
 };
 
 export const BOT_IDS = Object.keys(BOT_PROFILES);
 
-// Pick a clean single setup from rem (41..59 or odd <= 39) targeting favorite doubles
 function pickSingleSetup(rem, favDoubles = CLEAN_DOUBLES) {
   for (const dbl of favDoubles) {
     if (dbl === 50) continue;
@@ -151,7 +173,6 @@ function pickSingleSetup(rem, favDoubles = CLEAN_DOUBLES) {
     if (need >= 1 && need <= 20) return 'S' + need;
   }
   if (rem % 2 === 1 && rem >= 3 && rem <= 39) {
-    // Reduce odd score to largest power-of-2 double possible
     for (const d of [32, 16, 8, 4, 2]) {
       const need = rem - d;
       if (need >= 1 && need <= 20) return 'S' + need;
@@ -161,40 +182,40 @@ function pickSingleSetup(rem, favDoubles = CLEAN_DOUBLES) {
   return 'S' + Math.max(1, Math.min(20, rem - 2));
 }
 
-// Decide what bed a bot aims at for the current dart
 export function chooseBotAimBed(bot, { rem, dartsLeft, rivalScore, priorDarts = [], rng = Math.random }) {
   const smart = rng() < bot.tacticalIQ;
   const underPressure = rivalScore <= 100;
+  const trailingHard = rem - rivalScore >= 90;
 
   // 1. Direct 1-Dart Double-Out (2..40 even or 50)
   if (rem === 50) {
-    if (dartsLeft === 1 || underPressure || rng() < bot.bullAggression) {
+    if (dartsLeft === 1 || underPressure || trailingHard || rng() < bot.bullAggression) {
       return parseBedCode('BULL');
     }
-    // Safe 2+ dart setup when rival is far back
     return parseBedCode(smart ? 'S18' : 'S10');
   }
   if (rem >= 2 && rem <= 40 && rem % 2 === 0) {
-    // Optional smart split (off in Phase 1 baseline; available for Phase 2 tuning)
-    if (bot.smartSplit && dartsLeft >= 2 && (rem === 6 || rem === 10 || rem === 14 || rem === 18 || rem === 22 || rem === 26 || rem === 30 || rem === 34 || rem === 38)) {
-      const splitBed = pickSingleSetup(rem, bot.favoriteDoubles);
-      if (splitBed && rem - bedValue(splitBed) >= 8) {
-        return parseBedCode(splitBed);
-      }
+    // Smart split-to-favorite-double escapes: prevents awkward odd-halving & Madhouse D1 slogs!
+    if (bot.smartSplit && dartsLeft >= 2 && AWKWARD_SPLIT_MAP[rem] && (smart || rem <= 14)) {
+      return parseBedCode(AWKWARD_SPLIT_MAP[rem]);
     }
     return parseBedCode('D' + (rem / 2));
   }
 
   // 2. Odd numbers 3..39 -> Single to leave favorite even double
   if (rem < 40 && rem % 2 === 1) {
+    if (!smart && rem >= 15 && rng() < 0.28) {
+      // Pub-habit occasional clunky single that leaves an odd/ugly double
+      return parseBedCode('S' + Math.min(20, rem - 4));
+    }
     return parseBedCode(pickSingleSetup(rem, bot.favoriteDoubles));
   }
 
   // 3. Below-60 setups (41..59, excl. 50)
   if (rem >= 41 && rem <= 59) {
-    if (dartsLeft === 1 && smart) {
-      // With 1 dart left, leave a fat double for next visit
-      return parseBedCode(pickSingleSetup(rem, bot.favoriteDoubles));
+    if (!smart && rng() < 0.62) {
+      // Pub regular occasionally throws S20/S19 reflexively even when it leaves an awkward/odd score
+      return parseBedCode(rem > 41 ? 'S20' : 'S19');
     }
     return parseBedCode(pickSingleSetup(rem, bot.favoriteDoubles));
   }
@@ -206,18 +227,23 @@ export function chooseBotAimBed(bot, { rem, dartsLeft, rivalScore, priorDarts = 
       if (rem === 64 || rem === 68) return parseBedCode('T16');
       return parseBedCode(pickSingleSetup(rem, [40, 36, 32, 24]));
     }
-    return parseBedCode('T20');
+    // Non-tactical pub habit: throws the 2-dart FDI treble with only 1 dart left!
+    const g = G44_BY_SCORE[rem];
+    return parseBedCode(g ? g.route[0] : 'T20');
   }
 
   // 5. Golden 44 / 2-Dart Checkout Range (60..110)
   if (rem >= 60 && rem <= 110 && isCheckoutable2Dart(rem)) {
     const g = G44_BY_SCORE[rem];
-    if (g && (smart || dartsLeft >= 2)) {
-      if (bot.bullAggression > 0.5 && rem === 82 && rng() < 0.45) return parseBedCode('BULL');
-      if (bot.bullAggression > 0.5 && rem === 95) return parseBedCode('T15');
-      if (dartsLeft >= 2) return parseBedCode(g.route[0]);
+    if (g && dartsLeft >= 2) {
+      if (!smart && rng() < 0.68) {
+        // Pub habit: reflexively throws T20 on non-T20 Golden 44 numbers (e.g. 74, 83, 89)
+        return parseBedCode('T20');
+      }
+      if ((bot.bullAggression > 0.5 || trailingHard) && rem === 82 && rng() < 0.55) return parseBedCode('BULL');
+      if ((bot.bullAggression > 0.5 || trailingHard) && rem === 95) return parseBedCode('T15');
+      return parseBedCode(g.route[0]);
     }
-    // Non-tactical pub fallback
     if (rem >= 60) {
       if (rem - 60 >= 2 && rem - 60 <= 40 && (rem - 60) % 2 === 0) return parseBedCode('T20');
       if (rem - 57 >= 2 && rem - 57 <= 40 && (rem - 57) % 2 === 0) return parseBedCode('T19');
@@ -228,24 +254,29 @@ export function chooseBotAimBed(bot, { rem, dartsLeft, rivalScore, priorDarts = 
   // 6. 3-Dart Ton-Plus Checkouts (101..170)
   if (rem >= 101 && rem <= 170 && !BOGEY_NUMBERS.has(rem)) {
     const tp = TON_PLUS_BY_SCORE[rem];
-    if (tp && smart && dartsLeft === 3) {
-      if (bot.bullAggression > 0.5 && tp.open.includes('BULL') && rng() < 0.45) {
-        return parseBedCode('BULL');
+    if (tp && dartsLeft === 3) {
+      if (!smart && tp.traps) {
+        // Non-tactical bot occasionally steps right into a classic splash trap (e.g. T20 on 129/107, T18 on 104)!
+        const trapKeys = Object.keys(tp.traps);
+        if (trapKeys.length && rng() < 0.82) return parseBedCode(trapKeys[0]);
       }
-      if (bot.switchAggression > 0.4 && tp.open.includes('T19') && rng() < 0.65) {
-        return parseBedCode('T19');
+      if (smart) {
+        if ((bot.bullAggression > 0.5 || trailingHard) && tp.open.includes('BULL') && rng() < 0.55) {
+          return parseBedCode('BULL');
+        }
+        if ((bot.switchAggression > 0.4 || trailingHard) && tp.open.includes('T19') && rng() < 0.68) {
+          return parseBedCode('T19');
+        }
+        return parseBedCode(tp.open[0]);
       }
-      return parseBedCode(tp.open[0]);
     }
     if (dartsLeft === 3) {
       if (rem % 2 === 1 && smart) return parseBedCode('T19');
       return parseBedCode(rng() < bot.switchAggression ? 'T19' : 'T20');
     }
-    // 2 darts left on 111..170 -> set up a clean 1-visit out below 100
     if (dartsLeft === 2) {
-      return parseBedCode(rng() < bot.switchAggression ? 'T19' : 'T20');
+      return parseBedCode(rng() < (bot.switchAggression + (trailingHard ? 0.2 : 0)) ? 'T19' : 'T20');
     }
-    // 1 dart left on 101..170 -> drop below 100 (or below 70 if <= 130)
     return parseBedCode(rem <= 129 && smart ? 'T20' : (rng() < bot.switchAggression ? 'T19' : 'T20'));
   }
 
@@ -255,34 +286,37 @@ export function chooseBotAimBed(bot, { rem, dartsLeft, rivalScore, priorDarts = 
       const teen = rem === 179 ? 19 : rem - 170;
       if (teen >= 10 && teen <= 20) return parseBedCode('S' + teen);
     }
-    return parseBedCode('T20');
+    // Non-tactical pub blunder: throws 25 on 188 (leaves 163!) or stays on S20!
+    if (rem === 188 && rng() < 0.45) return parseBedCode('25');
+    return parseBedCode('S20');
   }
 
-  // 8. Heavy Scoring Phase (>170 or bogey numbers like 169, 168, 166, 165, 163, 162, 159)
+  // 8. Heavy Scoring Phase (>170 or bogey numbers)
   if (BOGEY_NUMBERS.has(rem) && smart) {
-    // Drop neatly off a bogey into a 2-dart out
     return parseBedCode(rem % 2 === 1 ? 'T19' : 'T20');
   }
 
-  // Treble Hunter switches down to T19/T18 aggressively (especially if Dart 1 blocked or strayed)
+  // Trailing aggression & Treble Hunter cover switches
+  const effSwitch = bot.switchAggression + (trailingHard ? 0.24 : 0);
   const strayedIn20 = priorDarts.some(c => c === 'S5' || c === 'S1' || c === 'S20');
-  if (bot.switchAggression > 0.35) {
-    if (strayedIn20 && rng() < bot.switchAggression) return parseBedCode(rng() < 0.72 ? 'T19' : 'T18');
-    if (rng() < bot.switchAggression * 0.55) return parseBedCode('T19');
-  } else if (strayedIn20 && rng() < bot.switchAggression) {
+  if (effSwitch > 0.35) {
+    if (strayedIn20 && rng() < effSwitch) return parseBedCode(rng() < 0.72 ? 'T19' : 'T18');
+    if (rng() < effSwitch * 0.55) return parseBedCode('T19');
+  } else if (strayedIn20 && rng() < effSwitch) {
     return parseBedCode('T19');
   }
 
   return parseBedCode('T20');
 }
 
-// Throw 1 physical dart for a bot using real computeAimDrop() board geometry!
-export function throwBotDart(bot, { rem, dartsLeft, rivalScore, visitMood = 0, priorDarts = [], rng = Math.random }) {
+export function throwBotDart(bot, { rem, dartsLeft, rivalScore, visitMood = 0, priorDarts = [], d1DartsInLeg = 0, rng = Math.random }) {
   const aimed = chooseBotAimBed(bot, { rem, dartsLeft, rivalScore, priorDarts, rng });
   const aimXY = bedToXY(aimed.code, { jitter: 0.015, rng });
 
   const isMatchDart = isCheckoutable1Dart(rem) && (aimed.ring === 'D' || aimed.ring === 'BULL');
-  const underPressure = rivalScore <= 100;
+  const rivalClose = rivalScore <= 170;
+  const rivalOnFinish = rivalScore <= 100;
+  const deficit = rem - rivalScore;
 
   let sigmaU = aimed.ring === 'D' || aimed.ring === 'BULL'
     ? bot.doubleSigmaU
@@ -290,21 +324,31 @@ export function throwBotDart(bot, { rem, dartsLeft, rivalScore, visitMood = 0, p
       ? bot.singleSigmaU
       : bot.sigmaU;
 
-  // Apply visit streakiness (hot hand vs cold hand)
+  // Authentic visit rhythm (hot hand vs loose pub visit)
   sigmaU = Math.max(0.16, sigmaU * (1 + visitMood));
 
-  // Match-dart nerve jitter (especially signature on Nervy Nigel!)
-  if (isMatchDart) {
-    const pressureScale = underPressure ? 1.35 : 1.0;
-    sigmaU += bot.nerveBoost * pressureScale;
+  // Trailing adrenaline focus when behind by >=90 (chasing down the leader!)
+  if (deficit >= 90 && !isMatchDart) {
+    const focus = (bot.trailingFocus || 0.12) * (deficit >= 140 ? 1.25 : 1.0);
+    sigmaU = Math.max(0.18, sigmaU * (1 - focus));
   }
 
-  // Sample realistic horizontal needle release u and vertical breath v in [-1, 1]
+  // Match-dart nerve dynamics: when leading & throwing for the leg, pub tension kicks in!
+  if (isMatchDart) {
+    const leadingComfort = rivalScore - rem >= 80;
+    const pressureScale = rivalOnFinish ? 1.45 : rivalClose ? 1.15 : leadingComfort ? 1.25 : 0.90;
+    sigmaU += bot.nerveBoost * pressureScale;
+    // Steady breathing adjustment if stuck on Madhouse D1 for 3+ darts so legs never deadlock
+    if (rem === 2 && d1DartsInLeg >= 2) {
+      sigmaU = Math.max(0.22, sigmaU * 0.65);
+    }
+  }
+
   const u = clamp(sampleNormal(rng) * sigmaU, -0.99, 0.99);
-  const v = clamp(sampleNormal(rng) * 0.52, -0.99, 0.99);
+  const v = clamp(sampleNormal(rng) * 0.50, -0.99, 0.99);
 
   const drop = computeAimDrop(aimed, aimXY, u, v, bot.aimCfg, true);
-  const res = resolve501Dart(rem, rem, drop.bed); // caller supplies visitStartScore for bust revert
+  const res = resolve501Dart(rem, rem, drop.bed);
 
   return {
     aimed,
@@ -318,9 +362,8 @@ export function throwBotDart(bot, { rem, dartsLeft, rivalScore, visitMood = 0, p
   };
 }
 
-// Execute a complete 3-dart visit for a bot in a 501 leg (pure & headless-safe!)
-export function simulateBot501Visit(bot, { startScore, rivalScore, rng = Math.random, rivalName = 'Opponent' }) {
-  const visitMood = bot.streakiness ? clamp(sampleNormal(rng) * bot.streakiness, -0.32, 0.42) : 0;
+export function simulateBot501Visit(bot, { startScore, rivalScore, rng = Math.random, rivalName = 'Opponent', priorD1Darts = 0 }) {
+  const visitMood = bot.streakiness ? clamp(sampleNormal(rng) * bot.streakiness, -0.34, 0.44) : 0;
   let rem = startScore;
   const throws = [];
   let auditTotal = 0;
@@ -339,10 +382,10 @@ export function simulateBot501Visit(bot, { startScore, rivalScore, rng = Math.ra
       rivalScore,
       visitMood,
       priorDarts: throws.map(t => t.landed.code),
+      d1DartsInLeg: priorD1Darts + d1Darts,
       rng,
     });
 
-    // Run the exact live @yourdarts Board-Management Auditor when inside <=189!
     if (rem <= 189) {
       const audit = audit501Decision(rem, dartsLeft, shot.aimed, rivalScore, rivalName);
       if (audit) {
@@ -393,7 +436,6 @@ export function simulateBot501Visit(bot, { startScore, rivalScore, rng = Math.ra
   };
 }
 
-// Legacy flat-random Big Dave comparator (reproduces the pre-refactor Level 7 rival turn)
 export const LEGACY_BIG_DAVE = {
   id: 'legacy_big_dave',
   name: 'Legacy Dave (Flat)',

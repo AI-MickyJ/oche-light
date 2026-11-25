@@ -58,6 +58,7 @@ function playSingleLeg(botA, botB, rng, maxVisitsPerPlayer = 35) {
           startScore: scores[p],
           rivalScore: scores[opp],
           rivalName: bots[opp].name,
+          priorD1Darts: d1Darts[p],
           rng,
         });
 
