@@ -199,10 +199,84 @@
   .hud-btn:hover { border-color: var(--brass-bright); color: var(--brass-bright); background: rgba(34,28,18,0.88); }
   .hud-btn.active { border-color: var(--brass-bright); background: rgba(112, 82, 32, 0.45); color: var(--brass-bright); }
   .flow-plate {
-    padding: 6px 12px; display: flex; align-items: center; gap: 12px;
+    padding: 6px 12px; display: flex; align-items: center; gap: 10px;
     font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace; font-size: 11px;
+    transition: border-color 0.25s, box-shadow 0.25s;
+  }
+  .flow-plate.hot {
+    border-color: rgba(243, 204, 125, 0.82);
+    box-shadow: 0 0 18px rgba(232, 184, 96, 0.34), inset 0 1px 0 rgba(255, 240, 200, 0.2);
   }
   .flow-val { color: var(--brass-bright); font-weight: 700; font-size: 13px; }
+  .mult-pill {
+    display: none; padding: 1px 6px; border-radius: 99px; font-size: 10px; font-weight: 800;
+    background: linear-gradient(135deg, rgba(224,162,56,0.42), rgba(168,84,24,0.52));
+    border: 1px solid #f7d996; color: #fff6db; letter-spacing: 0.4px;
+    animation: multPop 0.32s cubic-bezier(0.22, 1.35, 0.36, 1);
+  }
+  .mult-pill.show { display: inline-block; }
+  .mult-pill.fire { background: linear-gradient(135deg, rgba(224,94,42,0.55), rgba(176,38,32,0.62)); border-color: #ffbe8a; }
+  @keyframes multPop {
+    0% { transform: scale(0.5); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .prompt-plate.on-fire {
+    border-color: rgba(243, 204, 125, 0.78);
+    box-shadow: 0 6px 28px rgba(0,0,0,0.65), 0 0 22px rgba(232, 184, 96, 0.28);
+  }
+
+  /* 3D-Projected Floating Pub Score & Arcade Callouts */
+  .callout-layer {
+    position: fixed; inset: 0; z-index: 24; pointer-events: none; overflow: hidden;
+  }
+  .callout-pop {
+    position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+    font-family: Georgia, 'Times New Roman', serif; font-weight: 800;
+    letter-spacing: 1px; white-space: nowrap; text-transform: uppercase;
+    text-shadow: 0 3px 10px rgba(0,0,0,0.92), 0 0 18px rgba(0,0,0,0.65);
+    animation: calloutRise 1.15s cubic-bezier(0.18, 0.9, 0.28, 1) forwards;
+    will-change: transform, opacity;
+  }
+  .callout-pop.ok   { font-size: 22px; color: #a7f3c2; }
+  .callout-pop.gold { font-size: 24px; color: #ffe39a; text-shadow: 0 3px 12px rgba(0,0,0,0.95), 0 0 20px rgba(232,184,96,0.75); }
+  .callout-pop.warn { font-size: 20px; color: #ffb3ac; }
+  .callout-pop.big  {
+    font-size: clamp(26px, 4.4vw, 44px); color: #fff1c2;
+    padding: 5px 18px; border-radius: 8px;
+    background: linear-gradient(135deg, rgba(168,112,28,0.88), rgba(112,30,24,0.88));
+    border: 2px solid #ffe299;
+    box-shadow: 0 10px 32px rgba(0,0,0,0.78), 0 0 28px rgba(243,204,125,0.6);
+    animation: calloutBigRise 1.65s cubic-bezier(0.18, 0.92, 0.28, 1) forwards;
+  }
+  @keyframes calloutRise {
+    0%   { opacity: 0; transform: translate(-50%, -18%) scale(0.65); }
+    18%  { opacity: 1; transform: translate(-50%, -55%) scale(1.12); }
+    36%  { opacity: 1; transform: translate(-50%, -72%) scale(1.0); }
+    100% { opacity: 0; transform: translate(-50%, -145%) scale(0.95); }
+  }
+  @keyframes calloutBigRise {
+    0%   { opacity: 0; transform: translate(-50%, -20%) scale(0.45) rotate(-3deg); }
+    16%  { opacity: 1; transform: translate(-50%, -52%) scale(1.14) rotate(1deg); }
+    32%  { opacity: 1; transform: translate(-50%, -58%) scale(1.0) rotate(0deg); }
+    78%  { opacity: 1; transform: translate(-50%, -74%) scale(1.02); }
+    100% { opacity: 0; transform: translate(-50%, -120%) scale(0.96); }
+  }
+
+  /* Quick Muscle-Memory Re-Aim Pill (1-tap / Spacebar repeat on Darts 2 & 3!) */
+  .relock-pill {
+    position: fixed; left: 50%; bottom: 68px; transform: translateX(-50%);
+    z-index: 25; display: none; align-items: center; gap: 8px;
+    padding: 7px 16px; border-radius: 99px; cursor: pointer;
+    background: linear-gradient(135deg, rgba(201,152,64,0.34), rgba(126,86,26,0.52));
+    border: 1.5px solid var(--brass-bright); color: #fff6de;
+    font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+    font-size: 11.5px; font-weight: 700; letter-spacing: 0.7px; text-transform: uppercase;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.72), 0 0 14px rgba(232,198,130,0.35);
+    backdrop-filter: blur(4px);
+    animation: trialPulse 1.8s ease-in-out infinite;
+  }
+  .relock-pill.visible { display: inline-flex; }
+  .relock-pill:hover { filter: brightness(1.18); }
   .tier-badge {
     padding: 2px 6px; border-radius: 3px; font-size: 10px;
     border: 1px solid rgba(201,161,90,0.35); color: var(--chalk-dim);
@@ -585,6 +659,22 @@
     font-size: 10px; cursor: pointer; line-height: 1.3;
   }
   .trev-mini-btn:hover, .trev-mini-btn.on { color: var(--brass-bright); border-color: var(--brass-bright); }
+  .trev-mini-btn.hd-btn {
+    font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+    font-size: 9.5px; font-weight: 700; letter-spacing: 0.5px; padding: 1px 6px;
+  }
+  .trev-mini-btn.hd-btn.loading {
+    color: #ffe39a; border-color: rgba(243,204,125,0.75);
+    background: rgba(196,144,44,0.24);
+    animation: trialPulse 1.3s ease-in-out infinite;
+  }
+  .trev-mini-btn.hd-btn.ready {
+    color: #c8f7d9; border-color: #7ae09f;
+    background: rgba(46,134,78,0.34);
+  }
+  .trev-mini-btn.hd-btn.err {
+    color: #ffb3ac; border-color: rgba(184,66,57,0.75);
+  }
   .trev-bubble-acts { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 7px; }
   .trev-stage {
     pointer-events: auto; position: relative; width: 152px; height: 170px;
@@ -755,7 +845,7 @@
     .flow-plate { padding: 4px 9px; gap: 10px; font-size: 10px; justify-content: space-between; width: 100%; }
     .flow-plate .hide-sm { display: none; }
     .hud-bottom { gap: 6px; }
-    .feedback-strip { font-size: 11.5px; padding: 6px 9px; min-height: 32px; }
+    .feedback-strip { font-size: 11px; padding: 5px 8px; min-height: 32px; max-height: 40px; line-height: 1.22; overflow: hidden; }
     .sound-pill { padding: 5px 8px; font-size: 10px; white-space: nowrap; }
     .hover-bed { display: none; }
     .numpad-panel {
@@ -769,10 +859,11 @@
     .np-key.enter { font-size: 11px; letter-spacing: 0.4px; }
     .aim-gauge-panel { bottom: 68px; width: calc(100vw - 16px); padding: 7px 10px 8px; gap: 6px; }
     .aim-throw-btn { padding: 9px 12px; font-size: 12px; }
+    .relock-pill { bottom: 152px; padding: 6px 14px; font-size: 11px; }
     body.numpad-open .trev-dock, body.aim-open .trev-dock { opacity: 0; pointer-events: none; }
-    .toast-stack { bottom: 50px; }
+    .toast-stack { bottom: 52px; }
     .trev-dock {
-      left: 6px; right: 6px; bottom: 48px;
+      left: 6px; right: 6px; bottom: 52px;
       flex-direction: row-reverse; align-items: flex-end; justify-content: flex-end; gap: 8px;
     }
     .trev-stage { width: 70px; height: 78px; flex-shrink: 0; }
@@ -840,9 +931,10 @@
         <button id="ledger-btn" class="hud-btn" title="Stages & Mastery Ledger (L)">Ledger<span class="kb-hint"> [L]</span></button>
         <button id="help-btn" class="hud-btn" title="How to Play (?)" style="flex:0 0 auto">?</button>
       </div>
-      <div class="plate flow-plate">
+      <div id="flow-plate" class="plate flow-plate">
         <span id="rank-pill" class="rank-pill">Oche Rookie</span>
         <span>FLOW <span id="flow-val" class="flow-val">0</span></span>
+        <span id="mult-pill" class="mult-pill">×2</span>
         <span class="hide-sm">AVG <span id="avg-ms" class="flow-val">—</span></span>
         <span id="tier-badge" class="tier-badge t1">Guided</span>
       </div>
@@ -867,6 +959,7 @@
     <div class="trev-bubble-head">
       <span>TREV · EAST END COACH</span>
       <div class="trev-head-btns">
+        <button id="trev-hd-btn" class="trev-mini-btn hd-btn" title="Enable Kokoro-82M Neural British Voice (~86MB cached locally in browser)">HD</button>
         <button id="trev-voice-btn" class="trev-mini-btn on" title="Toggle Trev's spoken London voice">🔊</button>
         <button id="trev-hide-btn" class="trev-mini-btn" title="Tuck speech bubble (click Trev to bring back)">×</button>
       </div>
@@ -939,6 +1032,12 @@
     </div>
   </div>
 </div>
+
+<!-- Floating 3D-Projected Pub Callouts -->
+<div id="callout-layer" class="callout-layer"></div>
+
+<!-- Quick Repeat-Aim Pill for Darts 2 & 3 (1-tap / Spacebar muscle-memory rhythm!) -->
+<button id="relock-pill" class="relock-pill">Aim T20 Again [Space]</button>
 
 <!-- 3-Dart Skill Aiming & Brass Accuracy Gauge (Levels 4 & 7) -->
 <div id="aim-gauge-panel" class="plate aim-gauge-panel">
@@ -1440,7 +1539,7 @@ const STAGES = [
   { id: 'LEVEL_6', short: 'Level 6 · 3-Dart Finishes', title: 'Level 6 · Three-Dart Finishes (101–170) & Traps', tag: 'FDIs + Bogeys',
     desc: 'Rule of 40 (+40), Rule of 43 (+43), Two-T19 (-14) bridging into 25/30/35 FDIs, Splash-Trap saves & Bogey Dodger!' },
   { id: 'LEVEL_7', short: 'Level 7 · 501 Match', title: 'Level 7 · Championship 501 (Board Management)', tag: 'Final Boss',
-    desc: 'Play a full leg of 501 (Double Out) vs. Big Dave! Chalk & subtract every visit while Trev audits every board-management decision.' },
+    desc: 'Play a full leg of 501 (Double Out) vs. Big Dave, "Razor" Rita or The Guv\'nor! Chalk & subtract every visit while Trev audits every decision.' },
 ];
 
 const LEVEL_FLOW_ORDER = ['LEVEL_1', 'LEVEL_2', 'LEVEL_3', 'LEVEL_4', 'LEVEL_5', 'LEVEL_6', 'LEVEL_7'];
@@ -1598,10 +1697,14 @@ class MasteryEngine {
       items: {}, streak: 0, bestStreak: 0, totalCorrect: 0, totalAttempts: 0,
       xp: 0, difficulty: 'league', welcomed: false, promotedStages: {},
       levelPips: {}, levelStars: {},
+      records: { bestVisit: 0, count180: 0, tonPlusVisits: 0, fastestMs: 99999, legsWon501: 0, bestLegDarts: 999 },
     };
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) return { ...base, ...JSON.parse(raw) };
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        return { ...base, ...parsed, records: { ...base.records, ...(parsed.records || {}) } };
+      }
     } catch (_) {}
     return base;
   }
@@ -1614,8 +1717,30 @@ class MasteryEngine {
       items: {}, streak: 0, bestStreak: 0, totalCorrect: 0, totalAttempts: 0,
       xp: 0, difficulty: diff, welcomed: true, promotedStages: {},
       levelPips: {}, levelStars: {},
+      records: { bestVisit: 0, count180: 0, tonPlusVisits: 0, fastestMs: 99999, legsWon501: 0, bestLegDarts: 999 },
     };
     this.recentRt = [];
+    this.save();
+  }
+  flowMultiplier() {
+    const s = this.data.streak || 0;
+    return s >= 8 ? 4 : s >= 5 ? 3 : s >= 3 ? 2 : 1;
+  }
+  recordVisitScore(visitTotal) {
+    this.data.records = this.data.records || { bestVisit: 0, count180: 0, tonPlusVisits: 0, fastestMs: 99999, legsWon501: 0, bestLegDarts: 999 };
+    const r = this.data.records;
+    const isNewBest = visitTotal > (r.bestVisit || 0);
+    if (isNewBest) r.bestVisit = visitTotal;
+    if (visitTotal === 180) r.count180 = (r.count180 || 0) + 1;
+    if (visitTotal >= 100) r.tonPlusVisits = (r.tonPlusVisits || 0) + 1;
+    this.save();
+    return isNewBest && visitTotal >= 60;
+  }
+  record501Win(dartsUsed) {
+    this.data.records = this.data.records || { bestVisit: 0, count180: 0, tonPlusVisits: 0, fastestMs: 99999, legsWon501: 0, bestLegDarts: 999 };
+    const r = this.data.records;
+    r.legsWon501 = (r.legsWon501 || 0) + 1;
+    if (dartsUsed < (r.bestLegDarts || 999)) r.bestLegDarts = dartsUsed;
     this.save();
   }
   getPips(lvlId) { return (this.data.levelPips && this.data.levelPips[lvlId]) || 0; }
@@ -1671,6 +1796,7 @@ class MasteryEngine {
     let xpGain = 0;
 
     this.data.totalAttempts++;
+    let lightning = false;
     if (correct) {
       this.data.totalCorrect++;
       this.data.streak++;
@@ -1679,6 +1805,10 @@ class MasteryEngine {
       s.ok++;
       s.lastMs = Math.round(ms);
       if (!usedHint && ms < s.bestMs) s.bestMs = Math.round(ms);
+      this.data.records = this.data.records || { bestVisit: 0, count180: 0, tonPlusVisits: 0, fastestMs: 99999, legsWon501: 0, bestLegDarts: 999 };
+      if (!usedHint && ms > 150 && ms < (this.data.records.fastestMs || 99999)) {
+        this.data.records.fastestMs = Math.round(ms);
+      }
       xpGain += 10;
       if (firstHit) xpGain += 15;
       if (usedHint || ms > gateMs * 1.2) {
@@ -1687,6 +1817,10 @@ class MasteryEngine {
       } else {
         s.streak++;
         xpGain += 5; // fast flow bonus
+        if (!usedHint && ms <= gateMs * 0.58) {
+          lightning = true;
+          xpGain += 10; // lightning pub recall bonus!
+        }
         s.dueTurn = this.turn + Math.min(20, 4 + s.streak * 4);
       }
       this.recentRt.push(ms);
@@ -1700,10 +1834,12 @@ class MasteryEngine {
     this.data.items[id] = s;
     const newBadge = this.badge(id, speedTargetMs);
     if (correct && prevBadge !== 'brass' && newBadge === 'brass') xpGain += 20;
+    const flowMult = correct ? this.flowMultiplier() : 1;
+    xpGain = Math.round(xpGain * flowMult);
     this.data.xp = (this.data.xp || 0) + xpGain;
     const newRank = this.getRank().cur.title;
     this.save();
-    return { xpGain, rankedUp: newRank !== prevRank ? newRank : null };
+    return { xpGain, flowMult, lightning, rankedUp: newRank !== prevRank ? newRank : null };
   }
   pickNext(pool, idFn, avoidId = null, weightFn = null) {
     if (!pool.length) return null;
@@ -1755,6 +1891,8 @@ class PubAudio {
     this.chatterTimer = null;
     this.step80s = 0;
     this.ducked = false;
+    this.voiceSrc = null;
+    this.voiceBus = null;
   }
   unlock() {
     if (!this.ctx) {
@@ -1770,6 +1908,12 @@ class PubAudio {
   }
   toggle() {
     if (!this.ctx) return this.unlock();
+    if (this.ctx.state === 'suspended') {
+      this.ctx.resume();
+      this.enabled = true;
+      this.updateAmbientLevel();
+      return true;
+    }
     this.enabled = !this.enabled;
     this.updateAmbientLevel();
     return this.enabled;
@@ -2099,6 +2243,147 @@ class PubAudio {
     const g = ctx.createGain(); g.gain.value = 0.095;
     s.connect(bp).connect(g).connect(ctx.destination);
     s.start(t);
+  }
+  playSweetSpot() {
+    if (!this.enabled || !this.ctx) return;
+    const ctx = this.ctx, t = ctx.currentTime;
+    [1046.5, 1318.5, 1568.0, 2093.0].forEach((f, idx) => {
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = 'triangle';
+      o.frequency.setValueAtTime(f, t + idx * 0.025);
+      g.gain.setValueAtTime(0.065 / (idx * 0.4 + 1), t + idx * 0.025);
+      g.gain.exponentialRampToValueAtTime(0.0006, t + idx * 0.025 + 0.24);
+      o.connect(g).connect(ctx.destination);
+      o.start(t + idx * 0.025); o.stop(t + idx * 0.025 + 0.26);
+    });
+  }
+  playCrowdRoar(intensity = 1.0) {
+    if (!this.enabled || !this.ctx) return;
+    const ctx = this.ctx, t = ctx.currentTime;
+    const dur = 1.35 * Math.min(1.5, intensity);
+    const nLen = Math.floor(ctx.sampleRate * dur);
+    const buf = ctx.createBuffer(1, nLen, ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < nLen; i++) {
+      const u = i / nLen;
+      const env = Math.sin(Math.min(1, u * 3.5) * (Math.PI / 2)) * Math.pow(1 - u, 0.7);
+      const cheer = 0.72 + 0.28 * Math.sin(i * 0.012) * Math.cos(i * 0.003);
+      d[i] = (Math.random() * 2 - 1) * env * cheer;
+    }
+    [620, 1280, 2250].forEach((freq, idx) => {
+      const s = ctx.createBufferSource(); s.buffer = buf;
+      const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = freq; bp.Q.value = idx === 0 ? 1.1 : 1.6;
+      const g = ctx.createGain(); g.gain.value = (idx === 0 ? 0.14 : 0.085) * intensity;
+      s.connect(bp).connect(g).connect(ctx.destination);
+      s.start(t);
+    });
+    // Rising victorious brass fanfare triad!
+    [523.25, 659.25, 783.99, 1046.5].forEach((f, idx) => {
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = 'triangle';
+      const st = t + idx * 0.07;
+      o.frequency.setValueAtTime(f, st);
+      g.gain.setValueAtTime(0.065 * intensity, st);
+      g.gain.exponentialRampToValueAtTime(0.0006, st + 0.42);
+      o.connect(g).connect(ctx.destination);
+      o.start(st); o.stop(st + 0.45);
+    });
+  }
+  playPubGroan() {
+    if (!this.enabled || !this.ctx) return;
+    const ctx = this.ctx, t = ctx.currentTime;
+    // Cheeky falling "ooohhh!" pub groan on 26 Breakfast / Bust!
+    [320, 240].forEach((f, idx) => {
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = 'sawtooth';
+      o.frequency.setValueAtTime(f, t);
+      o.frequency.exponentialRampToValueAtTime(f * 0.66, t + 0.48);
+      const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 640;
+      g.gain.setValueAtTime(0.045 / (idx + 1), t);
+      g.gain.exponentialRampToValueAtTime(0.0008, t + 0.52);
+      o.connect(lp).connect(g).connect(ctx.destination);
+      o.start(t); o.stop(t + 0.55);
+    });
+  }
+  playHeartbeat() {
+    if (!this.enabled || !this.ctx) return;
+    const ctx = this.ctx, t = ctx.currentTime;
+    [0, 0.22].forEach((off, idx) => {
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = 'sine';
+      o.frequency.setValueAtTime(idx === 0 ? 74 : 62, t + off);
+      o.frequency.exponentialRampToValueAtTime(34, t + off + 0.14);
+      g.gain.setValueAtTime(idx === 0 ? 0.20 : 0.14, t + off);
+      g.gain.exponentialRampToValueAtTime(0.001, t + off + 0.16);
+      o.connect(g).connect(ctx.destination);
+      o.start(t + off); o.stop(t + off + 0.18);
+    });
+  }
+  ensureVoiceBus() {
+    if (!this.ctx) return null;
+    if (this.voiceBus) return this.voiceBus;
+    const ctx = this.ctx;
+    // Warm "Pub Oche" vocal EQ + faint slapback so Kokoro-82M Trev sits right inside the boozer!
+    const input = ctx.createGain();
+    input.gain.value = 1.05;
+    const warm = ctx.createBiquadFilter();
+    warm.type = 'peaking'; warm.frequency.value = 230; warm.Q.value = 1.0; warm.gain.value = 3.5;
+    const pres = ctx.createBiquadFilter();
+    pres.type = 'peaking'; pres.frequency.value = 2750; pres.Q.value = 1.2; pres.gain.value = 2.4;
+    const lp = ctx.createBiquadFilter();
+    lp.type = 'lowpass'; lp.frequency.value = 7400;
+    const dry = ctx.createGain(); dry.gain.value = 0.96;
+    const slap = ctx.createDelay(0.1); slap.delayTime.value = 0.026;
+    const slapLP = ctx.createBiquadFilter(); slapLP.type = 'lowpass'; slapLP.frequency.value = 2200;
+    const slapG = ctx.createGain(); slapG.gain.value = 0.10;
+    const out = ctx.createGain(); out.gain.value = 0.98;
+
+    input.connect(warm).connect(pres).connect(lp);
+    lp.connect(dry).connect(out);
+    lp.connect(slap).connect(slapLP).connect(slapG).connect(out);
+    out.connect(ctx.destination);
+    this.voiceBus = input;
+    return input;
+  }
+  stopVoice() {
+    if (this.voiceSrc) {
+      try {
+        this.voiceSrc.onended = null;
+        this.voiceSrc.stop();
+        this.voiceSrc.disconnect();
+      } catch (_) {}
+      this.voiceSrc = null;
+    }
+    this.duckAmbience(false);
+  }
+  playVoiceBuffer(audioBuffer, { rate = 1.0, onStart = null, onEnd = null } = {}) {
+    if (!this.enabled || !this.ctx || !audioBuffer) {
+      if (onEnd) onEnd();
+      return false;
+    }
+    if (this.ctx.state === 'suspended') this.ctx.resume();
+    this.stopVoice();
+    const bus = this.ensureVoiceBus();
+    const src = this.ctx.createBufferSource();
+    src.buffer = audioBuffer;
+    src.playbackRate.value = rate;
+    src.connect(bus);
+    this.voiceSrc = src;
+    this.duckAmbience(true);
+    if (onStart) onStart();
+    src.onended = () => {
+      if (this.voiceSrc === src) {
+        this.voiceSrc = null;
+        this.duckAmbience(false);
+      }
+      if (onEnd) onEnd();
+    };
+    src.start(0);
+    return true;
   }
 }
 const audio = new PubAudio();
@@ -2792,29 +3077,66 @@ const dustMat = new THREE.PointsMaterial({
 const dustPoints = new THREE.Points(dustGeo, dustMat);
 scene.add(dustPoints);
 
-// Impact Chalk-Puff & Brass Spark Bursts
+// Impact Chalk-Puff, Brass Sparks, Golden Confetti & 3D Expanding Shockwave Rings
 const bursts = [];
+const shockwaves = [];
 function spawnBurst(x, y, kind = 'chalk') {
-  const count = kind === 'spark' ? 14 : 16;
+  const count = kind === 'gold' ? 42 : kind === 'spark' ? 14 : 16;
   const g = new THREE.BufferGeometry();
   const pos = new Float32Array(count * 3);
   const vels = [];
   for (let i = 0; i < count; i++) {
-    pos[i * 3] = x; pos[i * 3 + 1] = y; pos[i * 3 + 2] = 0.04;
+    pos[i * 3] = x; pos[i * 3 + 1] = y; pos[i * 3 + 2] = 0.05;
     const ang = Math.random() * Math.PI * 2;
-    const spd = (kind === 'spark' ? 1.4 : 0.45) * (0.4 + Math.random() * 0.8);
-    vels.push({ vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd + 0.15, vz: 0.35 + Math.random() * 0.5 });
+    const spd = (kind === 'gold' ? 2.4 : kind === 'spark' ? 1.4 : 0.45) * (0.35 + Math.random() * 0.9);
+    vels.push({ vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd + (kind === 'gold' ? 0.65 : 0.15), vz: 0.4 + Math.random() * 0.6 });
   }
   g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
   const m = new THREE.PointsMaterial({
-    color: kind === 'spark' ? 0xffd27d : 0xefe7d1,
-    size: kind === 'spark' ? 0.055 : 0.07,
-    transparent: true, opacity: 0.85, depthWrite: false,
+    color: kind === 'gold' ? 0xffe494 : kind === 'spark' ? 0xffd27d : 0xefe7d1,
+    size: kind === 'gold' ? 0.085 : kind === 'spark' ? 0.055 : 0.07,
+    transparent: true, opacity: 0.92, depthWrite: false,
     blending: THREE.AdditiveBlending,
   });
   const pts = new THREE.Points(g, m);
   scene.add(pts);
-  bursts.push({ pts, vels, age: 0, life: kind === 'spark' ? 0.42 : 0.55 });
+  bursts.push({ pts, vels, age: 0, life: kind === 'gold' ? 1.05 : kind === 'spark' ? 0.42 : 0.55 });
+}
+
+function spawnShockwave(x, y, colorHex = 0x7ae09f, maxScale = 3.2) {
+  const mesh = new THREE.Mesh(
+    new THREE.RingGeometry(0.08, 0.115, 32),
+    new THREE.MeshBasicMaterial({ color: colorHex, transparent: true, opacity: 0.88, side: THREE.DoubleSide, depthWrite: false })
+  );
+  mesh.position.set(x, y, 0.036);
+  scene.add(mesh);
+  shockwaves.push({ mesh, age: 0, life: 0.48, maxScale });
+}
+
+function projectBoardToScreen(x = 0, y = 0) {
+  const v = new THREE.Vector3(x, y, 0.05).project(camera);
+  return {
+    sx: Math.max(84, Math.min(window.innerWidth - 84, (v.x * 0.5 + 0.5) * window.innerWidth)),
+    sy: Math.max(120, Math.min(window.innerHeight - 110, (-v.y * 0.5 + 0.5) * window.innerHeight)),
+  };
+}
+
+function spawnCallout(text, { x = 0, y = 0.25, style = 'ok', center = false } = {}) {
+  const layer = document.getElementById('callout-layer');
+  if (!layer) return;
+  const el = document.createElement('div');
+  el.className = 'callout-pop ' + style;
+  el.textContent = text;
+  if (center) {
+    el.style.left = '50%';
+    el.style.top = '44%';
+  } else {
+    const p = projectBoardToScreen(x, y);
+    el.style.left = p.sx + 'px';
+    el.style.top = p.sy + 'px';
+  }
+  layer.appendChild(el);
+  setTimeout(() => { if (el.parentNode) el.parentNode.removeChild(el); }, style === 'big' ? 1700 : 1200);
 }
 
 /* ============================================================================
@@ -3019,7 +3341,7 @@ function clearDarts() {
   }
 }
 
-function throwDartTo(x, y, { kind = 'S', accent = 0x8f231e, delay = 0, onLand = null, wireTink = false, ephemeral = false } = {}) {
+function throwDartTo(x, y, { kind = 'S', accent = 0x8f231e, delay = 0, onLand = null, wireTink = false, ephemeral = false, ringHex = null, ringScale = 2.4 } = {}) {
   // Wrong/trap throws automatically pull back out shortly after impact so the board never fills past 3 real darts!
   const isEphemeral = ephemeral || wireTink;
   // Never keep more than 3 committed darts on the board at once
@@ -3047,7 +3369,7 @@ function throwDartTo(x, y, { kind = 'S', accent = 0x8f231e, delay = 0, onLand = 
   const dart = {
     mesh, start, end, t: -delay, duration: 0.26,
     landed: false, wobbleT: 0, entryPitch, entryYaw,
-    kind, wireTink, onLand,
+    kind, wireTink, onLand, ringHex, ringScale,
     ephemeral: isEphemeral,
     pullAge: 0,
     bVx: (Math.random() - 0.5) * 2.6 + (x >= 0 ? 0.45 : -0.45),
@@ -3089,6 +3411,11 @@ function updateDarts(dt) {
         } else {
           audio.playThud(d.kind);
           spawnBurst(d.end.x, d.end.y, 'chalk');
+          if (d.ringHex) {
+            spawnShockwave(d.end.x, d.end.y, d.ringHex, d.ringScale || 2.6);
+          } else if (d.kind === 'T' || d.kind === 'D' || d.kind === 'BULL') {
+            spawnShockwave(d.end.x, d.end.y, d.kind === 'BULL' ? 0xffe494 : 0xf3cc7d, d.kind === 'BULL' ? 3.2 : 2.3);
+          }
           cameraKick = 0.032;
         }
         if (d.onLand) d.onLand();
@@ -3145,12 +3472,239 @@ const TREV_STAGE_QUOTES = {
 
 const TREV_PINT_LINE = "Cor, mate, you are so accurate I'd let you have a go at knockin' this off — except I don't want to part with a perfectly good pint!";
 
+const KOKORO_VOICES = {
+  bm_george: { id: 'bm_george', label: 'George', desc: 'Lively cheeky UK pub banter', rate: 1.05 },
+  bm_lewis:  { id: 'bm_lewis',  label: 'Lewis',  desc: 'Deep warm East End gravel',  rate: 1.03 },
+  bm_daniel: { id: 'bm_daniel', label: 'Daniel', desc: 'Seasoned pub darts regular', rate: 1.04 },
+  bm_fable:  { id: 'bm_fable',  label: 'Fable',  desc: 'Theatrical TV darts caller', rate: 1.05 },
+};
+
+class KokoroVoiceEngine {
+  constructor() {
+    this.status = 'idle'; // 'idle' | 'loading' | 'ready' | 'error'
+    this.progressPct = 0;
+    this.errorMsg = '';
+    this.worker = null;
+    this.directTts = null;
+    this.cache = new Map(); // key: voice|text -> AudioBuffer
+    this.latestReqId = 0;
+    this.pendingMeta = new Map();
+    this.listeners = new Set();
+  }
+  onState(fn) { this.listeners.add(fn); }
+  emit() {
+    for (const fn of this.listeners) {
+      try { fn(this.status, this.progressPct, this.errorMsg); } catch (_) {}
+    }
+  }
+  buildWorkerSource() {
+    return `
+      let tts = null;
+      let busy = false;
+      let nextJob = null;
+      const CDN_URLS = [
+        'https://cdn.jsdelivr.net/npm/kokoro-js@1.2.1/dist/kokoro.web.min.js',
+        'https://esm.sh/kokoro-js@1.2.1'
+      ];
+      async function importKokoro() {
+        let lastErr = null;
+        for (const url of CDN_URLS) {
+          try { return await import(url); } catch (e) { lastErr = e; }
+        }
+        throw lastErr || new Error('Failed to load kokoro-js');
+      }
+      async function runNext() {
+        if (busy || !nextJob || !tts) return;
+        const job = nextJob;
+        nextJob = null;
+        busy = true;
+        try {
+          const out = await tts.generate(job.text, { voice: job.voice });
+          const raw = out.audio || out.data;
+          const samples = raw instanceof Float32Array ? new Float32Array(raw) : Float32Array.from(raw);
+          const sr = out.sampling_rate || 24000;
+          self.postMessage({ type: 'audio', id: job.id, key: job.key, samples, sampleRate: sr }, [samples.buffer]);
+        } catch (err) {
+          self.postMessage({ type: 'gen_error', id: job.id, message: String(err && err.message || err) });
+        } finally {
+          busy = false;
+          if (nextJob) runNext();
+        }
+      }
+      self.onmessage = async (e) => {
+        const msg = e.data || {};
+        if (msg.type === 'init') {
+          if (tts) { self.postMessage({ type: 'ready' }); return; }
+          try {
+            const mod = await importKokoro();
+            const KokoroTTS = mod.KokoroTTS || (mod.default && mod.default.KokoroTTS);
+            if (!KokoroTTS) throw new Error('KokoroTTS export missing');
+            const fileProg = {};
+            tts = await KokoroTTS.from_pretrained('onnx-community/Kokoro-82M-v1.0-ONNX', {
+              dtype: 'q8',
+              device: 'wasm',
+              progress_callback: (p) => {
+                if (!p) return;
+                if (p.file && typeof p.progress === 'number') {
+                  fileProg[p.file] = p.progress;
+                  const vals = Object.values(fileProg);
+                  const avg = Math.round(vals.reduce((a, b) => a + b, 0) / vals.length);
+                  self.postMessage({ type: 'progress', pct: Math.min(99, Math.max(1, avg)) });
+                } else if (typeof p.progress === 'number') {
+                  self.postMessage({ type: 'progress', pct: Math.min(99, Math.max(1, Math.round(p.progress))) });
+                }
+              },
+            });
+            self.postMessage({ type: 'ready' });
+          } catch (err) {
+            self.postMessage({ type: 'init_error', message: String(err && err.message || err) });
+          }
+        } else if (msg.type === 'speak') {
+          nextJob = msg;
+          runNext();
+        }
+      };
+    `;
+  }
+  async load() {
+    if (this.status === 'ready' || this.status === 'loading') return;
+    this.status = 'loading';
+    this.progressPct = 2;
+    this.errorMsg = '';
+    this.emit();
+
+    // Run Kokoro-82M inside an inline ES-module Web Worker so Three.js & the Accuracy Gauge never drop a frame!
+    try {
+      const blob = new Blob([this.buildWorkerSource()], { type: 'text/javascript' });
+      const url = URL.createObjectURL(blob);
+      const w = new Worker(url, { type: 'module' });
+      this.worker = w;
+      w.onmessage = (e) => {
+        const msg = e.data || {};
+        if (msg.type === 'progress') {
+          this.progressPct = msg.pct || this.progressPct;
+          this.emit();
+        } else if (msg.type === 'ready') {
+          this.status = 'ready';
+          this.progressPct = 100;
+          this.emit();
+        } else if (msg.type === 'init_error') {
+          this.worker = null;
+          try { w.terminate(); } catch (_) {}
+          this.loadDirectFallback(msg.message);
+        } else if (msg.type === 'audio') {
+          this.onSamplesReady(msg.id, msg.key, msg.samples, msg.sampleRate);
+        } else if (msg.type === 'gen_error') {
+          const meta = this.pendingMeta.get(msg.id);
+          this.pendingMeta.delete(msg.id);
+          if (meta && meta.onFallback) meta.onFallback();
+        }
+      };
+      w.onerror = () => {
+        if (this.status === 'loading') {
+          this.worker = null;
+          try { w.terminate(); } catch (_) {}
+          this.loadDirectFallback('Worker module unavailable');
+        }
+      };
+      w.postMessage({ type: 'init' });
+    } catch (err) {
+      this.loadDirectFallback(String(err && err.message || err));
+    }
+  }
+  async loadDirectFallback(priorReason) {
+    try {
+      const mod = await import('https://cdn.jsdelivr.net/npm/kokoro-js@1.2.1/dist/kokoro.web.min.js');
+      const KokoroTTS = mod.KokoroTTS || (mod.default && mod.default.KokoroTTS);
+      this.directTts = await KokoroTTS.from_pretrained('onnx-community/Kokoro-82M-v1.0-ONNX', {
+        dtype: 'q8',
+        device: 'wasm',
+        progress_callback: (p) => {
+          if (p && typeof p.progress === 'number') {
+            this.progressPct = Math.min(99, Math.max(1, Math.round(p.progress)));
+            this.emit();
+          }
+        },
+      });
+      this.status = 'ready';
+      this.progressPct = 100;
+      this.emit();
+    } catch (err) {
+      this.status = 'error';
+      this.errorMsg = String(err && err.message || priorReason || 'Could not load Kokoro-82M');
+      this.emit();
+    }
+  }
+  cacheBuffer(key, buf) {
+    if (this.cache.has(key)) this.cache.delete(key);
+    this.cache.set(key, buf);
+    if (this.cache.size > 80) {
+      const oldest = this.cache.keys().next().value;
+      this.cache.delete(oldest);
+    }
+  }
+  onSamplesReady(id, key, samples, sampleRate) {
+    const meta = this.pendingMeta.get(id);
+    this.pendingMeta.delete(id);
+    if (!audio.ctx || !samples || !samples.length) return;
+    const buf = audio.ctx.createBuffer(1, samples.length, sampleRate || 24000);
+    buf.copyToChannel(samples, 0);
+    this.cacheBuffer(key, buf);
+    if (id === this.latestReqId && meta && audio.enabled) {
+      audio.playVoiceBuffer(buf, { rate: meta.rate || 1.04, onStart: meta.onStart, onEnd: meta.onEnd });
+    }
+  }
+  cancelPending() {
+    this.latestReqId++;
+    this.pendingMeta.clear();
+    audio.stopVoice();
+  }
+  async speak(text, voiceId = 'bm_george', { rate = 1.04, onStart = null, onEnd = null, onFallback = null } = {}) {
+    if (this.status !== 'ready') {
+      if (onFallback) onFallback();
+      return false;
+    }
+    const clean = String(text || '').trim();
+    if (!clean) return false;
+    const key = `${voiceId}|${clean}`;
+    const reqId = ++this.latestReqId;
+
+    // 0ms instant cache hit for repeated Trev banter!
+    if (this.cache.has(key)) {
+      const buf = this.cache.get(key);
+      audio.playVoiceBuffer(buf, { rate, onStart, onEnd });
+      return true;
+    }
+
+    this.pendingMeta.set(reqId, { rate, onStart, onEnd, onFallback });
+    if (this.worker) {
+      this.worker.postMessage({ type: 'speak', id: reqId, key, text: clean, voice: voiceId });
+      return true;
+    }
+    if (this.directTts) {
+      try {
+        const out = await this.directTts.generate(clean, { voice: voiceId });
+        const raw = out.audio || out.data;
+        const samples = raw instanceof Float32Array ? raw : Float32Array.from(raw);
+        this.onSamplesReady(reqId, key, samples, out.sampling_rate || 24000);
+        return true;
+      } catch (_) {
+        this.pendingMeta.delete(reqId);
+        if (onFallback) onFallback();
+      }
+    }
+    return false;
+  }
+}
+const kokoro = new KokoroVoiceEngine();
+
 class CoachTrev {
   constructor() {
     this.elStage = document.getElementById('trev-stage');
     this.elBubble = document.getElementById('trev-bubble');
     this.elText = document.getElementById('trev-text');
     this.elActs = document.getElementById('trev-acts');
+    this.elHdBtn = document.getElementById('trev-hd-btn');
     this.elVoiceBtn = document.getElementById('trev-voice-btn');
     this.elHideBtn = document.getElementById('trev-hide-btn');
     this.elImg = document.getElementById('trev-img');
@@ -3161,6 +3715,14 @@ class CoachTrev {
     this.elBriefImg.src = TREV_IMG_URI;
 
     this.voiceOn = true;
+    this.kokoroOn = false;
+    this.kokoroVoice = 'bm_george';
+    this.announcedKokoroReady = false;
+    try {
+      this.kokoroOn = localStorage.getItem('oche_trev_kokoro_on') === '1';
+      const savedV = localStorage.getItem('oche_trev_kokoro_voice');
+      if (savedV && KOKORO_VOICES[savedV]) this.kokoroVoice = savedV;
+    } catch (_) {}
     this.bubbleHidden = false;
     this.moodTimer = null;
     this.talkTimer = null;
@@ -3169,8 +3731,85 @@ class CoachTrev {
     this.lastPaceTipAt = 0;
     this.clickCount = 0;
 
+    kokoro.onState((status, pct) => this.onKokoroState(status, pct));
     this.initVoice();
     this.bindUI();
+    this.updateHdButton();
+  }
+  onKokoroState(status, pct) {
+    this.updateHdButton();
+    if (elDrawerBg && elDrawerBg.classList.contains('open') && typeof renderDrawer === 'function') {
+      renderDrawer();
+    }
+    if (status === 'ready' && this.kokoroOn && !this.announcedKokoroReady) {
+      this.announcedKokoroReady = true;
+      const vName = (KOKORO_VOICES[this.kokoroVoice] || KOKORO_VOICES.bm_george).label;
+      this.say(`Wahey! Kokoro neural voice (${vName}) is live, me old china — proper pub atmosphere now, ain't it!`, {
+        mood: 'toast', holdMs: 3200, forceOpen: true, speak: true, allowInGhost: true,
+      });
+    } else if (status === 'error' && this.kokoroOn) {
+      setFeedback('Kokoro-82M could not reach CDN/model right now — using built-in London voice instead.', 'warn');
+    }
+  }
+  updateHdButton() {
+    if (!this.elHdBtn) return;
+    this.elHdBtn.classList.remove('loading', 'ready', 'err', 'on');
+    if (!this.kokoroOn) {
+      this.elHdBtn.textContent = 'HD';
+      this.elHdBtn.title = 'Enable Kokoro-82M Neural British Voice (~86MB cached in browser)';
+    } else if (kokoro.status === 'loading') {
+      this.elHdBtn.textContent = `${kokoro.progressPct}%`;
+      this.elHdBtn.classList.add('loading');
+      this.elHdBtn.title = `Downloading Kokoro-82M neural voice (${kokoro.progressPct}%)…`;
+    } else if (kokoro.status === 'ready') {
+      this.elHdBtn.textContent = 'HD ✓';
+      this.elHdBtn.classList.add('ready', 'on');
+      const vName = (KOKORO_VOICES[this.kokoroVoice] || KOKORO_VOICES.bm_george).label;
+      this.elHdBtn.title = `Kokoro-82M Neural Voice active (${vName}) — click to switch back to instant browser voice`;
+    } else if (kokoro.status === 'error') {
+      this.elHdBtn.textContent = 'HD !';
+      this.elHdBtn.classList.add('err');
+      this.elHdBtn.title = 'Kokoro-82M unavailable (using browser voice) — click to retry';
+    } else {
+      this.elHdBtn.textContent = 'HD';
+      this.elHdBtn.classList.add('on');
+      this.elHdBtn.title = 'Kokoro-82M enabled — loads when sound is active';
+    }
+  }
+  setKokoroConfig(enabled, voiceId = this.kokoroVoice, audition = false) {
+    this.kokoroOn = !!enabled;
+    if (voiceId && KOKORO_VOICES[voiceId]) this.kokoroVoice = voiceId;
+    try {
+      localStorage.setItem('oche_trev_kokoro_on', this.kokoroOn ? '1' : '0');
+      localStorage.setItem('oche_trev_kokoro_voice', this.kokoroVoice);
+    } catch (_) {}
+    if (!this.kokoroOn) {
+      kokoro.cancelPending();
+      this.updateHdButton();
+      return;
+    }
+    if (!audio.ctx) { audio.unlock(); elSoundPill.textContent = 'Sound: On'; elSoundPill.classList.add('on'); }
+    if (!audio.enabled) { audio.toggle(); elSoundPill.textContent = 'Sound: On'; elSoundPill.classList.add('on'); }
+    this.voiceOn = true;
+    this.elVoiceBtn.textContent = '🔊';
+    this.elVoiceBtn.classList.add('on');
+    if (kokoro.status === 'idle' || kokoro.status === 'error') {
+      this.announcedKokoroReady = false;
+      kokoro.status = 'idle';
+      kokoro.load();
+      this.updateHdButton();
+      this.say("Hang on sunshine — warmin' up me Kokoro-82M neural voice (~86MB cached in yer browser). Won't be a tick!", {
+        mood: 'toast', holdMs: 3200, forceOpen: true, speak: true, allowInGhost: true,
+      });
+    } else {
+      this.updateHdButton();
+      if (audition && kokoro.status === 'ready') {
+        const vName = KOKORO_VOICES[this.kokoroVoice].label;
+        this.say(`Alright me old china! ${vName} on the mic — lovely jubbly, let's get some trebles in the lipstick!`, {
+          mood: 'cheer', holdMs: 2600, forceOpen: true, speak: true, allowInGhost: true,
+        });
+      }
+    }
   }
   initVoice() {
     if (!('speechSynthesis' in window)) return;
@@ -3188,20 +3827,32 @@ class CoachTrev {
     this.pickVoice();
     window.speechSynthesis.onvoiceschanged = this.pickVoice;
   }
-  toSpokenText(raw) {
-    return String(raw || '')
-      .replace(/->/g, ' leaves ')
+  toSpokenText(raw, forKokoro = false) {
+    let s = String(raw || '')
+      .replace(/->/g, ', leaves ')
+      .replace(/\s*[·—|]\s*/g, ', ')
       .replace(/\bT(\d+)\b/g, 'treble $1')
       .replace(/\bD(\d+)\b/g, 'double $1')
       .replace(/\bS(\d+)\b/g, 'single $1')
       .replace(/\bFDI(s?)\b/g, 'first dart indicator$1')
       .replace(/\ban'\b/gi, 'and')
       .replace(/\bav'\b/gi, 'have')
-      .replace(/\byer\b/gi, 'your')
-      .replace(/\bme\b/g, 'my');
+      .replace(/'em\b/gi, 'them')
+      .replace(/'specially\b/gi, 'especially')
+      .replace(/\byer\b/gi, forKokoro ? 'ya' : 'your')
+      .replace(/\bme\b/gi, 'my');
+    if (forKokoro) {
+      s = s
+        .replace(/([a-z]{3,})in'\b/gi, '$1ing')
+        .replace(/\baht\b/gi, 'out')
+        .replace(/\(\s*~\d+MB[^)]*\)/gi, '')
+        .replace(/\s{2,}/g, ' ')
+        .trim();
+    }
+    return s;
   }
-  speakNow(text) {
-    if (!this.voiceOn || !audio.enabled || !('speechSynthesis' in window)) return;
+  speakBrowser(text) {
+    if (!('speechSynthesis' in window)) return;
     try {
       if (!this.ukVoice && this.pickVoice) this.pickVoice();
       const synth = window.speechSynthesis;
@@ -3210,7 +3861,7 @@ class CoachTrev {
       const runSpeak = () => {
         try {
           if (synth.paused) synth.resume();
-          const u = new SpeechSynthesisUtterance(this.toSpokenText(text));
+          const u = new SpeechSynthesisUtterance(this.toSpokenText(text, false));
           if (this.ukVoice) u.voice = this.ukVoice;
           u.lang = (this.ukVoice && this.ukVoice.lang) || 'en-GB';
           u.rate = 1.02;
@@ -3222,20 +3873,57 @@ class CoachTrev {
           synth.speak(u);
         } catch (_) {}
       };
-      // Chromium/macOS workaround: brief 40ms gap after cancel() prevents speak() from being swallowed
+      // Chromium/macOS workaround: brief 45ms gap after cancel() prevents speak() from being swallowed
       if (wasActive) setTimeout(runSpeak, 45);
       else runSpeak();
     } catch (_) {}
   }
+  speakNow(text) {
+    if (!this.voiceOn || !audio.enabled) return;
+    if (this.kokoroOn) {
+      if (kokoro.status === 'idle') kokoro.load();
+      if (kokoro.status === 'ready') {
+        if ('speechSynthesis' in window) {
+          try { window.speechSynthesis.cancel(); } catch (_) {}
+        }
+        const cfg = KOKORO_VOICES[this.kokoroVoice] || KOKORO_VOICES.bm_george;
+        kokoro.speak(this.toSpokenText(text, true), cfg.id, {
+          rate: cfg.rate,
+          onStart: () => { this.elStage.classList.add('talking'); },
+          onEnd: () => { this.elStage.classList.remove('talking'); },
+          onFallback: () => { this.speakBrowser(text); },
+        });
+        return;
+      }
+    }
+    this.speakBrowser(text);
+  }
   bindUI() {
+    if (this.elHdBtn) {
+      this.elHdBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (this.kokoroOn && kokoro.status !== 'error') {
+          this.setKokoroConfig(false);
+          this.say("Switched back to instant browser voice, mate — tap HD anytime for Kokoro-82M!", {
+            mood: 'cheer', holdMs: 1800, speak: true, allowInGhost: true,
+          });
+        } else {
+          this.setKokoroConfig(true, this.kokoroVoice, true);
+        }
+      });
+    }
     this.elVoiceBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       if (!audio.ctx) { audio.unlock(); elSoundPill.textContent = 'Sound: On'; elSoundPill.classList.add('on'); }
       this.voiceOn = !this.voiceOn;
       this.elVoiceBtn.textContent = this.voiceOn ? '🔊' : '🔇';
       this.elVoiceBtn.classList.toggle('on', this.voiceOn);
-      if (!this.voiceOn && 'speechSynthesis' in window) window.speechSynthesis.cancel();
-      else if (this.voiceOn) this.say("Alright mate, Trev's voice is loud an' clear!", { mood: 'cheer', holdMs: 1200, speak: true, allowInGhost: true });
+      if (!this.voiceOn) {
+        kokoro.cancelPending();
+        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+      } else {
+        this.say("Alright mate, Trev's voice is loud an' clear!", { mood: 'cheer', holdMs: 1200, speak: true, allowInGhost: true });
+      }
     });
     this.elHideBtn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -3296,7 +3984,8 @@ class CoachTrev {
   pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
   onStageBriefing(stageId) {
-    const q = TREV_STAGE_QUOTES[stageId] || "Right then, mate — av' a butcher's at the rules an' step up to the oche!";
+    let q = TREV_STAGE_QUOTES[stageId] || "Right then, mate — av' a butcher's at the rules an' step up to the oche!";
+    if (stageId === 'LEVEL_7') q = q.replace('Big Dave', currentRival().name);
     this.elBriefQuote.innerHTML = `<strong>Trev says:</strong> "${q}"`;
     this.say(q, { mood: 'cheer', holdMs: 1200, speak: true });
   }
@@ -3327,7 +4016,7 @@ class CoachTrev {
       } else if (ch.kind === 'countdown301') {
         tip = `Easy as pie, sunshine! Add the three arrows first, then take it off in round tens — like minus 85 is minus 100, add 15 back!`;
       } else if (ch.kind === 'match501') {
-        tip = `501 Championship, mate! Keep Big Dave honest — dodge bogeys in the 180s, watch splash traps on 101 to 170, an' bin the FDI with one dart left on 62 to 70!`;
+        tip = `501 Championship, mate! Keep ${currentRival().name} honest — dodge bogeys in the 180s, watch splash traps on 101 to 170, an' bin the FDI with one dart left on 62 to 70!`;
       } else if (ch.kind === 'treble_find' || ch.kind === 'treble_val') {
         tip = `Lock in 20 down to 15 an' their cheeky neighbors first, mate — T14 = 42, T17 = 51, T19 = 57, burn 'em into the old loaf!`;
       } else if (ch.kind === 'double_find' || ch.kind === 'double_val' || ch.kind === 'halving') {
@@ -3534,13 +4223,29 @@ const state = {
   trialReadyNotified: {},
   // Level 4: 301 / Under-260 Chalk & Countdown running leg
   leg301: { score: 301, startMode: 301, visitsDone: 0, nextMode: 'throw' },
-  // Level 7: Championship 501 vs. Big Dave + Live Board-Management Auditor
+  // Level 7: Championship 501 vs. Pub Rival + Live Board-Management Auditor
+  rivalId: 'dave',
+  lastAimBed: null,
+  lastAimXY: null,
   match501: {
     playerScore: 501, rivalScore: 501, dartsThrown: 0, totalScored: 0,
     chalkOk: 0, chalkAttempts: 0, auditGood: 0, auditTotal: 0, auditNotes: [],
     visitNum: 1, lastDaveNote: '', finished: false,
   },
 };
+
+const PUB_RIVALS = {
+  dave:   { id: 'dave',   name: 'Big Dave',     short: 'DAVE',   avg: '~54 Avg', dblRate: 0.30, flightHex: 0x265685,
+    visits: [['S20','S5','S1'], ['S20','S20','S1'], ['S20','S20','S5'], ['S20','S20','S18'], ['T20','S20','S1'], ['S19','S19','S7'], ['T20','S5','S1'], ['T19','S19','S7'], ['T20','S20','S5'], ['T20','S20','S20']],
+    taunt: "Big Dave's steppin' up with a pint in one hand!" },
+  rita:   { id: 'rita',   name: '"Razor" Rita', short: 'RITA',   avg: '~68 Avg', dblRate: 0.48, flightHex: 0x6b2e75,
+    visits: [['S20','S20','S20'], ['T20','S5','S1'], ['T19','S19','S3'], ['T20','S20','S1'], ['T20','S20','S5'], ['T20','S20','S19'], ['T20','S20','S20'], ['T19','T19','S7'], ['T20','T20','S5']],
+    taunt: "Watch out — Razor Rita's deadly on Double 16!" },
+  guvnor: { id: 'guvnor', name: "The Guv'nor",  short: 'GUV',    avg: '~84 Avg', dblRate: 0.65, flightHex: 0x246b55,
+    visits: [['S20','S20','S20'], ['T20','S20','S5'], ['T20','S20','S19'], ['T20','S20','S20'], ['T19','T19','S19'], ['T20','T20','S5'], ['T20','T20','S20'], ['T20','T19','T19']],
+    taunt: "East End royalty on the oche — The Guv'nor doesn't miss many!" },
+};
+function currentRival() { return PUB_RIVALS[state.rivalId] || PUB_RIVALS.dave; }
 
 function currentProfile() {
   return DIFFICULTY_PROFILES[state.difficulty] || DIFFICULTY_PROFILES.league;
@@ -3563,10 +4268,11 @@ function resetLeg301(startScore = null) {
 }
 
 function resetMatch501() {
+  const rv = currentRival();
   state.match501 = {
     playerScore: 501, rivalScore: 501, dartsThrown: 0, totalScored: 0,
     chalkOk: 0, chalkAttempts: 0, auditGood: 0, auditTotal: 0, auditNotes: [],
-    visitNum: 1, lastDaveNote: 'Big Dave: 501', finished: false,
+    visitNum: 1, lastDaveNote: `${rv.name} (${rv.avg}): 501`, finished: false,
   };
 }
 
@@ -3778,17 +4484,18 @@ function audit501Decision(rem, dartsLeft, aimedBed, rivalScore) {
 
   // 5. Rival Pressure on 50 (2+ darts in hand)
   if (rem === 50 && dartsLeft >= 2) {
+    const rName = (typeof currentRival === 'function' ? currentRival().name : 'Big Dave');
     if (rivalScore <= 100 && aimedBed.code === 'BULL') {
       return { grade: 'great', tag: 'RIVAL PRESSURE',
-        msg: `Ice cold! Big Dave's sitting on ${rivalScore} — right call going straight at the Bull!` };
+        msg: `Ice cold! ${rName}'s sitting on ${rivalScore} — right call going straight at the Bull!` };
     }
     if (rivalScore > 170 && aimedBed.code === 'BULL') {
       return { grade: 'bad', tag: 'UNNEEDED RISK',
-        msg: `Easy tiger! Big Dave's back on ${rivalScore} — play S18 -> D16 or S10 -> D20 instead of Bull!` };
+        msg: `Easy tiger! ${rName}'s back on ${rivalScore} — play S18 -> D16 or S10 -> D20 instead of Bull!` };
     }
     if (rivalScore > 170 && ['S18', 'S10', 'S14', 'S16', 'S12'].includes(aimedBed.code)) {
       return { grade: 'great', tag: 'PUB SMART',
-        msg: `Tidy match management! Dave's back on ${rivalScore}, easy single for a fat double!` };
+        msg: `Tidy match management! ${rName}'s back on ${rivalScore}, easy single for a fat double!` };
     }
     return null;
   }
@@ -3835,11 +4542,15 @@ const elRivalTag    = document.getElementById('rival-tag');
 const elTimerFill   = document.getElementById('timer-fill');
 const elTimerSec    = document.getElementById('timer-sec');
 const elFeedback    = document.getElementById('feedback-strip');
+const elFlowPlate   = document.getElementById('flow-plate');
 const elFlowVal     = document.getElementById('flow-val');
+const elMultPill    = document.getElementById('mult-pill');
 const elAvgMs       = document.getElementById('avg-ms');
 const elRankPill    = document.getElementById('rank-pill');
 const elPaceBtn     = document.getElementById('pace-btn');
 const elTierBadge   = document.getElementById('tier-badge');
+const elPromptPlate = document.querySelector('.prompt-plate');
+const elRelockPill  = document.getElementById('relock-pill');
 const elNumpad      = document.getElementById('numpad-panel');
 const elNumDisp     = document.getElementById('numpad-display');
 const elSoundPill   = document.getElementById('sound-pill');
@@ -3971,10 +4682,38 @@ function computeAimDrop(aimBed, aimXY, u, v, cfg, allowOutsideMiss = false) {
   return { x, y, bed: landed, zone };
 }
 
+function updateRelockPill() {
+  const ch = state.challenge;
+  const blocked = state.briefingOpen || elDrawerBg.classList.contains('open') || elLevelUp.classList.contains('show') || elNumpad.classList.contains('visible');
+  const canRepeat = !state.ghostMode && state.useAimGauge && !aimGauge.active && !state.busy && !blocked
+    && ch && (ch.kind === 'countdown301' || ch.kind === 'match501') && ch.phase === 'throw'
+    && ch.darts && ch.darts.length > 0 && ch.darts.length < 3 && state.lastAimBed;
+  if (canRepeat) {
+    elRelockPill.textContent = (state.isTouch || window.innerWidth <= 780)
+      ? `Aim ${state.lastAimBed.code} Again`
+      : `Aim ${state.lastAimBed.code} Again [Space]`;
+    elRelockPill.classList.add('visible');
+  } else {
+    elRelockPill.classList.remove('visible');
+  }
+}
+
+function relockLastAim() {
+  if (!state.lastAimBed || aimGauge.active || state.busy) return false;
+  const ch = state.challenge;
+  if (!ch || (ch.kind !== 'countdown301' && ch.kind !== 'match501') || ch.phase !== 'throw') return false;
+  elRelockPill.classList.remove('visible');
+  startAimGauge(ch.kind === 'match501' ? '501' : '301', state.lastAimBed, state.lastAimXY);
+  return true;
+}
+
 function startAimGauge(mode, bed, rawXY) {
   const pt = rawXY ? { x: rawXY.x, y: rawXY.y } : bedToXY(bed.code);
   const cfg = aimConfigForDifficulty();
   const sides = getScreenSideNeighbors(bed, pt);
+  state.lastAimBed = bed;
+  state.lastAimXY = pt;
+  elRelockPill.classList.remove('visible');
   aimGauge.active = true;
   aimGauge.mode = mode;
   aimGauge.aimedBed = bed;
@@ -3984,7 +4723,15 @@ function startAimGauge(mode, bed, rawXY) {
   aimGauge.phase = (Math.random() < 0.5 ? -1 : 1) * (0.85 + Math.random() * 0.35);
   aimGauge.vPhase = Math.random() * Math.PI * 2;
 
-  const dartNum = (state.challenge && state.challenge.darts ? state.challenge.darts.length : 0) + 1;
+  const ch = state.challenge;
+  const dartNum = (ch && ch.darts ? ch.darts.length : 0) + 1;
+  // Dramatic tension heartbeat on Dart 3 for a 180!! OR aiming at a winning Double-Out in 501!
+  const on180Dart = dartNum === 3 && ch && ch.darts && ch.darts[0] === 'T20' && ch.darts[1] === 'T20' && bed.code === 'T20';
+  const onMatchDart = mode === '501' && ch && (ch.liveRem === bed.value) && (bed.ring === 'D' || bed.ring === 'BULL');
+  if (on180Dart || onMatchDart) {
+    audio.playHeartbeat();
+    spawnCallout(on180Dart ? '180 DART!' : 'MATCH DART!', { x: pt.x, y: pt.y + 0.25, style: 'gold' });
+  }
   elAimTarget.textContent = `AIMING ${bed.code} · DART ${dartNum}/3`;
   elAimLeft.textContent = sides.left;
   elAimRight.textContent = sides.right;
@@ -4003,6 +4750,7 @@ function startAimGauge(mode, bed, rawXY) {
 }
 
 function cancelAimGauge() {
+  elRelockPill.classList.remove('visible');
   if (!aimGauge.active) return;
   aimGauge.active = false;
   aimGauge.mode = null;
@@ -4058,7 +4806,7 @@ function openStageBriefing(stageId) {
   state.seenBriefings.add(stageId);
   elBriefTag.textContent = card.tag;
   elBriefTitle.textContent = card.title;
-  elBriefGoal.textContent = card.goal;
+  elBriefGoal.textContent = stageId === 'LEVEL_7' ? card.goal.replace('"Big Dave"', currentRival().name) : card.goal;
   elBriefBody.innerHTML = card.html;
   trev.onStageBriefing(stageId);
   elBriefBg.classList.add('open');
@@ -4072,6 +4820,7 @@ function closeStageBriefing() {
   state.challengeStartMs = performance.now();
   state.lastPlayerInputAt = performance.now();
   state.bellChimed = false;
+  updateRelockPill();
 }
 
 function setBridgeBadge(fdi) {
@@ -4224,7 +4973,9 @@ function finishLevelTrial(passed) {
     mastery.data.promotedStages[lvlId] = true;
     mastery.data.xp = (mastery.data.xp || 0) + 60;
     mastery.save();
-    audio.playApplause();
+    audio.playCrowdRoar(1.2);
+    spawnBurst(0, 0.25, 'gold');
+    spawnCallout(`TRIAL PASSED! ${formatStars(earned)}`, { center: true, style: 'big' });
     trev.say(TREV_PINT_LINE, { mood: 'pint', holdMs: 9500, forceOpen: true, speak: true });
     const acts = [];
     if (nextSt) acts.push({ label: `Advance to ${nextSt.short} →`, onClick: () => selectStage(nextId, true) });
@@ -4239,6 +4990,8 @@ function finishLevelTrial(passed) {
       acts
     );
   } else {
+    audio.playPubGroan();
+    spawnCallout('TRIAL SLIP!', { center: true, style: 'warn' });
     trev.say("Unlucky off the spider wire, mate! Two slips in the Trial — shake it off, warm up a couple more arrows, an' smash it next go!", {
       mood: 'wince', holdMs: 2600, forceOpen: true, speak: true,
     });
@@ -4259,14 +5012,27 @@ function selectStage(stageId, startAsPlayer = true, forceBriefing = false) {
   if (stageId === 'LEVEL_4') resetLeg301(301);
   if (stageId === 'LEVEL_7') resetMatch501();
   loadChallenge(nextChallengeForStage(stageId));
-  if (STAGE_BRIEFS[stageId]) setFeedback(STAGE_BRIEFS[stageId], 'cue');
+  if (STAGE_BRIEFS[stageId]) {
+    const briefTxt = stageId === 'LEVEL_7' ? STAGE_BRIEFS[stageId].replace('Big Dave', currentRival().name) : STAGE_BRIEFS[stageId];
+    setFeedback(briefTxt, 'cue');
+  }
   if (startAsPlayer && (forceBriefing || !state.seenBriefings.has(stageId))) {
     openStageBriefing(stageId);
   }
 }
 
 function updateHudStats() {
-  elFlowVal.textContent = String(mastery.data.streak);
+  const streak = mastery.data.streak || 0;
+  const fMult = mastery.flowMultiplier();
+  elFlowVal.textContent = String(streak);
+  elFlowPlate.classList.toggle('hot', fMult >= 2);
+  if (elPromptPlate) elPromptPlate.classList.toggle('on-fire', fMult >= 3);
+  if (fMult >= 2) {
+    elMultPill.textContent = fMult >= 4 ? '×4 🔥' : fMult === 3 ? '×3 🔥' : '×2';
+    elMultPill.className = 'mult-pill show' + (fMult >= 3 ? ' fire' : '');
+  } else {
+    elMultPill.className = 'mult-pill';
+  }
   const avg = mastery.avgMs();
   elAvgMs.textContent = avg ? (avg / 1000).toFixed(2) + 's' : '—';
   const rk = mastery.getRank();
@@ -4293,10 +5059,11 @@ function updateHudStats() {
     elPipRow.style.display = 'flex';
     elTrialBtn.style.display = 'none';
     const m = state.match501;
+    const rv = currentRival();
     const iqPct = m.auditTotal ? Math.round((m.auditGood / m.auditTotal) * 100) : 100;
     const iqGrade = iqPct >= 90 ? 'S' : iqPct >= 75 ? 'A' : iqPct >= 55 ? 'B' : 'C';
     elPipDots.innerHTML = '';
-    elPipLabel.textContent = `YOU ${m.playerScore} · DAVE ${m.rivalScore} · IQ ${m.auditTotal ? iqGrade : '—'}`;
+    elPipLabel.textContent = `YOU ${m.playerScore} · ${rv.short} ${m.rivalScore} · IQ ${m.auditTotal ? iqGrade : '—'}`;
   } else if (state.inTrial) {
     elPipRow.style.display = 'flex';
     elTrialBtn.style.display = 'none';
@@ -4315,6 +5082,7 @@ function updateHudStats() {
     elTrialBtn.style.display = ready ? 'inline-block' : 'none';
     elTrialBtn.textContent = stars > 0 ? `Retry Trial →` : `Take Trial →`;
   }
+  updateRelockPill();
 }
 
 function showNumpad(show) {
@@ -4685,6 +5453,7 @@ function loadChallenge(ch) {
     if (tier === 1) applyChallengeHint(true);
   } else if (ch.kind === 'match501') {
     const m = state.match501;
+    const rv = currentRival();
     ch.phase = 'throw';
     ch.darts = [];
     ch.dartCoords = [];
@@ -4694,7 +5463,7 @@ function loadChallenge(ch) {
     state.remainingScore = ch.startScore;
     state.dartsLeft = 3;
     elRivalTag.style.display = 'inline-block';
-    elRivalTag.textContent = `Big Dave: ${m.rivalScore}`;
+    elRivalTag.textContent = `${rv.name}: ${m.rivalScore}`;
     elRivalTag.className = 'rival-tag';
     if (ch.startScore <= 90) setBridgeBadge(getFdiRule(ch.startScore));
     elPromptSub.textContent = `Level 7 · 501 Visit #${m.visitNum}`;
@@ -4712,7 +5481,7 @@ function loadChallenge(ch) {
     elPromptTask.textContent = taskMsg;
     showNumpad(false);
     renderChalkboard({
-      header: 'CHAMPIONSHIP 501', big: ch.startScore, sub: `YOU ${m.playerScore} · DAVE ${m.rivalScore}`,
+      header: 'CHAMPIONSHIP 501', big: ch.startScore, sub: `YOU ${m.playerScore} · ${rv.short} ${m.rivalScore}`,
       lines: [m.lastDaveNote || 'Double Out · Board IQ Live!', state.useAimGauge ? 'Click bed to lock aim -> release on GREEN!' : 'Instant throw · Auditor active!'],
     });
   }
@@ -4916,66 +5685,102 @@ function checkStagePromotion(rankUpTitle) {
 
 function runBigDaveTurn() {
   const m = state.match501;
+  const rv = currentRival();
   state.busy = true;
+  elRelockPill.classList.remove('visible');
   clearDarts();
   clearGroup(overlayGroup);
 
   let daveScored = 0;
   let daveWon = false;
+  let rivalDarts = [];
+
   if (m.rivalScore > 170) {
-    const scores = [41, 45, 58, 60, 66, 78, 81, 85, 95, 100, 26, 45, 60];
-    daveScored = scores[Math.floor(Math.random() * scores.length)];
-    if (m.rivalScore - daveScored < 40) daveScored = Math.max(20, m.rivalScore - 40);
+    const picked = rv.visits[Math.floor(Math.random() * rv.visits.length)];
+    rivalDarts = picked.slice();
+    daveScored = rivalDarts.reduce((s, c) => s + bedValue(c), 0);
+    if (m.rivalScore - daveScored < 40) {
+      rivalDarts = ['S20', 'S20', 'S1'];
+      daveScored = Math.min(41, Math.max(20, m.rivalScore - 40));
+    }
     m.rivalScore -= daveScored;
-    m.lastDaveNote = `Big Dave scored ${daveScored} -> ${m.rivalScore}`;
+    m.lastDaveNote = `${rv.name}: ${rivalDarts.join('+')} (${daveScored}) -> ${m.rivalScore}`;
   } else if (m.rivalScore > 40 && m.rivalScore !== 50) {
     const targetLeave = m.rivalScore > 100 ? (m.rivalScore - (55 + Math.floor(Math.random() * 35))) : (Math.random() < 0.5 ? 32 : 40);
     const clamped = Math.max(16, targetLeave % 2 === 0 ? targetLeave : targetLeave - 1);
     daveScored = Math.max(15, m.rivalScore - clamped);
+    const d1 = daveScored >= 60 ? 'T20' : daveScored >= 45 ? 'T15' : 'S20';
+    const left1 = Math.max(1, daveScored - bedValue(d1));
+    const d2 = left1 <= 20 ? 'S' + left1 : 'S20';
+    const left2 = Math.max(0, left1 - bedValue(d2));
+    rivalDarts = left2 > 0 && left2 <= 20 ? [d1, d2, 'S' + left2] : [d1, d2];
     m.rivalScore -= daveScored;
-    m.lastDaveNote = `Big Dave hit ${daveScored} -> leaves ${m.rivalScore}!`;
+    m.lastDaveNote = `${rv.name} scored ${daveScored} -> leaves ${m.rivalScore}!`;
   } else {
-    if ((m.rivalScore === 50 || (m.rivalScore <= 40 && m.rivalScore % 2 === 0)) && Math.random() < 0.30) {
+    const outBed = m.rivalScore === 50 ? 'BULL' : (m.rivalScore <= 40 && m.rivalScore % 2 === 0) ? ('D' + (m.rivalScore / 2)) : null;
+    if (outBed && Math.random() < rv.dblRate) {
       daveScored = m.rivalScore;
       m.rivalScore = 0;
       daveWon = true;
-      m.lastDaveNote = `Big Dave checked out ${daveScored}!`;
+      rivalDarts = [outBed];
+      m.lastDaveNote = `${rv.name} checked out ${daveScored} (${outBed})!`;
     } else {
       const chip = m.rivalScore % 2 === 1 ? 1 : (m.rivalScore > 16 ? Math.floor(m.rivalScore / 2) : 0);
       daveScored = chip;
       m.rivalScore -= chip;
-      m.lastDaveNote = chip > 0 ? `Big Dave missed double, split to ${m.rivalScore}!` : `Big Dave missed 3 at double (${m.rivalScore} left)!`;
+      rivalDarts = chip > 0 ? ['S' + Math.min(20, chip)] : [];
+      m.lastDaveNote = chip > 0 ? `${rv.name} split to ${m.rivalScore}!` : `${rv.name} missed 3 at double (${m.rivalScore} left)!`;
     }
   }
 
+  // Physically fly your rival's colored darts into the 3D dartboard one by one!
+  if (rivalDarts.length) {
+    rivalDarts.forEach((code, idx) => {
+      const p = bedToXY(code, { jitter: 0.06 });
+      throwDartTo(p.x, p.y, { kind: code === 'BULL' ? 'BULL' : code[0], accent: rv.flightHex, delay: idx * 0.20 });
+    });
+  } else {
+    // Wire miss bounce-out visual when rival misses 3 at double!
+    const dp = bedToXY(m.rivalScore <= 40 ? ('D' + Math.max(1, Math.floor(m.rivalScore / 2))) : 'D16', { jitter: 0.06 });
+    throwDartTo(dp.x, dp.y, { kind: 'D', accent: rv.flightHex, wireTink: true, delay: 0.14 });
+  }
+
   audio.playChalk();
+  spawnCallout(
+    daveWon ? `${rv.short} CHECKS OUT!` : daveScored === 26 ? `${rv.short}: 26 BREAKFAST!` : `${rv.short}: ${daveScored}!`,
+    { x: 0, y: 0.4, style: daveWon ? 'warn' : daveScored >= 100 ? 'gold' : 'ok' }
+  );
   renderChalkboard({
-    header: "BIG DAVE'S VISIT", big: m.rivalScore, sub: `YOU ${m.playerScore} · DAVE ${m.rivalScore}`,
-    lines: [m.lastDaveNote, daveWon ? 'Big Dave takes the leg!' : `Your throw on ${m.playerScore}!`],
+    header: `${rv.name.toUpperCase()}'S TURN`, big: m.rivalScore, sub: `YOU ${m.playerScore} · ${rv.short} ${m.rivalScore}`,
+    lines: [m.lastDaveNote, daveWon ? `${rv.name} takes the leg!` : `Your throw on ${m.playerScore}!`],
   });
   updateHudStats();
 
   if (daveWon) {
-    state.advanceTimerId = setTimeout(() => { state.advanceTimerId = null; finish501Leg(false); }, 1350);
+    audio.playPubGroan();
+    state.advanceTimerId = setTimeout(() => { state.advanceTimerId = null; finish501Leg(false); }, 1450);
     return;
   }
 
   if (daveScored === 26) {
-    trev.say("Haha! Big Dave's just chucked a 26 Breakfast — bury him right now, sunshine!", { mood: 'cheer', holdMs: 2200, speak: true });
+    audio.playPubGroan();
+    trev.say(`Haha! ${rv.name}'s just chucked a 26 Breakfast — bury 'em right now, sunshine!`, { mood: 'cheer', holdMs: 2200, speak: true });
   } else if (m.rivalScore <= 50) {
-    trev.say(`Heads up, me old china — Big Dave's sittin' on ${m.rivalScore}! Time to show some bottle!`, { mood: 'wince', holdMs: 2200, speak: true });
+    trev.say(`Heads up, me old china — ${rv.name}'s sittin' on ${m.rivalScore}! Time to show some bottle!`, { mood: 'wince', holdMs: 2200, speak: true });
   }
   setFeedback(`${m.lastDaveNote} — Back to you on ${m.playerScore}!`, 'cue');
   state.advanceTimerId = setTimeout(() => {
     state.advanceTimerId = null;
     loadChallenge(nextChallengeForStage('LEVEL_7'));
-  }, 1300);
+  }, 1500);
 }
 
 function finish501Leg(playerWon) {
   const m = state.match501;
+  const rv = currentRival();
   m.finished = true;
   state.busy = true;
+  elRelockPill.classList.remove('visible');
   const avg3 = m.dartsThrown ? ((m.totalScored / m.dartsThrown) * 3).toFixed(1) : '0.0';
   const chalkPct = m.chalkAttempts ? Math.round((m.chalkOk / m.chalkAttempts) * 100) : 100;
   const iqPct = m.auditTotal ? Math.round((m.auditGood / m.auditTotal) * 100) : 100;
@@ -4984,34 +5789,40 @@ function finish501Leg(playerWon) {
   if (playerWon) {
     const stars = starsForDifficulty();
     mastery.awardStars('LEVEL_7', stars);
+    mastery.record501Win(m.dartsThrown);
     mastery.data.xp = (mastery.data.xp || 0) + 100;
     mastery.save();
-    audio.playApplause();
+    audio.playCrowdRoar(1.35);
+    spawnBurst(0, 0.2, 'gold');
+    spawnCallout('GAME SHOT & THE LEG!!', { center: true, style: 'big' });
     trev.say(TREV_PINT_LINE, { mood: 'pint', holdMs: 9500, forceOpen: true, speak: true });
     renderChalkboard({
       header: 'GAME SHOT · 501!', big: `IQ ${iqGrade}`, sub: `${m.dartsThrown} darts · Avg ${avg3}`,
       lines: [
-        { text: `Board Management: ${iqPct}% (${m.auditGood}/${m.auditTotal})`, kind: 'ok' },
+        { text: `Beat ${rv.name} · Board IQ: ${iqPct}% (${m.auditGood}/${m.auditTotal})`, kind: 'ok' },
         { text: `Chalk Accuracy: ${chalkPct}% · ${formatStars(stars)}`, kind: 'ok' },
       ],
     });
+    const nextRivalId = state.rivalId === 'dave' ? 'rita' : state.rivalId === 'rita' ? 'guvnor' : null;
+    const acts = [{ label: `Play ${rv.name} Again`, onClick: () => selectStage('LEVEL_7', true, false) }];
+    if (nextRivalId) {
+      acts.push({ label: `Challenge ${PUB_RIVALS[nextRivalId].name} →`, onClick: () => { state.rivalId = nextRivalId; selectStage('LEVEL_7', true, false); } });
+    }
+    acts.push({ label: 'View Pub Ladder', ghost: true, onClick: () => openDrawer('stages') });
     showLevelUpBanner(
       `GAME SHOT & THE LEG! (Board IQ: ${iqGrade}) ${formatStars(stars)}`,
-      `You beat Big Dave in ${m.dartsThrown} darts (${avg3} 3-dart avg) · Chalk ${chalkPct}% · Board Management ${iqPct}% (${m.auditGood}/${m.auditTotal} smart calls) · +100 XP!`,
-      [
-        { label: 'Play Another 501 Leg', onClick: () => selectStage('LEVEL_7', true, false) },
-        { label: 'View Pub Ladder', ghost: true, onClick: () => openDrawer('stages') },
-      ]
+      `You beat ${rv.name} in ${m.dartsThrown} darts (${avg3} 3-dart avg) · Chalk ${chalkPct}% · Board Management ${iqPct}% (${m.auditGood}/${m.auditTotal}) · +100 XP!`,
+      acts
     );
   } else {
-    trev.say(`Unlucky, sunshine — Big Dave nicked that leg! Your Board IQ was Grade ${iqGrade} (${iqPct}%) — av' a rematch an' send him back to the bar!`, {
+    trev.say(`Unlucky, sunshine — ${rv.name} nicked that leg! Your Board IQ was Grade ${iqGrade} (${iqPct}%) — av' a rematch an' send 'em back to the bar!`, {
       mood: 'wince', holdMs: 3600, forceOpen: true, speak: true,
     });
     showLevelUpBanner(
-      `Big Dave Takes the Leg (Board IQ: ${iqGrade})`,
+      `${rv.name} Takes the Leg (Board IQ: ${iqGrade})`,
       `You reached ${m.playerScore} (${avg3} 3-dart avg) · Chalk ${chalkPct}% · Board Management ${iqPct}% (${m.auditGood}/${m.auditTotal}).`,
       [
-        { label: 'Rematch Big Dave!', onClick: () => selectStage('LEVEL_7', true, false) },
+        { label: `Rematch ${rv.name}!`, onClick: () => selectStage('LEVEL_7', true, false) },
         { label: 'Practice Checkouts (Level 6)', ghost: true, onClick: () => selectStage('LEVEL_6', true) },
       ]
     );
@@ -5024,7 +5835,7 @@ function completeChallenge(correct, customMsg = null, customCueLines = null) {
   if (!ch) return;
   const id = challengeItemId(ch);
   const ms = performance.now() - state.challengeStartMs;
-  let rec = { xpGain: 0, rankedUp: null };
+  let rec = { xpGain: 0, flowMult: 1, lightning: false, rankedUp: null };
   if (!state.ghostMode) {
     rec = mastery.record(id, correct, ms, state.usedHint, ch.speedMs || 3000);
     if (state.stage === 'CALIBRATION') {
@@ -5036,9 +5847,22 @@ function completeChallenge(correct, customMsg = null, customCueLines = null) {
   }
 
   if (correct) {
-    audio.playBell('ok');
-    if (mastery.data.streak > 0 && mastery.data.streak % 5 === 0 && !state.ghostMode) audio.playApplause();
-    const xpTxt = !state.ghostMode && rec.xpGain ? ` (+${rec.xpGain} XP)` : '';
+    if (rec.lightning && !state.ghostMode) {
+      audio.playSweetSpot();
+      spawnCallout(`⚡ LIGHTNING! ${(ms / 1000).toFixed(1)}s`, { x: 0, y: 0.42, style: 'gold' });
+    } else {
+      audio.playBell('ok');
+      if (!state.ghostMode) {
+        const popTxt = rec.flowMult >= 3 ? `🔥 ×${rec.flowMult} FLOW! +${rec.xpGain}` : rec.flowMult === 2 ? `×2 FLOW! +${rec.xpGain}` : `CLEAN! +${rec.xpGain} XP`;
+        spawnCallout(popTxt, { x: 0, y: 0.35, style: rec.flowMult >= 2 ? 'gold' : 'ok' });
+      }
+    }
+    if (mastery.data.streak > 0 && mastery.data.streak % 5 === 0 && !state.ghostMode) {
+      audio.playCrowdRoar(1.0);
+      spawnBurst(0, 0.25, 'gold');
+    }
+    const multTxt = !state.ghostMode && rec.flowMult > 1 ? ` ×${rec.flowMult}` : '';
+    const xpTxt = !state.ghostMode && rec.xpGain ? ` (+${rec.xpGain} XP${multTxt})` : '';
     setFeedback((customMsg || `Clean! (${(ms / 1000).toFixed(2)}s)`) + xpTxt, 'ok');
     if (customCueLines) {
       renderChalkboard({ header: 'CHECKED OUT', big: '✓', sub: `${(ms / 1000).toFixed(2)}s`, lines: customCueLines });
@@ -5054,7 +5878,7 @@ function completeChallenge(correct, customMsg = null, customCueLines = null) {
       }
       setFeedback(`Pub Trial ${state.trialStep}/${state.trialTotal} CLEAN! ${(customMsg || '')}`, 'ok');
       trev.onCorrect(ms, ch, { rankedUp: rec.rankedUp, stageCleared: false });
-      advanceAfter(980);
+      advanceAfter(840);
       return;
     }
 
@@ -5071,19 +5895,21 @@ function completeChallenge(correct, customMsg = null, customCueLines = null) {
     updateHudStats();
     const stageCleared = checkStagePromotion(rec.rankedUp);
     if (justUnlockedTrial) {
+      spawnCallout('TRIAL UNLOCKED!', { center: true, style: 'big' });
       trev.say("Wahey! Eight out of eight practice pips in the bag, sunshine! Hit 'Take Trial' up top whenever yer ready to win yer Brass Stars!", {
         mood: 'toast', holdMs: 4200, forceOpen: true, speak: true,
       });
     } else {
       trev.onCorrect(ms, ch, { rankedUp: rec.rankedUp, stageCleared });
     }
-    advanceAfter(state.ghostMode ? 1250 : 1050);
+    advanceAfter(state.ghostMode ? 1200 : 840);
   } else {
     updateHudStats();
     const isNumeric = ch.kind === 'double_val' || ch.kind === 'treble_val' || ch.kind === 'marking'
       || ch.missPrompt || (ch.kind === 'countdown301' && ch.phase !== 'throw')
       || (ch.kind === 'match501' && ch.phase !== 'throw');
     if (isNumeric) audio.playWireTink(false);
+    if (!state.ghostMode) spawnCallout(isNumeric ? 'CHECK CHALK!' : 'CLINK! WIRE!', { x: 0, y: 0.25, style: 'warn' });
 
     if (!state.ghostMode && state.inTrial) {
       state.trialFails++;
@@ -5102,6 +5928,32 @@ function completeChallenge(correct, customMsg = null, customCueLines = null) {
 }
 
 /* ---------- Player & Ghost Interaction Handlers ---------- */
+function celebrate3DartVisit(visitTotal, darts) {
+  if (state.ghostMode) return;
+  const isNewPB = mastery.recordVisitScore(visitTotal);
+  if (visitTotal === 180) {
+    audio.playCrowdRoar(1.45);
+    spawnBurst(0, 1.0, 'gold');
+    spawnCallout('ONE HUNDRED & EIGHTY!!', { center: true, style: 'big' });
+    trev.say(TREV_PINT_LINE, { mood: 'pint', holdMs: 9500, forceOpen: true, speak: true });
+  } else if (visitTotal >= 140) {
+    audio.playCrowdRoar(1.2);
+    spawnBurst(0, 0.7, 'gold');
+    spawnCallout(`TON FORTY+! (${visitTotal})`, { center: true, style: 'big' });
+    trev.say(`TON-${visitTotal - 100}! Blimey, yer throwin' darts like a machine, sunshine!`, { mood: 'cheer', holdMs: 2600, speak: true });
+  } else if (visitTotal >= 100) {
+    audio.playCrowdRoar(0.95);
+    spawnCallout(`TON! (${visitTotal})`, { center: true, style: 'big' });
+    if (isNewPB) trev.say(`New personal best visit — ${visitTotal}! Proper pub league arrowin', me old china!`, { mood: 'toast', holdMs: 2600, speak: true });
+  } else if (visitTotal === 26) {
+    audio.playPubGroan();
+    spawnCallout('26 · BREAKFAST!', { center: true, style: 'warn' });
+    trev.say("Twenty-six! Full English Breakfast, mate — sausage, egg an' beans! Shake it off!", { mood: 'wince', holdMs: 2400, speak: true });
+  } else if (isNewPB) {
+    spawnCallout(`NEW BEST: ${visitTotal}!`, { x: 0, y: 0.45, style: 'gold' });
+  }
+}
+
 function commit301Dart(aimedBed, landedBed, pt, zone = null) {
   const ch = state.challenge;
   if (!ch || ch.kind !== 'countdown301' || ch.phase !== 'throw') return;
@@ -5114,7 +5966,23 @@ function commit301Dart(aimedBed, landedBed, pt, zone = null) {
     landed = { code: safeCode, ring: 'S', sector: safeSec, value: safeSec, sub: 'OS' };
     dartPt = bedToXY(safeCode, { jitter: 0.06 });
   }
-  throwDartTo(dartPt.x, dartPt.y, { kind: landed.ring, accent: 0x8f231e });
+  const pulled = landed.code !== aimedBed.code;
+  const sweetHit = zone === 'green' && (landed.ring === 'T' || landed.ring === 'BULL' || landed.ring === 'D');
+  const ringHex = sweetHit ? 0x7ae09f : (zone === 'red' && pulled) ? 0xf0685e : null;
+  const ringScale = sweetHit ? 3.5 : 2.3;
+  throwDartTo(dartPt.x, dartPt.y, {
+    kind: landed.ring, accent: 0x8f231e, ringHex, ringScale,
+    onLand: !state.ghostMode ? () => {
+      if (sweetHit) {
+        audio.playSweetSpot();
+        spawnCallout(landed.code === 'BULL' ? 'BULLSEYE! +50' : `DEAD ON! +${landed.value}`, { x: dartPt.x, y: dartPt.y + 0.16, style: 'gold' });
+      } else if (zone === 'red' && pulled) {
+        spawnCallout(`WIRE PULL! ${landed.code}`, { x: dartPt.x, y: dartPt.y + 0.16, style: 'warn' });
+      } else {
+        spawnCallout(`+${landed.value}`, { x: dartPt.x, y: dartPt.y + 0.14, style: 'ok' });
+      }
+    } : null,
+  });
   ch.darts.push(landed.code);
   ch.dartCoords.push({ code: landed.code, x: dartPt.x, y: dartPt.y });
   ch.visitTotal += landed.value;
@@ -5122,7 +5990,6 @@ function commit301Dart(aimedBed, landedBed, pt, zone = null) {
   const liveAfter = ch.startScore - ch.visitTotal;
   updateHudStats();
 
-  const pulled = landed.code !== aimedBed.code;
   const zoneTag = zone === 'green' ? 'DEAD ON! ' : zone === 'amber' ? 'SLIPPED OFF WIRE! ' : zone === 'red' ? 'PULLED NEIGHBOUR! ' : '';
   const driftNote = pulled
     ? `${zoneTag}Aimed ${aimedBed.code} -> landed ${bedPretty(landed.code)}`
@@ -5133,13 +6000,19 @@ function commit301Dart(aimedBed, landedBed, pt, zone = null) {
   });
   setFeedback(driftNote, !pulled ? 'ok' : zone === 'red' ? 'warn' : 'cue');
 
-  if (!state.ghostMode && zone === 'red' && pulled && landed.sector !== aimedBed.sector) {
+  if (!state.ghostMode && ch.darts.length === 2 && ch.darts[0] === 'T20' && ch.darts[1] === 'T20') {
+    audio.playHeartbeat();
+    spawnCallout('120! ONE MORE FOR 180!!', { center: true, style: 'gold' });
+    trev.say("Two in the lipstick! Quiet in the pub — ONE MORE FOR THE ONE-EIGHTY, SUNSHINE!!", { mood: 'toast', holdMs: 2800, forceOpen: true, speak: true });
+  } else if (!state.ghostMode && zone === 'red' && pulled && landed.sector !== aimedBed.sector) {
     trev.say(`Oooh, pulled it across the wire into ${landed.code}, mate — proper pub dart! Chalk it up!`, { mood: 'wince', holdMs: 1800, speak: true });
   } else if (state.dartsLeft === 1 && liveAfter >= 179 && liveAfter <= 189) {
     trev.say(`Oi, Bogey Watch on ${liveAfter}! Watch yer don't leave 169, 168, 166, 165, 163, 162 or 159!`, { mood: 'toast', holdMs: 2200, speak: true });
   }
 
   if (ch.darts.length >= 3) {
+    elRelockPill.classList.remove('visible');
+    celebrate3DartVisit(ch.visitTotal, ch.darts);
     ch.expectedRem = ch.startScore - ch.visitTotal;
     const dartList = ch.darts.join(' + ');
     state.busy = true;
@@ -5157,7 +6030,7 @@ function commit301Dart(aimedBed, landedBed, pt, zone = null) {
         header: 'STEP 1 · VISIT TOTAL', big: ch.startScore, sub: `Darts: ${dartList}`,
         lines: ['Add your 3 darts & press CALL!', '(Press Cue [H] for grouping help)'],
       });
-    }, 420);
+    }, 480);
   }
 }
 
@@ -5165,6 +6038,7 @@ function commit501Dart(aimedBed, landedBed, pt, zone = null) {
   const ch = state.challenge;
   if (!ch || ch.kind !== 'match501' || ch.phase !== 'throw') return;
   const m = state.match501;
+  const rv = currentRival();
   const remBefore = ch.liveRem;
   const isCheckoutZone = remBefore <= 189;
   const audit = isCheckoutZone ? audit501Decision(remBefore, state.dartsLeft, aimedBed, m.rivalScore) : null;
@@ -5177,7 +6051,6 @@ function commit501Dart(aimedBed, landedBed, pt, zone = null) {
 
   let landed = landedBed;
   let dartPt = pt;
-  // When playing without the Skill Gauge (Instant mode), still demonstrate real trap drift on known splash traps!
   if (!zone && isCheckoutZone && audit && audit.trapDrift && Math.random() < 0.72) {
     const dc = audit.trapDrift;
     landed = { code: dc, ring: dc === 'BULL' ? 'BULL' : dc === '25' ? '25' : dc[0], value: bedValue(dc), sector: parseInt(dc.slice(1), 10) || 25 };
@@ -5191,20 +6064,41 @@ function commit501Dart(aimedBed, landedBed, pt, zone = null) {
   const isBust = newRem < 0 || newRem === 1 || (newRem === 0 && !isWin);
 
   if (isBust) {
+    elRelockPill.classList.remove('visible');
     throwDartTo(dartPt.x, dartPt.y, { kind: landed.ring === 'MISS' ? 'S' : landed.ring, wireTink: true });
+    audio.playPubGroan();
+    spawnCallout('BUST!!', { center: true, style: 'warn' });
     state.dartsLeft = 0;
     setFeedback(`BUST! ${bedPretty(landed.code)} on ${remBefore} — score stays ${ch.startScore}!`, 'warn');
-    trev.say(`Ooh, BUST! Score goes right back to ${ch.startScore}, mate — Big Dave's steppin' up!`, { mood: 'wince', holdMs: 2400, speak: true });
+    trev.say(`Ooh, BUST! Score goes right back to ${ch.startScore}, mate — ${rv.name}'s steppin' up!`, { mood: 'wince', holdMs: 2400, speak: true });
     renderChalkboard({
       header: 'BUST!', big: ch.startScore, sub: `${landed.code} busted from ${remBefore}`,
-      lines: [{ text: `Score reverts to ${ch.startScore}`, kind: 'warn' }, "Big Dave's turn next..."],
+      lines: [{ text: `Score reverts to ${ch.startScore}`, kind: 'warn' }, `${rv.name}'s turn next...`],
     });
     state.busy = true;
     state.advanceTimerId = setTimeout(() => { state.advanceTimerId = null; runBigDaveTurn(); }, 1250);
     return;
   }
 
-  throwDartTo(dartPt.x, dartPt.y, { kind: landed.ring === 'MISS' ? 'S' : landed.ring, accent: 0x8f231e });
+  const pulled = landed.code !== aimedBed.code;
+  const sweetHit = zone === 'green' && (landed.ring === 'T' || landed.ring === 'BULL' || landed.ring === 'D');
+  const ringHex = isWin ? 0xffe494 : sweetHit ? 0x7ae09f : (zone === 'red' && pulled) ? 0xf0685e : null;
+  const ringScale = isWin ? 4.6 : sweetHit ? 3.5 : 2.3;
+  throwDartTo(dartPt.x, dartPt.y, {
+    kind: landed.ring === 'MISS' ? 'S' : landed.ring, accent: 0x8f231e, ringHex, ringScale,
+    onLand: (!state.ghostMode && !isWin) ? () => {
+      if (sweetHit) {
+        audio.playSweetSpot();
+        spawnCallout(landed.code === 'BULL' ? 'BULLSEYE! +50' : `DEAD ON! +${landed.value}`, { x: dartPt.x, y: dartPt.y + 0.16, style: 'gold' });
+      } else if (landed.code === 'MISS') {
+        spawnCallout('OUTSIDE WIRE · 0', { x: dartPt.x, y: dartPt.y + 0.16, style: 'warn' });
+      } else if (zone === 'red' && pulled) {
+        spawnCallout(`WIRE PULL! ${landed.code}`, { x: dartPt.x, y: dartPt.y + 0.16, style: 'warn' });
+      } else {
+        spawnCallout(`+${landed.value}`, { x: dartPt.x, y: dartPt.y + 0.14, style: 'ok' });
+      }
+    } : null,
+  });
   ch.darts.push(landed.code);
   ch.dartCoords.push({ code: landed.code, x: dartPt.x, y: dartPt.y });
   ch.visitTotal += landed.value;
@@ -5213,6 +6107,7 @@ function commit501Dart(aimedBed, landedBed, pt, zone = null) {
   state.dartsLeft = Math.max(0, 3 - ch.darts.length);
 
   if (isWin) {
+    elRelockPill.classList.remove('visible');
     m.totalScored += ch.visitTotal;
     m.playerScore = 0;
     updateHudStats();
@@ -5220,7 +6115,6 @@ function commit501Dart(aimedBed, landedBed, pt, zone = null) {
     return;
   }
 
-  const pulled = landed.code !== aimedBed.code;
   if (audit) {
     const landTag = pulled ? ` (landed ${landed.code})` : '';
     setFeedback(`[${audit.tag}] ${audit.msg}${landTag}`, audit.grade === 'great' ? 'ok' : 'warn');
@@ -5235,7 +6129,11 @@ function commit501Dart(aimedBed, landedBed, pt, zone = null) {
       ? `${zoneTag}Aimed ${aimedBed.code} -> ${bedPretty(landed.code)}`
       : `${zoneTag}${bedPretty(landed.code)}`;
     setFeedback(`${driftNote} · ${state.dartsLeft} dart(s) left`, !pulled ? 'ok' : zone === 'red' ? 'warn' : 'cue');
-    if (!state.ghostMode && zone === 'red' && pulled) {
+    if (!state.ghostMode && ch.darts.length === 2 && ch.darts[0] === 'T20' && ch.darts[1] === 'T20') {
+      audio.playHeartbeat();
+      spawnCallout('120! ONE MORE FOR 180!!', { center: true, style: 'gold' });
+      trev.say("Two in the lipstick! Quiet in the boozer — ONE MORE FOR THE ONE-EIGHTY, SUNSHINE!!", { mood: 'toast', holdMs: 2800, forceOpen: true, speak: true });
+    } else if (!state.ghostMode && zone === 'red' && pulled) {
       trev.say(landed.code === 'MISS' ? "Oooh, just outside the wire for zero, mate! Breathe an' steady yer arm!" : `Pulled across the wire into ${landed.code}! Happens to the best of us — adapt an' carry on!`, { mood: 'wince', holdMs: 1800, speak: true });
     }
   }
@@ -5246,12 +6144,14 @@ function commit501Dart(aimedBed, landedBed, pt, zone = null) {
   }
   renderChalkboard({
     header: 'CHAMPIONSHIP 501', big: newRem <= 189 ? newRem : ch.startScore,
-    sub: `YOU ${ch.startScore} · DAVE ${m.rivalScore}`,
+    sub: `YOU ${ch.startScore} · ${rv.short} ${m.rivalScore}`,
     lines: [ch.darts.map(d => `${d}(${bedValue(d)})`).join(' + '), audit ? `${audit.tag}: ${audit.grade === 'great' ? 'Smart ✓' : 'Check!'}` : `${state.dartsLeft} dart(s) left`],
   });
   updateHudStats();
 
   if (ch.darts.length >= 3) {
+    elRelockPill.classList.remove('visible');
+    celebrate3DartVisit(ch.visitTotal, ch.darts);
     ch.expectedRem = ch.startScore - ch.visitTotal;
     const dartList = ch.darts.join(' + ');
     state.busy = true;
@@ -5268,15 +6168,15 @@ function commit501Dart(aimedBed, landedBed, pt, zone = null) {
       showNumpad(true);
       renderChalkboard({
         header: 'CHALK YOUR VISIT', big: ch.startScore, sub: `Darts: ${dartList}`,
-        lines: [`YOU ${ch.startScore} · DAVE ${m.rivalScore}`, 'Step 1: Add your 3 darts & CALL!'],
+        lines: [`YOU ${ch.startScore} · ${rv.short} ${m.rivalScore}`, 'Step 1: Add your 3 darts & CALL!'],
       });
-    }, 450);
+    }, 520);
   }
 }
 
 function handleBoardClick(bed, rawXY) {
   if (!bed || state.busy || !state.challenge) return;
-  if (!audio.ctx) {
+  if (!state.ghostMode && !audio.ctx) {
     audio.unlock();
     elSoundPill.textContent = 'Sound: On';
     elSoundPill.classList.add('on');
@@ -5771,9 +6671,10 @@ function submitNumericAnswer(rawStr) {
     }
   }
 
-  // Level 7 — Championship 501 (Step 1: Chalk Visit -> Step 2: Subtract -> Big Dave's Turn!)
+  // Level 7 — Championship 501 (Step 1: Chalk Visit -> Step 2: Subtract -> Pub Rival's Turn!)
   if (ch.kind === 'match501') {
     const m = state.match501;
+    const rv = currentRival();
     if (ch.phase === 'chalk_visit') {
       m.chalkAttempts++;
       if (val === ch.visitTotal) {
@@ -5788,7 +6689,7 @@ function submitNumericAnswer(rawStr) {
         elScoreBig.textContent = `${ch.startScore} - ${ch.visitTotal}`;
         elPromptTask.textContent = `Take ${ch.visitTotal} off ${ch.startScore} & press CALL!`;
         renderChalkboard({
-          header: '501 · SUBTRACT', big: `${ch.startScore} - ${ch.visitTotal}`, sub: `YOU ${ch.startScore} · DAVE ${m.rivalScore}`,
+          header: '501 · SUBTRACT', big: `${ch.startScore} - ${ch.visitTotal}`, sub: `YOU ${ch.startScore} · ${rv.short} ${m.rivalScore}`,
           lines: [trick, 'Call your new remaining score!'],
         });
         setFeedback(`Chalked ${ch.visitTotal} ✓! Now take ${ch.visitTotal} off ${ch.startScore}!`, 'ok');
@@ -5812,13 +6713,14 @@ function submitNumericAnswer(rawStr) {
         showNumpad(false);
         elScoreBig.textContent = String(ch.expectedRem);
         audio.playBell('ok');
-        setFeedback(`Chalked! ${ch.startScore} - ${ch.visitTotal} = ${ch.expectedRem} — Big Dave steps up!`, 'ok');
+        if (!state.ghostMode) spawnCallout(`CHALKED ${ch.expectedRem}!`, { x: 0, y: 0.35, style: 'ok' });
+        setFeedback(`Chalked! ${ch.startScore} - ${ch.visitTotal} = ${ch.expectedRem} — ${rv.name} steps up!`, 'ok');
         renderChalkboard({
           header: '501 CHALKED', big: ch.expectedRem, sub: `${ch.startScore} - ${ch.visitTotal} = ${ch.expectedRem}`,
-          lines: [{ text: `Clean chalk!`, kind: 'ok' }, "Big Dave's throw next..."],
+          lines: [{ text: `Clean chalk!`, kind: 'ok' }, `${rv.name}'s throw next...`],
         });
         state.busy = true;
-        state.advanceTimerId = setTimeout(() => { state.advanceTimerId = null; runBigDaveTurn(); }, 950);
+        state.advanceTimerId = setTimeout(() => { state.advanceTimerId = null; runBigDaveTurn(); }, 860);
       } else {
         audio.playWireTink(false);
         state.numInput = ''; renderNumpadDisplay();
@@ -6018,6 +6920,12 @@ window.addEventListener('keydown', (e) => {
     releaseAimGauge();
     return;
   }
+  if (!aimGauge.active && e.key === ' ' && !elNumpad.classList.contains('visible')) {
+    if (relockLastAim()) {
+      e.preventDefault();
+      return;
+    }
+  }
   if (e.key >= '0' && e.key <= '9') {
     if (elNumpad.classList.contains('visible')) {
       e.preventDefault();
@@ -6088,7 +6996,12 @@ document.getElementById('w-howto').addEventListener('click', () => { dismissWelc
 document.getElementById('aim-throw-btn').addEventListener('click', () => releaseAimGauge());
 document.getElementById('aim-cancel-btn').addEventListener('click', () => {
   cancelAimGauge();
+  updateRelockPill();
   setFeedback('Aim cancelled — pick any bed on the 3D board to re-aim.', 'cue');
+});
+elRelockPill.addEventListener('click', () => {
+  claimPlayerControl();
+  relockLastAim();
 });
 elTrialBtn.addEventListener('click', () => startLevelTrial(state.stage));
 elGhostPill.title = 'Click to toggle Ghost Demo / Your Throw';
@@ -6113,8 +7026,9 @@ elSoundPill.addEventListener('click', () => {
   if (on) {
     audio.playBell('ok');
     trev.say("Wahey, sound's up! Hear the regulars chattin' an' the 80s jukebox in the corner? Right proper pub, this!", { mood: 'toast', holdMs: 2600, speak: true, allowInGhost: true });
-  } else if ('speechSynthesis' in window) {
-    window.speechSynthesis.cancel();
+  } else {
+    kokoro.cancelPending();
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
   }
 });
 
@@ -6134,7 +7048,10 @@ function openDrawer(tab = 'stages') {
   elDrawerBg.classList.add('open');
   renderDrawer();
 }
-function closeDrawer() { elDrawerBg.classList.remove('open'); }
+function closeDrawer() {
+  elDrawerBg.classList.remove('open');
+  updateRelockPill();
+}
 
 function stageProgressPct(stageId) {
   let ids = [];
@@ -6188,6 +7105,40 @@ function renderDrawer() {
         </div>
       </div>
       <div class="setting-row">
+        <div>
+          <div><span>Level 7 · 501 Pub Rival</span></div>
+          <div style="font-size:11px;color:var(--chalk-dim);margin-top:2px">${currentRival().name} (${currentRival().avg})</div>
+        </div>
+        <div class="seg-group">
+          <button class="seg-btn ${state.rivalId === 'dave' ? 'active' : ''}" data-rivalid="dave">Big Dave</button>
+          <button class="seg-btn ${state.rivalId === 'rita' ? 'active' : ''}" data-rivalid="rita">Razor Rita</button>
+          <button class="seg-btn ${state.rivalId === 'guvnor' ? 'active' : ''}" data-rivalid="guvnor">Guv'nor</button>
+        </div>
+      </div>
+      <div class="setting-row" style="flex-wrap:wrap">
+        <div>
+          <div><span>Coach Trev Voice (Kokoro-82M)</span></div>
+          <div style="font-size:11px;color:var(--chalk-dim);margin-top:2px">${
+            !trev.kokoroOn
+              ? 'Built-in browser voice (instant)'
+              : kokoro.status === 'loading'
+                ? `Downloading Kokoro-82M neural voice (${kokoro.progressPct}%)…`
+                : kokoro.status === 'ready'
+                  ? `Neural UK · ${(KOKORO_VOICES[trev.kokoroVoice] || KOKORO_VOICES.bm_george).desc}`
+                  : kokoro.status === 'error'
+                    ? 'CDN unreachable — using browser voice'
+                    : 'Kokoro-82M ready to load (~86MB cached)'
+          }</div>
+        </div>
+        <div class="seg-group">
+          <button class="seg-btn ${!trev.kokoroOn ? 'active' : ''}" data-kvoice="browser">Browser</button>
+          <button class="seg-btn ${trev.kokoroOn && trev.kokoroVoice === 'bm_george' ? 'active' : ''}" data-kvoice="bm_george">George</button>
+          <button class="seg-btn ${trev.kokoroOn && trev.kokoroVoice === 'bm_lewis' ? 'active' : ''}" data-kvoice="bm_lewis">Lewis</button>
+          <button class="seg-btn ${trev.kokoroOn && trev.kokoroVoice === 'bm_daniel' ? 'active' : ''}" data-kvoice="bm_daniel">Daniel</button>
+          <button class="seg-btn ${trev.kokoroOn && trev.kokoroVoice === 'bm_fable' ? 'active' : ''}" data-kvoice="bm_fable">Fable</button>
+        </div>
+      </div>
+      <div class="setting-row">
         <span>Match-Night Rival Pressure</span>
         <div class="seg-group">
           <button class="seg-btn ${state.rivalPressure ? 'active' : ''}" data-rival="1">Rival on D16</button>
@@ -6229,6 +7180,23 @@ function renderDrawer() {
       if (!state.useAimGauge) cancelAimGauge();
       renderDrawer();
     }));
+    elDrawerBody.querySelectorAll('[data-rivalid]').forEach(b => b.addEventListener('click', () => {
+      state.rivalId = b.dataset.rivalid;
+      renderDrawer();
+      if (state.stage === 'LEVEL_7') {
+        resetMatch501();
+        loadChallenge(nextChallengeForStage('LEVEL_7'));
+      }
+    }));
+    elDrawerBody.querySelectorAll('[data-kvoice]').forEach(b => b.addEventListener('click', () => {
+      const v = b.dataset.kvoice;
+      if (v === 'browser') {
+        trev.setKokoroConfig(false);
+      } else {
+        trev.setKokoroConfig(true, v, true);
+      }
+      renderDrawer();
+    }));
     elDrawerBody.querySelectorAll('[data-rival]').forEach(b => b.addEventListener('click', () => {
       state.rivalPressure = b.dataset.rival === '1'; renderDrawer();
     }));
@@ -6244,7 +7212,8 @@ function renderDrawer() {
           <li><strong>Oche Ghost Demo:</strong> Plays automatically on load so you can watch worked shots. Click or tap the board anytime to grab the darts!</li>
           <li><strong>Desktop / Mouse:</strong> Hover any segment on the 3D dartboard to preview it (e.g., <em>T14 · 42</em>), then click to throw.</li>
           <li><strong>Phone / Touch:</strong> <strong>Press and slide your finger</strong> across the dartboard — a floating fingertip badge previews the exact bed. <strong>Lift to throw</strong> (slide off board to cancel).</li>
-          <li><strong>3-Dart Accuracy Gauge (Levels 4 &amp; 7):</strong> Click/tap a bed to lock your aim, then click/tap (or press <strong>Space</strong>) when the swaying brass needle hits the <strong>green sweet spot</strong>! Slip into <strong>amber</strong> to drop into the single, or pull into <strong>crimson</strong> to drift into a neighbouring sector (like <code>5</code> or <code>1</code> next to <code>20</code>)!</li>
+          <li><strong>3-Dart Accuracy Gauge (Levels 4 &amp; 7):</strong> Click/tap a bed to lock your aim, then click/tap (or press <strong>Space</strong>) when the swaying brass needle hits the <strong>green sweet spot</strong>! Press <strong>Space</strong> (or tap the quick re-aim pill) to instantly re-lock your last bed for smooth 3-dart rhythm! Slip into <strong>amber</strong> to drop into the single, or pull into <strong>crimson</strong> to drift into a neighbouring sector (like <code>5</code> or <code>1</code> next to <code>20</code>)!</li>
+          <li><strong>Flow Streaks &amp; Lightning Bonus:</strong> Chain clean shots to unlock <strong>&times;2 / &times;3 / &times;4 Flow Multipliers</strong>, golden lightning speed bonuses, and pub crowd roars!</li>
           <li><strong>Chalk &amp; Value Calls:</strong> Type numbers on your keyboard + <strong>Enter</strong>, or tap the slate numpad + <strong>CALL</strong>.</li>
         </ul>
       </div>
@@ -6254,10 +7223,10 @@ function renderDrawer() {
           <li><strong>Level 1 · Doubles Mastery:</strong> Hit the double from a total &harr; call double values + Halving Escapes. Sectors <code>20–15</code> &amp; clockwise neighbors appear <strong>1.4&times;</strong> more often!</li>
           <li><strong>Level 2 · Trebles Mastery:</strong> All <code>T1–T20</code> two-way recall — <code>20–15</code> &amp; neighbors weighted <strong>1.4&times;</strong>.</li>
           <li><strong>Level 3 · 3-Dart Adding:</strong> Realistic <code>20–15</code> throws, stray wire misses (<code>1, 5, 3, 7, 4</code>), <code>Bull (50)</code> &amp; <code>25</code>.</li>
-          <li><strong>Level 4 · 301 / 260 Chalk &amp; Countdown:</strong> Mix of <em>Your Throw</em> (gentle pub scatter) &amp; <em>Pub Chalker</em> — add the 3-dart visit, then subtract it live on the chalkboard!</li>
+          <li><strong>Level 4 · 301 / 260 Chalk &amp; Countdown:</strong> Mix of <em>Your Throw</em> (Accuracy Gauge) &amp; <em>Pub Chalker</em> — add the 3-dart visit, then subtract it live on the chalkboard!</li>
           <li><strong>Level 5 · 2-Dart Finishes:</strong> Below-60 Double Smiths, Golden 44 (<code>25/30/35</code> No-Peek FDIs) &amp; Sod's Law miss saves.</li>
           <li><strong>Level 6 · 3-Dart Finishes:</strong> <code>101–170</code> FDI bridges, splash traps (<code>129, 104, 101</code>) &amp; Bogey Teen Covers.</li>
-          <li><strong>Level 7 · Championship 501:</strong> Full Double-Out leg vs. <em>Big Dave</em>! Throw, chalk &amp; subtract while Trev grades every board-management decision (<strong>Board IQ S / A / B / C</strong>)!</li>
+          <li><strong>Level 7 · Championship 501:</strong> Full Double-Out legs against 3 animated pub rivals (<em>Big Dave ~54</em>, <em>"Razor" Rita ~68</em> &amp; <em>The Guv'nor ~84</em>) while Trev grades every board-management decision (<strong>Board IQ S / A / B / C</strong>)!</li>
         </ul>
       </div>
       <div class="howto-card">
@@ -6289,6 +7258,7 @@ function renderDrawer() {
     const xp = mastery.data.xp || 0;
     const rkPct = rk.next ? Math.min(100, Math.round(((xp - rk.cur.xp) / (rk.next.xp - rk.cur.xp)) * 100)) : 100;
     const totalStars = LEVEL_FLOW_ORDER.reduce((sum, id) => sum + mastery.getStars(id), 0);
+    const rec = mastery.data.records || { bestVisit: 0, count180: 0, tonPlusVisits: 0, fastestMs: 99999, legsWon501: 0, bestLegDarts: 999 };
     const cell = (id, label, sub, speedMs = 2800) => {
       const cls = mastery.badge(id, speedMs);
       const st = mastery.get(id);
@@ -6301,6 +7271,7 @@ function renderDrawer() {
         <div class="sc-bar" style="margin:5px 0 7px"><div class="sc-fill" style="width:${rkPct}%"></div></div>
         <strong>Stats:</strong> ${mastery.data.totalCorrect}/${mastery.data.totalAttempts} hits (${acc}%) ·
         Best Flow: <strong>${mastery.data.bestStreak}</strong> · Avg Speed: <strong>${avg ? (avg/1000).toFixed(2)+'s' : '—'}</strong><br/>
+        <strong>Pub Records:</strong> Best Visit <strong>${rec.bestVisit || '—'}</strong> · 180s <strong>${rec.count180 || 0}</strong> · Tons (100+) <strong>${rec.tonPlusVisits || 0}</strong> · Fastest <strong>${rec.fastestMs < 90000 ? (rec.fastestMs / 1000).toFixed(2) + 's' : '—'}</strong> · 501 Wins <strong>${rec.legsWon501 || 0}${rec.bestLegDarts < 999 ? ` (${rec.bestLegDarts}d)` : ''}</strong><br/>
         <span style="opacity:0.75">Dim Chalk = Unseen · Warm Amber = Learning · Burnished Brass = Mastered</span>
       </div>
       <div class="ledger-section-title"><span>All Doubles &amp; Bull (Level 1)</span><span>1.4× on 20–15 + neighbors</span></div>
@@ -6497,6 +7468,20 @@ function animate(now) {
     }
     b.pts.geometry.attributes.position.needsUpdate = true;
     b.pts.material.opacity = 0.85 * (1 - b.age / b.life);
+  }
+
+  // Update expanding 3D brass/emerald hit shockwaves
+  for (let i = shockwaves.length - 1; i >= 0; i--) {
+    const sw = shockwaves[i];
+    sw.age += dt;
+    if (sw.age >= sw.life) {
+      scene.remove(sw.mesh); sw.mesh.geometry.dispose(); sw.mesh.material.dispose();
+      shockwaves.splice(i, 1); continue;
+    }
+    const u = sw.age / sw.life;
+    const ease = 1 - Math.pow(1 - u, 3);
+    sw.mesh.scale.setScalar(1 + ease * (sw.maxScale - 1));
+    sw.mesh.material.opacity = 0.88 * (1 - u);
   }
 
   updateAimGauge(dt);
