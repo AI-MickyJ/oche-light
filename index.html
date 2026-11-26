@@ -4,26 +4,38 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>OCHE LIGHT — 3D Pub Dartboard & Darts-Maths Trainer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,800&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet" />
 <style>
   :root {
-    --slate-bg: #0c1016;
-    --panel-bg: rgba(13, 17, 23, 0.84);
-    --panel-solid: #11161e;
-    --brass: #c9a15a;
-    --brass-dim: #7f6537;
-    --brass-bright: #e8c682;
-    --chalk: #e8e1cf;
-    --chalk-dim: #9e9786;
-    --crimson: #b84239;
-    --forest: #3c8c58;
+    --slate-bg: #0c0907;
+    --panel-bg: linear-gradient(180deg, rgba(31, 20, 14, 0.91) 0%, rgba(18, 12, 9, 0.94) 100%);
+    --panel-solid: #19110c;
+    --pub-green: #12251b;
+    --pub-green-hi: #1d3c2b;
+    --brass: #cfa255;
+    --brass-dim: #7b5d2b;
+    --brass-bright: #f2d28b;
+    --brass-foil: #fff0c2;
+    --chalk: #f2e8d2;
+    --chalk-dim: #b2a489;
+    --parchment: #f3e6ca;
+    --parchment-deep: #e6d1a5;
+    --ink-dark: #251910;
+    --crimson: #b5342b;
+    --forest: #328854;
     --ice: #7ba3c4;
+    --font-display: 'Fraunces', Georgia, 'Palatino Linotype', serif;
+    --font-chalk: 'Caveat', 'Bradley Hand', Georgia, cursive;
+    --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
   }
   * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
   html, body {
     margin: 0; padding: 0; width: 100%; height: 100%;
     overflow: hidden; background: var(--slate-bg);
     overscroll-behavior: none;
-    font-family: 'Georgia', 'Palatino Linotype', 'Times New Roman', serif;
+    font-family: Georgia, 'Palatino Linotype', 'Times New Roman', serif;
     color: var(--chalk);
   }
   #stage-canvas {
@@ -31,7 +43,7 @@
     display: block; cursor: crosshair; touch-action: none;
   }
 
-  /* Minimal Pub-Authentic HUD */
+  /* Gilded East End Boozer HUD — Riveted Mahogany & Brushed Brass Plaques */
   .hud-layer {
     position: fixed; inset: 0; pointer-events: none; z-index: 10;
     display: flex; flex-direction: column; justify-content: space-between;
@@ -43,209 +55,235 @@
   }
   .plate {
     pointer-events: auto;
-    background: var(--panel-bg);
-    border: 1px solid rgba(201, 161, 90, 0.34);
-    box-shadow: 0 6px 24px rgba(0,0,0,0.55), inset 0 1px 0 rgba(232,198,130,0.12);
+    background:
+      radial-gradient(circle 2.4px at 7px 7px, #f7df9f 0%, #996d28 65%, transparent 100%),
+      radial-gradient(circle 2.4px at calc(100% - 7px) 7px, #f7df9f 0%, #996d28 65%, transparent 100%),
+      radial-gradient(circle 2.4px at 7px calc(100% - 7px), #f7df9f 0%, #996d28 65%, transparent 100%),
+      radial-gradient(circle 2.4px at calc(100% - 7px) calc(100% - 7px), #f7df9f 0%, #996d28 65%, transparent 100%),
+      var(--panel-bg);
+    border: 1px solid rgba(214, 170, 92, 0.52);
+    box-shadow:
+      0 8px 26px rgba(0, 0, 0, 0.66),
+      inset 0 1px 0 rgba(255, 232, 176, 0.22),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.55),
+      inset 0 0 0 2px rgba(207, 162, 85, 0.08);
     border-radius: 6px;
-    backdrop-filter: blur(4px);
+    backdrop-filter: blur(5px);
   }
   .brand-plate {
-    padding: 8px 13px; display: flex; flex-direction: column; gap: 5px;
-    min-width: 205px;
+    padding: 8px 14px; display: flex; flex-direction: column; gap: 5px;
+    min-width: 210px;
   }
-  .brand-row { display: flex; align-items: center; gap: 9px; }
+  .brand-row { display: flex; align-items: center; justify-content: space-between; gap: 9px; }
   .brand-title {
-    font-size: 15px; letter-spacing: 2.6px; color: var(--brass-bright);
-    font-weight: 700; text-transform: uppercase;
+    font-family: var(--font-display);
+    font-size: 16.5px; letter-spacing: 2px; font-weight: 800; text-transform: uppercase;
+    background: linear-gradient(180deg, #fff5d4 0%, #f0c978 52%, #be8938 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.75));
   }
   .ghost-pill {
-    font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
-    font-size: 10px; letter-spacing: 0.9px; text-transform: uppercase;
+    font-family: var(--font-mono);
+    font-size: 9.5px; letter-spacing: 0.7px; text-transform: uppercase;
     padding: 2px 7px; border-radius: 99px; cursor: pointer;
-    border: 1px solid rgba(123, 163, 196, 0.45);
-    color: #b7d5ee; background: rgba(34, 52, 70, 0.55);
-    transition: all 0.25s ease;
+    border: 1px solid rgba(140, 178, 206, 0.48);
+    color: #c7e0f4; background: rgba(24, 42, 56, 0.72);
+    transition: all 0.22s ease;
   }
   .ghost-pill:hover { filter: brightness(1.18); }
   .ghost-pill.active-player {
-    border-color: rgba(201, 161, 90, 0.65);
-    color: var(--brass-bright); background: rgba(94, 67, 25, 0.45);
+    border-color: rgba(242, 210, 139, 0.72);
+    color: var(--brass-foil); background: linear-gradient(180deg, rgba(132, 92, 30, 0.62), rgba(78, 52, 16, 0.72));
+    box-shadow: inset 0 1px 0 rgba(255, 236, 186, 0.25);
   }
   .stage-btn {
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(201, 161, 90, 0.28);
+    background: linear-gradient(180deg, rgba(20, 40, 29, 0.65), rgba(14, 28, 20, 0.78));
+    border: 1px solid rgba(207, 162, 85, 0.36);
     color: var(--chalk); border-radius: 4px;
     padding: 5px 9px; font-family: inherit; font-size: 12px;
     text-align: left; cursor: pointer; display: flex; align-items: center;
     justify-content: space-between; gap: 8px;
+    box-shadow: inset 0 1px 0 rgba(255, 232, 176, 0.08);
     transition: border-color 0.2s, background 0.2s;
   }
-  .stage-btn:hover { border-color: var(--brass); background: rgba(201,161,90,0.12); }
-  .stage-btn .caret { color: var(--brass); font-size: 10px; }
+  .stage-btn:hover { border-color: var(--brass-bright); background: rgba(34, 62, 44, 0.78); }
+  .stage-btn .caret { color: var(--brass-bright); font-size: 10px; }
   .pip-row {
     display: flex; align-items: center; justify-content: space-between; gap: 6px;
-    font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace; font-size: 10px; color: var(--chalk-dim);
+    font-family: var(--font-mono); font-size: 10px; color: var(--chalk-dim);
   }
   .pip-dots { display: inline-flex; gap: 4px; align-items: center; }
   .pip-dot {
     width: 8px; height: 8px; border-radius: 50%;
-    border: 1px solid rgba(201,161,90,0.45); background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(207,162,85,0.48); background: rgba(12, 8, 6, 0.55);
     transition: all 0.25s ease;
   }
   .pip-dot.lit, .pip-dot.filled {
-    background: var(--brass-bright); border-color: #fff2ce;
-    box-shadow: 0 0 7px rgba(232,198,130,0.65);
+    background: radial-gradient(circle at 35% 35%, #fff7db, var(--brass) 75%);
+    border-color: #fff2ce;
+    box-shadow: 0 0 8px rgba(242, 210, 139, 0.72);
   }
-  .pip-dot.trial-ok, .pip-dot.trial { background: #64d18b; border-color: #c8f9d8; box-shadow: 0 0 7px rgba(100,209,139,0.7); }
+  .pip-dot.trial-ok, .pip-dot.trial { background: #64d18b; border-color: #c8f9d8; box-shadow: 0 0 8px rgba(100,209,139,0.75); }
   .trial-cta {
-    background: linear-gradient(135deg, rgba(212,164,74,0.34), rgba(140,96,26,0.45));
-    border: 1px solid var(--brass-bright); color: #fff4d2;
-    border-radius: 4px; padding: 2px 8px; font-family: inherit; font-size: 10px;
+    background: linear-gradient(180deg, rgba(214,162,64,0.48), rgba(128,84,22,0.68));
+    border: 1px solid var(--brass-bright); color: #fff6dc;
+    border-radius: 4px; padding: 2px 8px; font-family: var(--font-mono); font-size: 10px;
     font-weight: 700; letter-spacing: 0.5px; cursor: pointer; text-transform: uppercase;
     animation: trialPulse 1.8s ease-in-out infinite;
   }
   .trial-cta:hover { filter: brightness(1.16); }
   @keyframes trialPulse {
-    0%, 100% { box-shadow: 0 0 0 rgba(232,198,130,0.2); }
-    50% { box-shadow: 0 0 11px rgba(232,198,130,0.58); }
+    0%, 100% { box-shadow: 0 0 0 rgba(242,210,139,0.2); }
+    50% { box-shadow: 0 0 13px rgba(242,210,139,0.65); }
   }
   .stars-tag { color: var(--brass-bright); letter-spacing: 1px; font-size: 11px; }
 
-  /* Center Score & Prompt Plaque */
+  /* Center Score & Prompt Plaque — Bottle-Green Baize & Riveted Brass */
   .prompt-plate {
-    padding: 6px 16px 7px; text-align: center; min-width: 280px; max-width: 480px;
+    padding: 7px 18px 8px; text-align: center; min-width: 288px; max-width: 492px;
     display: flex; flex-direction: column; align-items: center; gap: 3px;
+    background:
+      radial-gradient(circle 2.4px at 7px 7px, #f7df9f 0%, #996d28 65%, transparent 100%),
+      radial-gradient(circle 2.4px at calc(100% - 7px) 7px, #f7df9f 0%, #996d28 65%, transparent 100%),
+      radial-gradient(circle 2.4px at 7px calc(100% - 7px), #f7df9f 0%, #996d28 65%, transparent 100%),
+      radial-gradient(circle 2.4px at calc(100% - 7px) calc(100% - 7px), #f7df9f 0%, #996d28 65%, transparent 100%),
+      linear-gradient(180deg, rgba(20, 42, 30, 0.93) 0%, rgba(16, 26, 20, 0.95) 55%, rgba(22, 14, 10, 0.96) 100%);
   }
   .prompt-meta {
     display: flex; align-items: center; gap: 10px; width: 100%;
     justify-content: center;
-    font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
-    font-size: 10.5px; letter-spacing: 1px; color: var(--chalk-dim);
+    font-family: var(--font-mono);
+    font-size: 10px; letter-spacing: 0.9px; color: #ccbda0;
     text-transform: uppercase;
   }
   .dart-icons { display: inline-flex; gap: 5px; align-items: center; }
   .dart-pip {
-    width: 16px; height: 5px; border-radius: 2px 5px 5px 2px;
-    background: linear-gradient(90deg, var(--crimson) 0 38%, var(--brass-bright) 38% 85%, #d9d9d9 85%);
-    box-shadow: 0 0 6px rgba(232,198,130,0.35);
+    width: 17px; height: 5px; border-radius: 2px 5px 5px 2px;
+    background: linear-gradient(90deg, var(--crimson) 0 38%, var(--brass-bright) 38% 84%, #e5e2d9 84%);
+    box-shadow: 0 0 6px rgba(242, 210, 139, 0.42);
     transition: opacity 0.25s, transform 0.25s;
   }
-  .dart-pip.spent { opacity: 0.18; transform: scaleX(0.8); box-shadow: none; }
+  .dart-pip.spent { opacity: 0.16; transform: scaleX(0.78); box-shadow: none; }
   .rival-tag {
-    padding: 1px 6px; border-radius: 3px; font-size: 10px;
-    border: 1px solid rgba(184, 66, 57, 0.55); color: #f0a8a2;
-    background: rgba(120, 32, 26, 0.35);
+    padding: 1px 6px; border-radius: 3px; font-size: 9.5px;
+    border: 1px solid rgba(204, 72, 62, 0.62); color: #f8bab4;
+    background: rgba(118, 28, 22, 0.5);
   }
   .rival-tag.safe {
-    border-color: rgba(60, 140, 88, 0.45); color: #9fdcb4;
-    background: rgba(26, 75, 44, 0.35);
+    border-color: rgba(86, 178, 118, 0.52); color: #b5ebc8;
+    background: rgba(24, 78, 44, 0.48);
   }
   .bridge-tag {
-    padding: 1px 7px; border-radius: 3px; font-size: 10px; font-weight: 700;
-    letter-spacing: 0.6px; display: none;
-    border: 1px solid rgba(232, 198, 130, 0.72); color: #fff2ce;
-    background: rgba(132, 92, 26, 0.48);
+    padding: 1px 7px; border-radius: 3px; font-size: 9.5px; font-weight: 700;
+    letter-spacing: 0.55px; display: none;
+    border: 1px solid rgba(242, 210, 139, 0.78); color: #fff5d6;
+    background: rgba(132, 92, 26, 0.55);
   }
-  .bridge-tag.r25 { border-color: rgba(136, 185, 224, 0.75); color: #d5ecff; background: rgba(34, 68, 98, 0.55); }
-  .bridge-tag.r30 { border-color: rgba(232, 198, 130, 0.8); color: #fff3d2; background: rgba(140, 96, 26, 0.52); }
-  .bridge-tag.r35 { border-color: rgba(126, 212, 156, 0.75); color: #d6fce2; background: rgba(30, 88, 52, 0.52); }
+  .bridge-tag.r25 { border-color: rgba(136, 185, 224, 0.78); color: #d5ecff; background: rgba(34, 68, 98, 0.62); }
+  .bridge-tag.r30 { border-color: rgba(242, 210, 139, 0.85); color: #fff5d6; background: rgba(140, 96, 26, 0.58); }
+  .bridge-tag.r35 { border-color: rgba(126, 212, 156, 0.78); color: #d6fce2; background: rgba(26, 86, 50, 0.6); }
   .prompt-main {
     display: flex; align-items: baseline; justify-content: center; gap: 11px;
-    line-height: 1.08;
+    line-height: 1.06;
   }
   .score-big {
-    font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
-    font-size: 28px; font-weight: 700; color: var(--chalk);
-    text-shadow: 0 2px 10px rgba(201,161,90,0.22);
-    letter-spacing: 1px;
+    font-family: var(--font-display); font-variant-numeric: tabular-nums;
+    font-size: 30px; font-weight: 800; color: #fff7e2;
+    text-shadow: 0 2px 10px rgba(240, 196, 108, 0.32), 0 1px 2px rgba(0,0,0,0.85);
+    letter-spacing: 0.6px;
   }
   .prompt-task {
-    font-size: 13.5px; color: var(--brass-bright); letter-spacing: 0.25px;
-    max-width: 330px;
+    font-size: 13.5px; color: var(--brass-bright); letter-spacing: 0.2px;
+    max-width: 340px;
   }
   .timer-row {
     display: flex; align-items: center; gap: 8px; width: 100%; margin-top: 3px;
   }
   .timer-track {
-    flex: 1; height: 5px; background: rgba(255,255,255,0.08);
+    flex: 1; height: 5px; background: rgba(0, 0, 0, 0.48);
+    border: 1px solid rgba(207, 162, 85, 0.24);
     border-radius: 99px; overflow: hidden;
   }
   .timer-sec {
-    font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
-    font-size: 10.5px; color: var(--chalk-dim); min-width: 32px; text-align: right;
+    font-family: var(--font-mono);
+    font-size: 10px; color: var(--chalk-dim); min-width: 34px; text-align: right;
   }
-  .timer-sec.urgent { color: #f08980; font-weight: 700; }
+  .timer-sec.urgent { color: #f6958c; font-weight: 700; }
   .timer-fill {
     height: 100%; width: 100%;
-    background: linear-gradient(90deg, var(--brass-dim), var(--brass-bright));
+    background: linear-gradient(90deg, var(--brass-dim), var(--brass-bright), #fff2c8);
     transform-origin: left center; transition: background 0.2s;
   }
-  .timer-fill.warn { background: linear-gradient(90deg, #b85b2c, #e5934c); }
-  .timer-fill.urgent { background: linear-gradient(90deg, #9c2b23, #de5347); }
+  .timer-fill.warn { background: linear-gradient(90deg, #b85b2c, #f0a152); }
+  .timer-fill.urgent { background: linear-gradient(90deg, #9c2b23, #ea5c4f); }
 
-  /* Right Controls */
+  /* Right Controls — Brushed Brass Switches */
   .right-stack { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
   .controls-row { display: flex; gap: 7px; align-items: center; }
   .hud-btn {
     pointer-events: auto;
-    background: var(--panel-bg);
-    border: 1px solid rgba(201, 161, 90, 0.36);
+    background: linear-gradient(180deg, rgba(38, 25, 17, 0.92), rgba(20, 13, 9, 0.95));
+    border: 1px solid rgba(207, 162, 85, 0.46);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.52), inset 0 1px 0 rgba(255, 234, 180, 0.18);
     color: var(--chalk); border-radius: 5px;
-    padding: 7px 11px; font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
-    font-size: 11px; letter-spacing: 0.8px; text-transform: uppercase;
+    padding: 7px 11px; font-family: var(--font-mono);
+    font-size: 10.5px; letter-spacing: 0.7px; text-transform: uppercase;
     cursor: pointer; backdrop-filter: blur(4px);
-    transition: all 0.18s ease;
+    transition: all 0.16s ease;
   }
-  .hud-btn:hover { border-color: var(--brass-bright); color: var(--brass-bright); background: rgba(34,28,18,0.88); }
-  .hud-btn.active { border-color: var(--brass-bright); background: rgba(112, 82, 32, 0.45); color: var(--brass-bright); }
+  .hud-btn:hover { border-color: var(--brass-bright); color: var(--brass-foil); background: linear-gradient(180deg, rgba(58, 39, 22, 0.94), rgba(32, 21, 12, 0.96)); }
+  .hud-btn.active { border-color: var(--brass-bright); background: linear-gradient(180deg, rgba(128, 90, 32, 0.56), rgba(74, 50, 16, 0.72)); color: var(--brass-foil); }
   .flow-plate {
-    padding: 6px 12px; display: flex; align-items: center; gap: 10px;
-    font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace; font-size: 11px;
+    padding: 6px 13px; display: flex; align-items: center; gap: 10px;
+    font-family: var(--font-mono); font-size: 10.5px;
     transition: border-color 0.25s, box-shadow 0.25s;
   }
   .flow-plate.hot {
-    border-color: rgba(243, 204, 125, 0.82);
-    box-shadow: 0 0 18px rgba(232, 184, 96, 0.34), inset 0 1px 0 rgba(255, 240, 200, 0.2);
+    border-color: rgba(248, 214, 132, 0.88);
+    box-shadow: 0 0 20px rgba(240, 188, 88, 0.42), inset 0 1px 0 rgba(255, 242, 204, 0.28);
   }
   .flow-val { color: var(--brass-bright); font-weight: 700; font-size: 13px; }
   .mult-pill {
     display: none; padding: 1px 6px; border-radius: 99px; font-size: 10px; font-weight: 800;
-    background: linear-gradient(135deg, rgba(224,162,56,0.42), rgba(168,84,24,0.52));
+    background: linear-gradient(135deg, rgba(224,162,56,0.48), rgba(168,84,24,0.58));
     border: 1px solid #f7d996; color: #fff6db; letter-spacing: 0.4px;
     animation: multPop 0.32s cubic-bezier(0.22, 1.35, 0.36, 1);
   }
   .mult-pill.show { display: inline-block; }
-  .mult-pill.fire { background: linear-gradient(135deg, rgba(224,94,42,0.55), rgba(176,38,32,0.62)); border-color: #ffbe8a; }
+  .mult-pill.fire { background: linear-gradient(135deg, rgba(224,94,42,0.62), rgba(168,36,28,0.72)); border-color: #ffbe8a; }
   @keyframes multPop {
     0% { transform: scale(0.5); opacity: 0; }
     100% { transform: scale(1); opacity: 1; }
   }
   .prompt-plate.on-fire {
-    border-color: rgba(243, 204, 125, 0.78);
-    box-shadow: 0 6px 28px rgba(0,0,0,0.65), 0 0 22px rgba(232, 184, 96, 0.28);
+    border-color: rgba(248, 214, 132, 0.88);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.72), 0 0 26px rgba(240, 188, 88, 0.36);
   }
 
-  /* 3D-Projected Floating Pub Score & Arcade Callouts */
+  /* 3D-Projected Floating Gilded Pub-Mirror Callouts */
   .callout-layer {
     position: fixed; inset: 0; z-index: 24; pointer-events: none; overflow: hidden;
   }
   .callout-pop {
     position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
-    font-family: Georgia, 'Times New Roman', serif; font-weight: 800;
+    font-family: var(--font-display); font-weight: 800;
     letter-spacing: 1px; white-space: nowrap; text-transform: uppercase;
-    text-shadow: 0 3px 10px rgba(0,0,0,0.92), 0 0 18px rgba(0,0,0,0.65);
+    text-shadow: 0 3px 10px rgba(0,0,0,0.95), 0 1px 0 rgba(52, 28, 8, 0.9), 0 0 18px rgba(0,0,0,0.65);
     animation: calloutRise 1.15s cubic-bezier(0.18, 0.9, 0.28, 1) forwards;
     will-change: transform, opacity;
   }
-  .callout-pop.ok   { font-size: 22px; color: #a7f3c2; }
-  .callout-pop.gold { font-size: 24px; color: #ffe39a; text-shadow: 0 3px 12px rgba(0,0,0,0.95), 0 0 20px rgba(232,184,96,0.75); }
-  .callout-pop.warn { font-size: 20px; color: #ffb3ac; }
+  .callout-pop.ok   { font-size: 23px; color: #b5f8cc; }
+  .callout-pop.gold { font-size: 25px; color: #ffe7a3; text-shadow: 0 3px 12px rgba(0,0,0,0.96), 0 0 22px rgba(240, 192, 92, 0.8); }
+  .callout-pop.warn { font-size: 21px; color: #ffb5ae; }
   .callout-pop.big  {
-    font-size: clamp(26px, 4.4vw, 44px); color: #fff1c2;
-    padding: 5px 18px; border-radius: 8px;
-    background: linear-gradient(135deg, rgba(168,112,28,0.88), rgba(112,30,24,0.88));
-    border: 2px solid #ffe299;
-    box-shadow: 0 10px 32px rgba(0,0,0,0.78), 0 0 28px rgba(243,204,125,0.6);
+    font-size: clamp(27px, 4.4vw, 46px); color: #fff5d0;
+    padding: 6px 22px; border-radius: 8px;
+    background: linear-gradient(150deg, rgba(142, 34, 26, 0.92), rgba(54, 24, 14, 0.95));
+    border: 2px solid #f7d990;
+    box-shadow:
+      0 12px 36px rgba(0,0,0,0.82),
+      0 0 32px rgba(243,204,125,0.58),
+      inset 0 0 0 3px rgba(255, 226, 152, 0.22);
     animation: calloutBigRise 1.65s cubic-bezier(0.18, 0.92, 0.28, 1) forwards;
   }
   @keyframes calloutRise {
@@ -262,28 +300,28 @@
     100% { opacity: 0; transform: translate(-50%, -120%) scale(0.96); }
   }
 
-  /* Quick Muscle-Memory Re-Aim Pill (1-tap / Spacebar repeat on Darts 2 & 3!) */
+  /* Quick Muscle-Memory Re-Aim Brass Pill */
   .relock-pill {
     position: fixed; left: 50%; bottom: 68px; transform: translateX(-50%);
     z-index: 25; display: none; align-items: center; gap: 8px;
-    padding: 7px 16px; border-radius: 99px; cursor: pointer;
-    background: linear-gradient(135deg, rgba(201,152,64,0.34), rgba(126,86,26,0.52));
-    border: 1.5px solid var(--brass-bright); color: #fff6de;
-    font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
-    font-size: 11.5px; font-weight: 700; letter-spacing: 0.7px; text-transform: uppercase;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.72), 0 0 14px rgba(232,198,130,0.35);
+    padding: 7px 17px; border-radius: 99px; cursor: pointer;
+    background: linear-gradient(180deg, rgba(168, 118, 42, 0.92), rgba(98, 64, 18, 0.95));
+    border: 1.5px solid var(--brass-foil); color: #fff8e4;
+    font-family: var(--font-mono);
+    font-size: 11px; font-weight: 700; letter-spacing: 0.7px; text-transform: uppercase;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.75), 0 0 16px rgba(242,210,139,0.4), inset 0 1px 0 rgba(255,244,206,0.35);
     backdrop-filter: blur(4px);
     animation: trialPulse 1.8s ease-in-out infinite;
   }
   .relock-pill.visible { display: inline-flex; }
-  .relock-pill:hover { filter: brightness(1.18); }
+  .relock-pill:hover { filter: brightness(1.15); }
   .tier-badge {
     padding: 2px 6px; border-radius: 3px; font-size: 10px;
-    border: 1px solid rgba(201,161,90,0.35); color: var(--chalk-dim);
+    border: 1px solid rgba(207,162,85,0.4); color: var(--chalk-dim);
   }
-  .tier-badge.t1 { color: #b7d5ee; border-color: rgba(123,163,196,0.45); }
-  .tier-badge.t2 { color: var(--brass-bright); border-color: rgba(201,161,90,0.6); }
-  .tier-badge.t3 { color: #a7e4ba; border-color: rgba(60,140,88,0.6); }
+  .tier-badge.t1 { color: #b7d5ee; border-color: rgba(123,163,196,0.48); }
+  .tier-badge.t2 { color: var(--brass-bright); border-color: rgba(207,162,85,0.65); }
+  .tier-badge.t3 { color: #a7e4ba; border-color: rgba(60,140,88,0.65); }
 
   /* Bottom Status & Cue Strip */
   .hud-bottom {
@@ -292,38 +330,39 @@
   }
   .sound-pill {
     pointer-events: auto;
-    background: rgba(15, 19, 25, 0.78);
-    border: 1px solid rgba(201,161,90,0.38);
+    background: linear-gradient(180deg, rgba(34, 22, 15, 0.9), rgba(18, 12, 8, 0.94));
+    border: 1px solid rgba(207,162,85,0.44);
     color: var(--chalk-dim); border-radius: 99px;
-    padding: 5px 12px; font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
-    font-size: 11px; letter-spacing: 0.6px; cursor: pointer;
+    padding: 5px 12px; font-family: var(--font-mono);
+    font-size: 10.5px; letter-spacing: 0.55px; cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.45);
     transition: all 0.2s;
   }
-  .sound-pill:hover { color: var(--brass-bright); border-color: var(--brass-bright); }
-  .sound-pill.on { color: var(--brass-bright); border-color: rgba(201,161,90,0.65); }
+  .sound-pill:hover { color: var(--brass-foil); border-color: var(--brass-bright); }
+  .sound-pill.on { color: var(--brass-bright); border-color: rgba(242,210,139,0.72); }
 
   .feedback-strip {
-    flex: 1; max-width: 640px; margin: 0 auto;
-    padding: 8px 16px; text-align: center;
+    flex: 1; max-width: 650px; margin: 0 auto;
+    padding: 8px 18px; text-align: center;
     font-size: 14px; line-height: 1.35; color: var(--chalk);
     min-height: 38px; display: flex; align-items: center; justify-content: center;
     gap: 10px; transition: border-color 0.25s, background 0.25s;
   }
-  .feedback-strip.ok { border-color: rgba(60, 140, 88, 0.75); background: rgba(16, 35, 24, 0.88); color: #cdebd7; }
-  .feedback-strip.warn { border-color: rgba(184, 66, 57, 0.8); background: rgba(42, 16, 15, 0.9); color: #f5cbc7; }
-  .feedback-strip.cue { border-color: rgba(201, 161, 90, 0.55); background: rgba(24, 21, 15, 0.88); color: #efe3c8; }
+  .feedback-strip.ok { border-color: rgba(74, 168, 108, 0.8); background: linear-gradient(180deg, rgba(19, 46, 30, 0.93), rgba(13, 29, 20, 0.96)); color: #d6f4df; }
+  .feedback-strip.warn { border-color: rgba(198, 72, 62, 0.84); background: linear-gradient(180deg, rgba(58, 20, 17, 0.94), rgba(34, 12, 10, 0.96)); color: #fad3cf; }
+  .feedback-strip.cue { border-color: rgba(224, 178, 96, 0.68); background: linear-gradient(180deg, rgba(38, 26, 15, 0.93), rgba(22, 15, 9, 0.96)); color: #f6ead0; }
   .hover-bed {
     pointer-events: none;
-    padding: 6px 11px; min-width: 116px; text-align: right;
-    font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+    padding: 6px 12px; min-width: 118px; text-align: right;
+    font-family: var(--font-mono);
     font-size: 12px; color: var(--brass-bright);
   }
-  .hover-bed span { color: var(--chalk-dim); font-size: 10px; display: block; text-transform: uppercase; }
+  .hover-bed span { color: var(--chalk-dim); font-size: 9.5px; display: block; text-transform: uppercase; }
 
-  /* Compact Slate Numpad (shown only for numeric input modes) */
+  /* Vintage Brass-and-Bakelite Pub Till Numpad */
   .numpad-panel {
     position: fixed; right: 20px; bottom: 64px; z-index: 26;
-    width: 218px; padding: 10px; display: none; flex-direction: column; gap: 7px;
+    width: 218px; padding: 11px 11px 10px; display: none; flex-direction: column; gap: 7px;
   }
   @media (min-width: 1080px) and (min-height: 760px) {
     /* Dock numpad cleanly on the open dark left cabinet door so both dartboard & right chalkboard stay 100% unobstructed! */
@@ -333,177 +372,213 @@
   .chalk-assist {
     display: none; flex-direction: column; gap: 4px;
     padding: 5px 6px; border-radius: 5px;
-    background: rgba(201, 161, 90, 0.11);
-    border: 1px solid rgba(232, 198, 130, 0.42);
+    background: linear-gradient(180deg, rgba(207, 162, 85, 0.16), rgba(116, 80, 26, 0.18));
+    border: 1px solid rgba(242, 210, 139, 0.5);
   }
   .chalk-assist.visible { display: flex; }
   .chalk-assist-btn {
-    width: 100%; padding: 5px 7px; border-radius: 4px; cursor: pointer;
-    background: linear-gradient(135deg, rgba(212,164,74,0.34), rgba(145,100,32,0.46));
-    border: 1px solid var(--brass-bright); color: #fff6dc;
-    font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
-    font-size: 10.5px; font-weight: 700; letter-spacing: 0.45px; text-transform: uppercase;
+    width: 100%; padding: 6px 7px; border-radius: 4px; cursor: pointer;
+    background: linear-gradient(180deg, #c28e3c 0%, #865a1a 100%);
+    border: 1px solid #f7dc9b; color: #fff8e4;
+    box-shadow: 0 2px 0 rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,244,206,0.38);
+    font-family: var(--font-mono);
+    font-size: 10px; font-weight: 700; letter-spacing: 0.4px; text-transform: uppercase;
+    transition: filter 0.12s, transform 0.08s;
   }
-  .chalk-assist-btn:hover { filter: brightness(1.16); }
+  .chalk-assist-btn:hover { filter: brightness(1.12); }
+  .chalk-assist-btn:active { transform: translateY(1px); }
   .chalk-assist-btn.used {
-    background: rgba(46, 134, 78, 0.28); border-color: #7ae09f; color: #dcfce7;
+    background: linear-gradient(180deg, rgba(36, 108, 62, 0.72), rgba(22, 68, 39, 0.85));
+    border-color: #8ae8ac; color: #e2ffec;
   }
   .chalk-assist-readout {
-    display: none; font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
-    font-size: 10.5px; line-height: 1.3; color: #ffe8a8; text-align: center;
+    display: none; font-family: var(--font-mono);
+    font-size: 10px; line-height: 1.32; color: #ffe9ab; text-align: center;
   }
   .chalk-assist-readout.visible { display: block; }
   .numpad-display {
-    background: rgba(6, 9, 12, 0.85);
-    border: 1px solid rgba(201, 161, 90, 0.36);
+    background: linear-gradient(180deg, #0d1210 0%, #141b17 100%);
+    border: 1.5px solid rgba(207, 162, 85, 0.52);
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.85), 0 1px 0 rgba(255, 232, 176, 0.14);
     border-radius: 4px; padding: 7px 10px;
-    font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
-    font-size: 24px; text-align: right; color: var(--chalk);
+    font-family: var(--font-mono);
+    font-size: 24px; font-weight: 700; text-align: right; color: #f6edd8;
+    text-shadow: 0 0 10px rgba(242, 210, 139, 0.25);
     letter-spacing: 2px; min-height: 44px;
   }
-  .numpad-display.placeholder { color: rgba(232, 225, 207, 0.28); font-size: 14px; line-height: 28px; letter-spacing: 0.5px; }
+  .numpad-display.placeholder { color: rgba(240, 230, 207, 0.3); font-size: 13px; line-height: 28px; letter-spacing: 0.4px; font-weight: 500; }
   .numpad-grid {
     display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;
   }
   .np-key {
-    background: rgba(255,255,255,0.05); border: 1px solid rgba(201,161,90,0.28);
-    color: var(--chalk); border-radius: 4px; padding: 9px 0;
-    font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+    background: linear-gradient(180deg, #32241b 0%, #1e1510 100%);
+    border: 1px solid rgba(214, 170, 92, 0.44);
+    box-shadow: 0 2px 0 rgba(0, 0, 0, 0.72), inset 0 1px 0 rgba(255, 236, 192, 0.2);
+    color: #f6ebd2; border-radius: 5px; padding: 9px 0;
+    font-family: var(--font-mono);
     font-size: 15px; font-weight: 700; cursor: pointer;
-    transition: all 0.12s;
+    transition: all 0.1s;
   }
-  .np-key:hover { background: rgba(201,161,90,0.2); border-color: var(--brass-bright); color: var(--brass-bright); }
-  .np-key.enter { background: rgba(60, 140, 88, 0.35); border-color: rgba(60,140,88,0.75); color: #d1f2dc; }
-  .np-key.del { background: rgba(184, 66, 57, 0.22); border-color: rgba(184,66,57,0.55); color: #f2b7b1; }
+  .np-key:hover { background: linear-gradient(180deg, #4b3422 0%, #2c1e13 100%); border-color: var(--brass-bright); color: var(--brass-foil); }
+  .np-key:active { transform: translateY(1px); box-shadow: 0 1px 0 rgba(0,0,0,0.7); }
+  .np-key.enter {
+    background: linear-gradient(180deg, #276e43 0%, #18472b 100%);
+    border-color: rgba(126, 224, 160, 0.75); color: #e4ffed;
+  }
+  .np-key.enter:hover { background: linear-gradient(180deg, #318753 0%, #1f5c37 100%); color: #fff; }
+  .np-key.del {
+    background: linear-gradient(180deg, #6e2620 0%, #451612 100%);
+    border-color: rgba(214, 102, 92, 0.65); color: #ffd4d0;
+  }
+  .np-key.del:hover { background: linear-gradient(180deg, #873028 0%, #581c17 100%); color: #fff; }
 
-  /* 3-Beat Oche Rhythm Multi-Axis Brass Aiming Panel (Levels 4 & 7) */
+  /* 3-Beat Oche Rhythm Antique Mahogany & Brass Vernier Panel */
   .aim-gauge-panel {
     position: fixed; left: 50%; bottom: 64px; transform: translateX(-50%);
-    z-index: 26; width: min(420px, calc(100vw - 20px));
-    padding: 8px 12px 9px; display: none; flex-direction: column; gap: 5px;
-    border-color: rgba(232, 198, 130, 0.72);
-    box-shadow: 0 12px 34px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,240,200,0.16);
+    z-index: 26; width: min(426px, calc(100vw - 20px));
+    padding: 9px 14px 10px; display: none; flex-direction: column; gap: 5px;
+    border-color: rgba(242, 210, 139, 0.78);
+    box-shadow:
+      0 14px 36px rgba(0, 0, 0, 0.88),
+      0 0 0 1px rgba(92, 62, 24, 0.65),
+      inset 0 1px 0 rgba(255, 240, 200, 0.28),
+      inset 0 0 18px rgba(0, 0, 0, 0.45);
   }
   .aim-gauge-panel.visible { display: flex; }
   .aim-top {
     display: flex; align-items: center; justify-content: space-between; gap: 8px;
-    font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
-    font-size: 10.5px; letter-spacing: 0.7px; text-transform: uppercase; color: var(--brass-bright);
+    font-family: var(--font-mono);
+    font-size: 10px; letter-spacing: 0.7px; text-transform: uppercase; color: var(--brass-bright);
   }
   .aim-live-bed {
     padding: 1px 7px; border-radius: 3px; font-weight: 700; font-size: 11px;
-    background: rgba(255,255,255,0.06); border: 1px solid rgba(201,161,90,0.4); color: var(--chalk);
+    background: rgba(10, 7, 5, 0.62); border: 1px solid rgba(207,162,85,0.48); color: var(--chalk);
   }
-  .aim-live-bed.zone-green { background: rgba(46, 134, 78, 0.42); border-color: #7ae09f; color: #dcfce7; }
-  .aim-live-bed.zone-amber { background: rgba(196, 134, 34, 0.38); border-color: #f2c46d; color: #fff0c7; }
-  .aim-live-bed.zone-red   { background: rgba(176, 54, 46, 0.42); border-color: #f08a82; color: #ffd9d6; }
+  .aim-live-bed.zone-green { background: rgba(34, 118, 66, 0.56); border-color: #84eca8; color: #e2ffec; }
+  .aim-live-bed.zone-amber { background: rgba(176, 118, 28, 0.48); border-color: #f4c974; color: #fff2cc; }
+  .aim-live-bed.zone-red   { background: rgba(154, 42, 34, 0.54); border-color: #f4928a; color: #ffdedb; }
   .aim-flow-pill {
     display: none; padding: 1px 6px; border-radius: 3px; font-weight: 700; font-size: 9.5px;
-    letter-spacing: 0.45px; white-space: nowrap;
+    letter-spacing: 0.4px; white-space: nowrap;
   }
   .aim-flow-pill.visible { display: inline-block; }
-  .aim-flow-pill.flow-hot  { background: rgba(46, 150, 86, 0.38); border: 1px solid #7ae09f; color: #d8ffe4; box-shadow: 0 0 8px rgba(122,224,159,0.28); }
-  .aim-flow-pill.flow-warm { background: rgba(201, 161, 90, 0.24); border: 1px solid #f0ce8c; color: #fff0c7; }
-  .aim-flow-pill.flow-slow { background: rgba(196, 126, 34, 0.34); border: 1px solid #f2b75c; color: #ffe4b5; }
-  .aim-flow-pill.flow-cold { background: rgba(184, 52, 44, 0.42); border: 1px solid #f08a82; color: #ffd9d6; }
+  .aim-flow-pill.flow-hot  { background: rgba(38, 134, 74, 0.46); border: 1px solid #84eca8; color: #deffe9; box-shadow: 0 0 9px rgba(132,236,168,0.32); }
+  .aim-flow-pill.flow-warm { background: rgba(196, 148, 66, 0.28); border: 1px solid #f2d28b; color: #fff2cc; }
+  .aim-flow-pill.flow-slow { background: rgba(182, 114, 28, 0.42); border: 1px solid #f2b75c; color: #ffe6bb; }
+  .aim-flow-pill.flow-cold { background: rgba(164, 44, 36, 0.5); border: 1px solid #f29088; color: #ffdedb; }
   .aim-row {
     display: flex; align-items: center; gap: 6px;
-    padding: 2px 4px; border-radius: 5px;
+    padding: 2.5px 5px; border-radius: 5px;
     border: 1px solid transparent; transition: opacity 0.14s, border-color 0.14s, background 0.14s;
   }
   .aim-row.active-row {
-    opacity: 1; background: rgba(201, 161, 90, 0.10);
-    border-color: rgba(232, 198, 130, 0.55);
+    opacity: 1; background: rgba(207, 162, 85, 0.12);
+    border-color: rgba(242, 210, 139, 0.62);
   }
-  .aim-row.locked-row { opacity: 0.78; background: rgba(46, 134, 78, 0.08); }
-  .aim-row.waiting-row { opacity: 0.42; }
+  .aim-row.locked-row { opacity: 0.8; background: rgba(38, 126, 70, 0.12); }
+  .aim-row.waiting-row { opacity: 0.44; }
   .aim-row.hidden-row { display: none; }
   .aim-row-tag {
-    font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
-    font-size: 9.5px; font-weight: 700; letter-spacing: 0.4px; text-transform: uppercase;
+    font-family: var(--font-mono);
+    font-size: 9px; font-weight: 700; letter-spacing: 0.35px; text-transform: uppercase;
     color: var(--brass); width: 54px; flex-shrink: 0;
   }
-  .aim-row.active-row .aim-row-tag { color: #fff4d2; }
+  .aim-row.active-row .aim-row-tag { color: #fff6d8; }
   .aim-edge-lbl {
-    font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
-    font-size: 10px; font-weight: 700; color: #f0a8a2; min-width: 28px; text-align: center;
-    background: rgba(140, 34, 28, 0.28); border: 1px solid rgba(184, 66, 57, 0.45);
+    font-family: var(--font-mono);
+    font-size: 9.5px; font-weight: 700; color: #f6b2ab; min-width: 28px; text-align: center;
+    background: rgba(128, 30, 24, 0.36); border: 1px solid rgba(196, 72, 62, 0.5);
     border-radius: 3px; padding: 1px 3px; flex-shrink: 0;
   }
   .aim-edge-lbl.neutral {
-    color: var(--chalk-dim); background: rgba(255,255,255,0.04); border-color: rgba(201,161,90,0.28);
+    color: var(--chalk-dim); background: rgba(12, 8, 6, 0.45); border-color: rgba(207,162,85,0.32);
   }
   .aim-track {
-    position: relative; flex: 1; height: 15px; border-radius: 8px; overflow: hidden;
-    background: rgba(10, 14, 20, 0.92);
-    border: 1.5px solid rgba(201, 161, 90, 0.48);
-    box-shadow: inset 0 2px 5px rgba(0,0,0,0.75);
+    position: relative; flex: 1; height: 16px; border-radius: 8px; overflow: hidden;
+    background: linear-gradient(180deg, #0b0806 0%, #15100c 100%);
+    border: 1.5px solid rgba(207, 162, 85, 0.58);
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.88), 0 1px 0 rgba(255, 232, 176, 0.16);
   }
-  .aim-row.active-row .aim-track { border-color: var(--brass-bright); }
+  .aim-track::after {
+    content: ''; position: absolute; left: 0; right: 0; top: 0; height: 42%;
+    background: linear-gradient(180deg, rgba(255, 248, 224, 0.15), rgba(255, 248, 224, 0));
+    pointer-events: none;
+  }
+  .aim-row.active-row .aim-track { border-color: var(--brass-foil); }
   .aim-zone { position: absolute; top: 0; bottom: 0; }
-  .aim-zone.red { inset: 0; background: linear-gradient(90deg, rgba(168,46,38,0.72), rgba(168,46,38,0.32) 25%, rgba(168,46,38,0.32) 75%, rgba(168,46,38,0.72)); }
-  .aim-zone.amber { background: rgba(214, 152, 48, 0.50); border-left: 1px solid rgba(242,196,109,0.5); border-right: 1px solid rgba(242,196,109,0.5); }
-  .aim-zone.green { background: linear-gradient(90deg, rgba(54,158,92,0.62), rgba(102,216,142,0.92), rgba(54,158,92,0.62)); border-left: 1px solid #b4f8cc; border-right: 1px solid #b4f8cc; }
+  .aim-zone.red { inset: 0; background: linear-gradient(90deg, rgba(162,40,32,0.78), rgba(140,34,28,0.34) 26%, rgba(140,34,28,0.34) 74%, rgba(162,40,32,0.78)); }
+  .aim-zone.amber { background: rgba(212, 146, 42, 0.55); border-left: 1px solid rgba(246,204,118,0.58); border-right: 1px solid rgba(246,204,118,0.58); }
+  .aim-zone.green { background: linear-gradient(90deg, rgba(38,144,78,0.68), rgba(98,218,142,0.95), rgba(38,144,78,0.68)); border-left: 1px solid #c2fcda; border-right: 1px solid #c2fcda; }
   .aim-center-tick {
     position: absolute; left: 50%; top: 0; bottom: 0; width: 2px;
-    transform: translateX(-50%); background: rgba(255, 248, 224, 0.72);
+    transform: translateX(-50%); background: rgba(255, 248, 224, 0.8);
   }
   .aim-needle {
     position: absolute; top: -2px; bottom: -2px; width: 6px; left: 50%;
     transform: translateX(-50%); border-radius: 3px;
-    background: linear-gradient(180deg, #fff9e6 0%, #f3cc7d 50%, #c4882a 100%);
-    box-shadow: 0 0 10px rgba(255, 226, 150, 0.95), 0 0 2px #000;
+    background: linear-gradient(180deg, #fffdf0 0%, #f5cf7a 48%, #ad7320 100%);
+    border: 0.5px solid rgba(58, 34, 8, 0.7);
+    box-shadow: 0 0 11px rgba(255, 226, 150, 0.96), 0 0 2px #000;
     will-change: left;
   }
-  .aim-row.locked-row .aim-needle { background: #a7f3c2; box-shadow: 0 0 6px rgba(122,224,159,0.85); }
+  .aim-row.locked-row .aim-needle { background: #a9f5c4; box-shadow: 0 0 7px rgba(132,236,168,0.9); }
   .aim-actions {
-    display: flex; align-items: center; justify-content: space-between; gap: 7px; margin-top: 1px;
+    display: flex; align-items: center; justify-content: space-between; gap: 7px; margin-top: 2px;
   }
   .aim-throw-btn {
-    flex: 1; padding: 6px 12px; border-radius: 5px; cursor: pointer;
-    background: linear-gradient(135deg, rgba(212,164,74,0.38), rgba(145,100,32,0.52));
-    border: 1.5px solid var(--brass-bright); color: #fff7e0;
-    font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
-    font-size: 11.5px; font-weight: 700; letter-spacing: 0.7px; text-transform: uppercase;
+    flex: 1; padding: 6.5px 12px; border-radius: 5px; cursor: pointer;
+    background: linear-gradient(180deg, #c28e3c 0%, #835617 100%);
+    border: 1.5px solid var(--brass-foil); color: #fff9e6;
+    box-shadow: 0 2px 0 rgba(0,0,0,0.62), inset 0 1px 0 rgba(255,244,206,0.36);
+    font-family: var(--font-mono);
+    font-size: 11px; font-weight: 700; letter-spacing: 0.7px; text-transform: uppercase;
   }
-  .aim-throw-btn:hover { filter: brightness(1.16); }
+  .aim-throw-btn:hover { filter: brightness(1.14); }
   .aim-cancel-btn {
-    padding: 6px 10px; border-radius: 5px; cursor: pointer;
-    background: rgba(255,255,255,0.05); border: 1px solid rgba(201,161,90,0.34);
-    color: var(--chalk-dim); font-family: ui-monospace, monospace; font-size: 10.5px;
+    padding: 6.5px 10px; border-radius: 5px; cursor: pointer;
+    background: rgba(18, 12, 8, 0.72); border: 1px solid rgba(207,162,85,0.4);
+    color: var(--chalk-dim); font-family: var(--font-mono); font-size: 10px;
   }
-  .aim-cancel-btn:hover { color: var(--chalk); border-color: var(--brass); }
+  .aim-cancel-btn:hover { color: var(--chalk); border-color: var(--brass-bright); }
 
-  /* Slide-Over Chalkboard Drawer (Stages & Mastery Ledger) */
+  /* Slide-Over Mahogany Pub Ledger Drawer (Stages & Mastery Ledger) */
   .drawer-backdrop {
-    position: fixed; inset: 0; background: rgba(5, 8, 12, 0.62);
+    position: fixed; inset: 0; background: rgba(8, 5, 3, 0.68);
     z-index: 30; display: none; justify-content: flex-end;
-    backdrop-filter: blur(2px);
+    backdrop-filter: blur(3px);
   }
   .drawer-backdrop.open { display: flex; }
   .drawer {
-    width: min(500px, 94vw); height: 100%;
-    background: #10151c; border-left: 1px solid rgba(201, 161, 90, 0.42);
-    box-shadow: -12px 0 40px rgba(0,0,0,0.72);
+    width: min(504px, 94vw); height: 100%;
+    background: linear-gradient(180deg, #1d130d 0%, #120c08 100%);
+    border-left: 1.5px solid rgba(214, 170, 92, 0.56);
+    box-shadow: -14px 0 44px rgba(0, 0, 0, 0.8), inset 1px 0 0 rgba(255, 232, 176, 0.14);
     display: flex; flex-direction: column; overflow: hidden;
   }
   .drawer-head {
-    padding: 14px 18px; border-bottom: 1px solid rgba(201,161,90,0.25);
+    padding: 14px 18px; border-bottom: 1px solid rgba(207, 162, 85, 0.3);
+    background: linear-gradient(180deg, rgba(20, 40, 29, 0.55), rgba(18, 12, 8, 0.2));
     display: flex; align-items: center; justify-content: space-between;
   }
   .drawer-tabs { display: flex; gap: 8px; }
   .dtab {
-    background: transparent; border: 1px solid rgba(201,161,90,0.28);
+    background: rgba(14, 9, 6, 0.5); border: 1px solid rgba(207, 162, 85, 0.34);
     color: var(--chalk-dim); padding: 6px 12px; border-radius: 4px;
-    font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
-    font-size: 11px; letter-spacing: 0.8px; text-transform: uppercase; cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: 10.5px; letter-spacing: 0.75px; text-transform: uppercase; cursor: pointer;
+    transition: all 0.16s;
   }
-  .dtab.active { background: rgba(201,161,90,0.2); color: var(--brass-bright); border-color: var(--brass-bright); }
+  .dtab:hover { border-color: var(--brass-bright); color: var(--chalk); }
+  .dtab.active {
+    background: linear-gradient(180deg, rgba(196, 146, 62, 0.34), rgba(114, 78, 22, 0.44));
+    color: var(--brass-foil); border-color: var(--brass-bright);
+  }
   .drawer-close {
-    background: transparent; border: 1px solid rgba(201,161,90,0.3);
+    background: rgba(14, 9, 6, 0.5); border: 1px solid rgba(207, 162, 85, 0.36);
     color: var(--chalk); width: 30px; height: 30px; border-radius: 4px;
     font-size: 16px; cursor: pointer;
   }
+  .drawer-close:hover { border-color: var(--brass-bright); color: var(--brass-foil); }
   .drawer-body {
     flex: 1; overflow-y: auto; padding: 16px 18px 24px;
     display: flex; flex-direction: column; gap: 14px;
@@ -511,43 +586,49 @@
   .setting-row {
     display: flex; align-items: center; justify-content: space-between;
     gap: 10px; padding: 9px 12px;
-    background: rgba(255,255,255,0.03); border: 1px solid rgba(201,161,90,0.2);
+    background: rgba(255, 240, 206, 0.035); border: 1px solid rgba(207, 162, 85, 0.26);
     border-radius: 5px; font-size: 13px;
   }
   .seg-group { display: flex; gap: 4px; }
   .seg-btn {
-    background: transparent; border: 1px solid rgba(201,161,90,0.28);
+    background: rgba(12, 8, 5, 0.5); border: 1px solid rgba(207, 162, 85, 0.32);
     color: var(--chalk-dim); padding: 4px 8px; border-radius: 3px;
-    font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+    font-family: var(--font-mono);
     font-size: 10px; cursor: pointer;
   }
-  .seg-btn.active { background: rgba(201,161,90,0.25); color: var(--brass-bright); border-color: var(--brass-bright); }
+  .seg-btn.active { background: rgba(207, 162, 85, 0.28); color: var(--brass-foil); border-color: var(--brass-bright); }
 
   .stage-card {
     padding: 11px 13px; border-radius: 6px; cursor: pointer;
-    background: rgba(255,255,255,0.03); border: 1px solid rgba(201,161,90,0.22);
+    background: linear-gradient(180deg, rgba(32, 21, 15, 0.72), rgba(20, 13, 9, 0.85));
+    border: 1px solid rgba(207, 162, 85, 0.28);
+    box-shadow: inset 0 1px 0 rgba(255, 232, 176, 0.08);
     display: flex; flex-direction: column; gap: 4px;
     transition: all 0.16s;
   }
-  .stage-card:hover { border-color: var(--brass); background: rgba(201,161,90,0.09); }
-  .stage-card.selected { border-color: var(--brass-bright); background: rgba(201,161,90,0.16); }
-  .sc-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-  .sc-title { font-size: 14px; font-weight: 700; color: var(--brass-bright); }
-  .sc-tag {
-    font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
-    font-size: 10px; color: var(--chalk-dim); padding: 2px 6px;
-    border-radius: 3px; background: rgba(0,0,0,0.35);
-    border: 1px solid rgba(255,255,255,0.08);
+  .stage-card:hover { border-color: var(--brass-bright); background: linear-gradient(180deg, rgba(30, 50, 36, 0.52), rgba(22, 15, 10, 0.9)); }
+  .stage-card.selected {
+    border-color: var(--brass-bright);
+    background: linear-gradient(180deg, rgba(34, 62, 44, 0.65), rgba(32, 22, 12, 0.92));
+    box-shadow: 0 0 14px rgba(207, 162, 85, 0.2), inset 0 1px 0 rgba(255, 238, 194, 0.18);
   }
-  .sc-desc { font-size: 12px; color: var(--chalk-dim); line-height: 1.38; }
-  .sc-bar { height: 3px; background: rgba(255,255,255,0.08); border-radius: 99px; overflow: hidden; margin-top: 4px; }
+  .sc-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .sc-title { font-family: var(--font-display); font-size: 15px; font-weight: 700; color: var(--brass-bright); }
+  .sc-tag {
+    font-family: var(--font-mono);
+    font-size: 9.5px; color: var(--chalk-dim); padding: 2px 6px;
+    border-radius: 3px; background: rgba(10, 7, 5, 0.55);
+    border: 1px solid rgba(207, 162, 85, 0.22);
+  }
+  .sc-desc { font-size: 12px; color: var(--chalk-dim); line-height: 1.4; }
+  .sc-bar { height: 3.5px; background: rgba(0, 0, 0, 0.45); border-radius: 99px; overflow: hidden; margin-top: 4px; }
   .sc-fill { height: 100%; background: linear-gradient(90deg, var(--brass-dim), var(--brass-bright)); }
 
   /* Mastery Ledger Cells */
   .ledger-section-title {
-    font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
-    font-size: 11px; letter-spacing: 1px; text-transform: uppercase;
-    color: var(--brass); margin: 4px 0 2px; display: flex; justify-content: space-between;
+    font-family: var(--font-mono);
+    font-size: 10.5px; letter-spacing: 1px; text-transform: uppercase;
+    color: var(--brass-bright); margin: 4px 0 2px; display: flex; justify-content: space-between;
   }
   .ledger-grid {
     display: grid; grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
@@ -555,33 +636,34 @@
   }
   .l-cell {
     padding: 5px 4px; border-radius: 4px; text-align: center;
-    font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
-    font-size: 11px; border: 1px solid rgba(232,225,207,0.14);
-    background: rgba(255,255,255,0.03); color: rgba(232,225,207,0.45);
+    font-family: var(--font-mono);
+    font-size: 11px; border: 1px solid rgba(240, 230, 207, 0.16);
+    background: rgba(255, 240, 206, 0.03); color: rgba(240, 230, 207, 0.48);
   }
   .l-cell.amber {
-    border-color: rgba(201,161,90,0.58);
-    background: rgba(154, 107, 36, 0.25); color: #f0d399;
+    border-color: rgba(207, 162, 85, 0.62);
+    background: rgba(154, 107, 36, 0.28); color: #f4d89e;
   }
   .l-cell.brass {
-    border-color: rgba(232, 198, 130, 0.9);
-    background: linear-gradient(145deg, rgba(196,148,64,0.45), rgba(112,78,24,0.38));
-    color: #fff3d2; box-shadow: inset 0 1px 0 rgba(255,243,210,0.3);
+    border-color: rgba(242, 210, 139, 0.92);
+    background: linear-gradient(145deg, rgba(196, 148, 64, 0.5), rgba(112, 78, 24, 0.44));
+    color: #fff6dc; box-shadow: inset 0 1px 0 rgba(255, 243, 210, 0.34);
   }
-  .l-sub { font-size: 9px; opacity: 0.78; display: block; margin-top: 1px; }
+  .l-sub { font-size: 9px; opacity: 0.8; display: block; margin-top: 1px; }
   .summary-banner {
     padding: 10px 12px; border-radius: 5px;
-    background: rgba(201,161,90,0.12); border: 1px solid rgba(201,161,90,0.4);
+    background: linear-gradient(180deg, rgba(20, 42, 30, 0.58), rgba(24, 16, 10, 0.72));
+    border: 1px solid rgba(207, 162, 85, 0.46);
     font-size: 12px; line-height: 1.45; color: var(--chalk);
   }
   .howto-card {
     padding: 11px 13px; border-radius: 6px;
-    background: rgba(255,255,255,0.03); border: 1px solid rgba(201,161,90,0.24);
+    background: rgba(255, 242, 212, 0.035); border: 1px solid rgba(207, 162, 85, 0.28);
     font-size: 12.5px; line-height: 1.48; color: var(--chalk);
   }
   .howto-card h4 {
-    margin: 0 0 6px; font-size: 12px; letter-spacing: 1px; text-transform: uppercase;
-    font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace; color: var(--brass-bright);
+    margin: 0 0 6px; font-size: 11.5px; letter-spacing: 0.9px; text-transform: uppercase;
+    font-family: var(--font-mono); color: var(--brass-bright);
   }
   .howto-card ul { margin: 4px 0 0 16px; padding: 0; }
   .howto-card li { margin-bottom: 4px; color: var(--chalk-dim); }
@@ -591,18 +673,18 @@
   .touch-aim-pill {
     position: fixed; z-index: 25; pointer-events: none; display: none;
     transform: translate(-50%, -100%);
-    background: rgba(15, 19, 26, 0.94);
+    background: linear-gradient(180deg, rgba(31, 20, 14, 0.96), rgba(16, 11, 8, 0.98));
     border: 1.5px solid var(--brass-bright);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.7);
-    color: var(--brass-bright); border-radius: 8px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.78);
+    color: var(--brass-foil); border-radius: 8px;
     padding: 6px 12px; text-align: center;
-    font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+    font-family: var(--font-mono);
     font-size: 14px; font-weight: 700; white-space: nowrap;
   }
   .touch-aim-pill .sub {
     display: block; font-size: 10px; font-weight: 400; color: var(--chalk-dim); margin-top: 1px;
   }
-  .touch-aim-pill.cancel { border-color: rgba(184,66,57,0.75); color: #f0a8a2; }
+  .touch-aim-pill.cancel { border-color: rgba(198, 72, 62, 0.8); color: #f6b2ab; }
 
   /* Non-blocking Welcome Quick-Start & Level-Up Banners */
   .toast-stack {
@@ -611,28 +693,30 @@
     width: min(640px, calc(100vw - 24px)); pointer-events: none;
   }
   .welcome-banner, .levelup-banner {
-    pointer-events: auto; width: 100%; padding: 10px 14px;
+    pointer-events: auto; width: 100%; padding: 11px 15px;
     display: none; flex-direction: column; gap: 7px;
-    background: rgba(16, 21, 29, 0.94);
-    border: 1px solid rgba(232, 198, 130, 0.62);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.7); border-radius: 7px;
+    background: linear-gradient(180deg, rgba(31, 21, 14, 0.96), rgba(17, 11, 8, 0.97));
+    border: 1px solid rgba(242, 210, 139, 0.68);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.78), inset 0 1px 0 rgba(255, 236, 186, 0.2);
+    border-radius: 7px;
   }
   .welcome-banner.show, .levelup-banner.show { display: flex; }
   .levelup-banner {
-    background: linear-gradient(135deg, rgba(46, 34, 15, 0.96), rgba(18, 22, 29, 0.96));
-    border-color: var(--brass-bright);
+    background: linear-gradient(135deg, rgba(58, 38, 16, 0.97), rgba(20, 38, 28, 0.97));
+    border-color: var(--brass-foil);
   }
   .banner-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; font-size: 12.5px; line-height: 1.4; }
-  .banner-title { color: var(--brass-bright); font-weight: 700; letter-spacing: 0.4px; }
+  .banner-title { font-family: var(--font-display); color: var(--brass-bright); font-weight: 700; letter-spacing: 0.4px; font-size: 14px; }
   .banner-actions { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
   .chip-btn {
-    background: rgba(201,161,90,0.18); border: 1px solid rgba(232,198,130,0.65);
-    color: var(--brass-bright); border-radius: 4px; padding: 5px 10px;
-    font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace; font-size: 11px;
+    background: linear-gradient(180deg, rgba(196, 146, 62, 0.34), rgba(114, 78, 22, 0.44));
+    border: 1px solid rgba(242, 210, 139, 0.72);
+    color: var(--brass-foil); border-radius: 4px; padding: 5px 10px;
+    font-family: var(--font-mono); font-size: 10.5px;
     cursor: pointer; transition: all 0.15s;
   }
-  .chip-btn:hover { background: rgba(201,161,90,0.32); }
-  .chip-btn.ghost { background: transparent; border-color: rgba(232,225,207,0.28); color: var(--chalk-dim); }
+  .chip-btn:hover { background: rgba(207, 162, 85, 0.42); }
+  .chip-btn.ghost { background: transparent; border-color: rgba(240, 230, 207, 0.3); color: var(--chalk-dim); }
   .chip-x {
     background: transparent; border: none; color: var(--chalk-dim);
     font-size: 17px; line-height: 1; cursor: pointer; padding: 0 4px;
@@ -643,39 +727,47 @@
 
   .kb-hint { opacity: 0.72; }
 
-  /* Pre-Stage Chalk Briefing Card (pauses countdown until player steps up!) */
+  /* Pre-Stage Chalk Briefing Placard */
   .briefing-backdrop {
     position: fixed; inset: 0; z-index: 28;
-    background: rgba(6, 9, 14, 0.72); backdrop-filter: blur(3px);
+    background: rgba(8, 5, 3, 0.76); backdrop-filter: blur(3px);
     display: none; align-items: center; justify-content: center; padding: 14px;
   }
   .briefing-backdrop.open { display: flex; }
   .briefing-card {
-    width: min(520px, 95vw); max-height: 86vh; overflow-y: auto;
-    background: #121821; border: 1.5px solid rgba(232, 198, 130, 0.62);
-    box-shadow: 0 18px 50px rgba(0,0,0,0.82), inset 0 1px 0 rgba(255,240,200,0.14);
-    border-radius: 9px; padding: 18px 20px; display: flex; flex-direction: column; gap: 11px;
+    width: min(526px, 95vw); max-height: 86vh; overflow-y: auto;
+    background:
+      radial-gradient(circle 3px at 10px 10px, #f7df9f 0%, #996d28 65%, transparent 100%),
+      radial-gradient(circle 3px at calc(100% - 10px) 10px, #f7df9f 0%, #996d28 65%, transparent 100%),
+      radial-gradient(circle 3px at 10px calc(100% - 10px), #f7df9f 0%, #996d28 65%, transparent 100%),
+      radial-gradient(circle 3px at calc(100% - 10px) calc(100% - 10px), #f7df9f 0%, #996d28 65%, transparent 100%),
+      linear-gradient(180deg, #211610 0%, #140d09 100%);
+    border: 1.5px solid rgba(242, 210, 139, 0.68);
+    box-shadow: 0 20px 56px rgba(0, 0, 0, 0.88), inset 0 1px 0 rgba(255, 240, 200, 0.2);
+    border-radius: 9px; padding: 20px 22px; display: flex; flex-direction: column; gap: 11px;
   }
   .briefing-kicker {
-    font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
-    font-size: 10.5px; letter-spacing: 1.4px; text-transform: uppercase;
-    color: var(--brass); display: flex; justify-content: space-between; align-items: center;
+    font-family: var(--font-mono);
+    font-size: 10px; letter-spacing: 1.4px; text-transform: uppercase;
+    color: var(--brass-bright); display: flex; justify-content: space-between; align-items: center;
   }
   .briefing-trev-row {
     display: flex; align-items: center; gap: 12px;
-    background: rgba(201,161,90,0.08); border: 1px solid rgba(201,161,90,0.3);
-    border-radius: 6px; padding: 8px 10px;
+    background: linear-gradient(165deg, #f4e7cb 0%, #e7d4ab 100%);
+    border: 1.5px solid #c5a166;
+    box-shadow: inset 0 0 0 2.5px #f3e5c7, inset 0 0 0 3.5px rgba(145, 52, 42, 0.45);
+    border-radius: 7px; padding: 9px 11px;
   }
   .briefing-trev-img {
     width: 62px; height: 68px; object-fit: contain; flex-shrink: 0;
-    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.7));
+    filter: drop-shadow(0 4px 8px rgba(32, 18, 8, 0.45));
   }
   .briefing-trev-quote {
-    font-size: 12.5px; font-style: italic; color: #f4e6c4; line-height: 1.4;
+    font-size: 12.5px; font-style: italic; color: var(--ink-dark); line-height: 1.42;
   }
-  .briefing-trev-quote strong { font-style: normal; color: var(--brass-bright); }
+  .briefing-trev-quote strong { font-style: normal; color: #7e261c; }
 
-  /* ==================== ANIMATED COACH TREV (COCKNEY PUB COACH) ==================== */
+  /* ==================== ANIMATED COACH TREV & LETTERPRESS BEER-MAT CARD ==================== */
   .trev-dock {
     position: fixed; left: 12px; bottom: 52px; z-index: 16;
     display: flex; flex-direction: column; align-items: flex-start; gap: 16px;
@@ -685,67 +777,82 @@
   .trev-dock:has(.mood-crown) { gap: 34px; }
   .trev-bubble {
     pointer-events: auto; position: relative;
-    max-width: 226px; min-width: 180px;
-    background: rgba(18, 22, 29, 0.94);
-    border: 1.5px solid rgba(224, 184, 108, 0.72);
-    box-shadow: 0 10px 28px rgba(0,0,0,0.72), inset 0 1px 0 rgba(255,240,200,0.12);
-    border-radius: 10px; padding: 8px 10px 9px;
-    color: #f4ecd7; font-size: 12px; line-height: 1.38;
+    max-width: 248px; min-width: 196px;
+    background: linear-gradient(168deg, #f6ead0 0%, #e9d6ae 100%);
+    border: 1.5px solid #c9a362;
+    box-shadow:
+      0 11px 28px rgba(0, 0, 0, 0.76),
+      inset 0 0 0 3px #f4e8cd,
+      inset 0 0 0 4.5px rgba(142, 46, 36, 0.56);
+    border-radius: 10px; padding: 10px 12px 11px;
+    color: var(--ink-dark); font-size: 12px; line-height: 1.4;
     transform-origin: 28px bottom;
     transition: opacity 0.22s ease, transform 0.22s ease;
   }
   .trev-bubble.hidden { opacity: 0; transform: translateY(8px) scale(0.95); pointer-events: none; }
   .trev-bubble::after {
-    content: ''; position: absolute; left: 32px; bottom: -9px;
-    width: 14px; height: 14px; background: rgba(18, 22, 29, 0.96);
-    border-right: 1.5px solid rgba(224, 184, 108, 0.72);
-    border-bottom: 1.5px solid rgba(224, 184, 108, 0.72);
+    content: ''; position: absolute; left: 32px; bottom: -8px;
+    width: 14px; height: 14px; background: #ebd9b4;
+    border-right: 1.5px solid #c9a362;
+    border-bottom: 1.5px solid #c9a362;
     transform: rotate(45deg);
   }
   .trev-bubble-head {
     display: flex; align-items: center; justify-content: space-between; gap: 6px;
-    margin-bottom: 4px;
-    font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
-    font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--brass-bright);
+    margin-bottom: 5px; padding-bottom: 3px; white-space: nowrap;
+    border-bottom: 1px dashed rgba(122, 74, 34, 0.35);
+    font-family: var(--font-mono); font-weight: 800;
+    font-size: 8.8px; letter-spacing: 0.45px; text-transform: uppercase; color: #7c241b;
   }
-  .trev-head-btns { display: flex; align-items: center; gap: 4px; }
+  .trev-head-btns { display: flex; align-items: center; gap: 3px; flex-shrink: 0; }
   .trev-mini-btn {
-    background: rgba(255,255,255,0.06); border: 1px solid rgba(201,161,90,0.34);
-    color: var(--chalk-dim); border-radius: 3px; padding: 1px 5px;
-    font-size: 10px; cursor: pointer; line-height: 1.3;
+    background: rgba(42, 26, 14, 0.08); border: 1px solid rgba(112, 70, 32, 0.45);
+    color: #3d2614; border-radius: 3px; padding: 1px 5px;
+    font-size: 10px; cursor: pointer; line-height: 1.3; font-weight: 700;
+    white-space: nowrap; flex-shrink: 0;
   }
-  .trev-mini-btn:hover, .trev-mini-btn.on { color: var(--brass-bright); border-color: var(--brass-bright); }
+  .trev-mini-btn:hover, .trev-mini-btn.on { color: #1d120a; border-color: #7c241b; background: rgba(142, 46, 36, 0.14); }
   .trev-mini-btn.hd-btn {
-    font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
-    font-size: 9.5px; font-weight: 700; letter-spacing: 0.5px; padding: 1px 6px;
+    font-family: var(--font-mono);
+    font-size: 9px; font-weight: 800; letter-spacing: 0.45px; padding: 1px 6px;
   }
   .trev-mini-btn.hd-btn.loading {
-    color: #ffe39a; border-color: rgba(243,204,125,0.75);
-    background: rgba(196,144,44,0.24);
+    color: #7a4606; border-color: #b4741c;
+    background: rgba(214, 152, 46, 0.24);
     animation: trialPulse 1.3s ease-in-out infinite;
   }
   .trev-mini-btn.hd-btn.ready {
-    color: #c8f7d9; border-color: #7ae09f;
-    background: rgba(46,134,78,0.34);
+    color: #134a28; border-color: #247844;
+    background: rgba(46, 142, 82, 0.18);
   }
   .trev-mini-btn.hd-btn.err {
-    color: #ffb3ac; border-color: rgba(184,66,57,0.75);
+    color: #8c1e17; border-color: #b5342b;
+    background: rgba(181, 52, 43, 0.14);
   }
   .trev-bubble-acts { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 7px; }
+  .trev-bubble .chip-btn {
+    background: linear-gradient(180deg, #332015 0%, #1e120b 100%);
+    border-color: #8f6327; color: #f8e5bc;
+  }
+  .trev-bubble .chip-btn:hover { background: linear-gradient(180deg, #4b2d1c 0%, #2a180e 100%); color: #fff6dc; }
+  .trev-bubble .chip-btn.ghost {
+    background: rgba(42, 26, 14, 0.08); border-color: rgba(96, 62, 30, 0.45); color: #3d2817;
+  }
   .trev-stage {
     pointer-events: auto; position: relative; width: 152px; height: 170px;
-    cursor: pointer; filter: drop-shadow(0 8px 18px rgba(0,0,0,0.78));
+    cursor: pointer;
+    filter: drop-shadow(0 9px 18px rgba(0, 0, 0, 0.84)) drop-shadow(0 -2px 11px rgba(242, 186, 86, 0.26));
     transition: transform 0.2s ease;
   }
   .trev-stage:hover { transform: scale(1.03); }
   .trev-halo {
-    position: absolute; inset: 18px 8px 0; border-radius: 50%;
-    background: radial-gradient(circle, rgba(232,184,96,0.28) 0%, rgba(232,184,96,0) 72%);
-    opacity: 0.45; transition: opacity 0.35s, transform 0.35s; pointer-events: none;
+    position: absolute; inset: 16px 6px -2px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(245, 192, 92, 0.36) 0%, rgba(212, 138, 44, 0.08) 52%, rgba(232, 184, 96, 0) 74%);
+    opacity: 0.58; transition: opacity 0.35s, transform 0.35s; pointer-events: none;
   }
   .trev-stage.mood-pint .trev-halo,
   .trev-stage.mood-crown .trev-halo,
-  .trev-stage.mood-cheer .trev-halo { opacity: 0.95; transform: scale(1.18); }
+  .trev-stage.mood-cheer .trev-halo { opacity: 1; transform: scale(1.2); }
 
   .trev-rig {
     position: relative; width: 100%; height: 100%;
@@ -847,10 +954,10 @@
     0%, 100% { transform: translateX(-46%) translateY(0px) rotate(-4deg); }
     50%      { transform: translateX(-46%) translateY(-1.5px) rotate(4deg); }
   }
-  .briefing-title { font-size: 20px; font-weight: 700; color: var(--brass-bright); margin: 0; }
+  .briefing-title { font-family: var(--font-display); font-size: 21px; font-weight: 800; color: var(--brass-bright); margin: 0; }
   .briefing-goal { font-size: 13.5px; line-height: 1.45; color: var(--chalk); margin: 0; }
   .briefing-box {
-    background: rgba(255,255,255,0.035); border: 1px solid rgba(201,161,90,0.26);
+    background: rgba(255, 240, 206, 0.04); border: 1px solid rgba(207, 162, 85, 0.3);
     border-radius: 6px; padding: 10px 12px; font-size: 12.5px; line-height: 1.5; color: var(--chalk-dim);
   }
   .briefing-box strong { color: var(--chalk); }
@@ -859,9 +966,9 @@
     gap: 5px; margin-top: 6px;
   }
   .b-chip {
-    background: rgba(0,0,0,0.34); border: 1px solid rgba(201,161,90,0.28);
+    background: rgba(12, 8, 5, 0.55); border: 1px solid rgba(207, 162, 85, 0.32);
     border-radius: 4px; padding: 4px 6px; text-align: center;
-    font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace; font-size: 11px; color: var(--chalk);
+    font-family: var(--font-mono); font-size: 11px; color: var(--chalk);
   }
   .b-chip b { color: var(--brass-bright); }
   .briefing-foot {
@@ -869,40 +976,41 @@
     flex-wrap: wrap; margin-top: 4px;
   }
   .briefing-start {
-    background: linear-gradient(135deg, rgba(201,161,90,0.34), rgba(145,104,38,0.42));
-    border: 1.5px solid var(--brass-bright); color: #fff6df;
-    border-radius: 5px; padding: 9px 18px; font-weight: 700; letter-spacing: 0.5px;
-    font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace; font-size: 12px;
+    background: linear-gradient(180deg, #c6913d 0%, #865817 100%);
+    border: 1.5px solid var(--brass-foil); color: #fff8e4;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,244,206,0.38);
+    border-radius: 5px; padding: 9px 19px; font-weight: 800; letter-spacing: 0.6px;
+    font-family: var(--font-mono); font-size: 11.5px;
     cursor: pointer; text-transform: uppercase;
   }
-  .briefing-start:hover { filter: brightness(1.15); }
-  .briefing-note { font-size: 11px; color: var(--chalk-dim); font-family: ui-monospace, monospace; }
+  .briefing-start:hover { filter: brightness(1.14); }
+  .briefing-note { font-size: 10.5px; color: var(--chalk-dim); font-family: var(--font-mono); }
 
   @media (max-width: 780px) {
     .hud-layer { padding: 7px 8px; gap: 5px; }
     .hud-top { flex-direction: column; align-items: stretch; gap: 5px; }
     .brand-plate {
-      min-width: 0; padding: 5px 8px; flex-direction: row; flex-wrap: wrap; align-items: center;
+      min-width: 0; padding: 5px 9px; flex-direction: row; flex-wrap: wrap; align-items: center;
       justify-content: space-between; gap: 5px 6px;
     }
     .brand-row { gap: 6px; flex-shrink: 0; }
-    .brand-title { font-size: 12px; letter-spacing: 1.2px; white-space: nowrap; }
-    .ghost-pill { font-size: 9.5px; padding: 2px 6px; white-space: nowrap; }
+    .brand-title { font-size: 13px; letter-spacing: 1.1px; white-space: nowrap; }
+    .ghost-pill { font-size: 9px; padding: 2px 6px; white-space: nowrap; }
     .stage-btn { padding: 4px 7px; font-size: 11px; min-width: 0; flex: 1; max-width: 52vw; }
     .stage-btn span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .pip-row { flex: 1 0 100%; margin-top: 1px; padding-top: 4px; font-size: 9.5px; }
     .prompt-plate { min-width: 0; max-width: none; width: 100%; padding: 6px 10px 6px; }
-    .score-big { font-size: 24px; }
+    .score-big { font-size: 25px; }
     .prompt-task { font-size: 12px; max-width: none; }
     .right-stack { flex-direction: column; align-items: stretch; width: 100%; gap: 4px; }
     .controls-row { gap: 4px; width: 100%; justify-content: space-between; }
     .kb-hint { display: none; }
-    .hud-btn { padding: 5px 7px; font-size: 10px; flex: 1; text-align: center; white-space: nowrap; }
+    .hud-btn { padding: 5px 7px; font-size: 9.5px; flex: 1; text-align: center; white-space: nowrap; }
     .flow-plate { padding: 4px 9px; gap: 10px; font-size: 10px; justify-content: space-between; width: 100%; }
     .flow-plate .hide-sm { display: none; }
     .hud-bottom { gap: 6px; }
-    .feedback-strip { font-size: 11px; padding: 5px 8px; min-height: 32px; max-height: 40px; line-height: 1.22; overflow: hidden; }
-    .sound-pill { padding: 5px 8px; font-size: 10px; white-space: nowrap; }
+    .feedback-strip { font-size: 10.5px; padding: 4px 8px; min-height: 32px; max-height: 44px; line-height: 1.18; overflow: hidden; }
+    .sound-pill { padding: 5px 8px; font-size: 9.5px; white-space: nowrap; }
     .hover-bed { display: none; }
     .numpad-panel {
       left: 8px; right: 8px; transform: none;
@@ -917,7 +1025,7 @@
     .aim-track { height: 13px; }
     .aim-row-tag { width: 48px; font-size: 9px; }
     .aim-throw-btn { padding: 8px 10px; font-size: 11px; }
-    .relock-pill { bottom: 152px; padding: 6px 14px; font-size: 11px; }
+    .relock-pill { bottom: 152px; padding: 6px 14px; font-size: 10.5px; }
     body.numpad-open .trev-dock, body.aim-open .trev-dock { opacity: 0; pointer-events: none; }
     .toast-stack { bottom: 52px; }
     .trev-dock {
@@ -930,12 +1038,13 @@
     .trev-toast-pint { width: 26px; height: 34px; right: -10px; bottom: 8px; }
     .trev-bubble {
       flex: 1; max-width: none; min-width: 0; max-height: 92px; overflow-y: auto;
-      font-size: 11px; line-height: 1.32; padding: 6px 8px;
+      font-size: 11px; line-height: 1.32; padding: 7px 9px;
+      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.72), inset 0 0 0 2px #f4e8cd, inset 0 0 0 3px rgba(142, 46, 36, 0.5);
     }
     .trev-bubble::after {
-      left: -8px; bottom: 18px; top: auto;
-      border-right: none; border-bottom: 1.5px solid rgba(224, 184, 108, 0.72);
-      border-left: 1.5px solid rgba(224, 184, 108, 0.72);
+      left: -7px; bottom: 18px; top: auto; background: #eedcb8;
+      border-right: none; border-bottom: 1.5px solid #c9a362;
+      border-left: 1.5px solid #c9a362;
     }
   }
 </style>
@@ -2111,8 +2220,8 @@ renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.18;
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x111822);
-scene.fog = new THREE.FogExp2(0x111822, 0.042);
+scene.background = new THREE.Color(0x110c09);
+scene.fog = new THREE.FogExp2(0x110c09, 0.036);
 
 const camera = new THREE.PerspectiveCamera(34, window.innerWidth / window.innerHeight, 0.4, 38);
 const BASE_CAM = new THREE.Vector3(0.92, 0.44, 10.65);
@@ -2151,6 +2260,8 @@ const postMat = new THREE.ShaderMaterial({
     uFocusDepth: { value: 8.75 },
     uTime: { value: 0 },
     uFlowBoost: { value: 0 },
+    uTension: { value: 0 },
+    uRattled: { value: 0 },
   },
   vertexShader: `
     varying vec2 vUv;
@@ -2169,6 +2280,8 @@ const postMat = new THREE.ShaderMaterial({
     uniform float uFocusDepth;
     uniform float uTime;
     uniform float uFlowBoost;
+    uniform float uTension;
+    uniform float uRattled;
     varying vec2 vUv;
 
     float linearizeDepth(float d) {
@@ -2228,25 +2341,38 @@ const postMat = new THREE.ShaderMaterial({
         col += texture2D(tDiffuse, vUv + vec2(-r2, -r2) * 0.707 * texel).rgb * 0.09;
       }
 
-      // Clean warm tungsten / cool blue-slate split-tone grading (preserves natural sisal cream, red & green)
+      // Warm 2700K East End pub tungsten / mahogany-bottle split-tone (shifts subtly cool slate-blue if Rattled!)
       float lum = dot(col, vec3(0.299, 0.587, 0.114));
-      vec3 shadowTint = vec3(0.90, 0.96, 1.12);
-      vec3 warmTint = vec3(1.03 + uFlowBoost * 0.03, 1.01 + uFlowBoost * 0.01, 0.97);
+      vec3 pubShadow = vec3(0.95, 0.92, 0.90);
+      vec3 rattledShadow = vec3(0.84, 0.94, 1.15);
+      vec3 shadowTint = mix(pubShadow, rattledShadow, uRattled);
+      vec3 warmTint = vec3(
+        1.04 + uFlowBoost * 0.04 + uTension * 0.03,
+        1.01 + uFlowBoost * 0.015,
+        0.95 - uFlowBoost * 0.02 - uTension * 0.015
+      );
       col *= mix(shadowTint, warmTint, smoothstep(0.05, 0.52, lum));
 
+      // Subtle golden Flow radiance halo around the board when hot!
+      vec2 vc = vUv - 0.5;
+      if (uFlowBoost > 0.01) {
+        float halo = exp(-dot(vc * vec2(1.15, 1.05), vc * vec2(1.15, 1.05)) * 4.8);
+        col += vec3(0.048, 0.030, 0.007) * uFlowBoost * halo;
+      }
+
       // Ultra-refined ordered Bayer dither ONLY in deep shadow falloff (zero grain/screen-door on lit board & chalk!)
-      float ditherAmt = smoothstep(0.36, 0.03, lum) * 0.42;
-      float levels = 36.0;
+      float ditherAmt = smoothstep(0.34, 0.03, lum) * 0.38;
+      float levels = 38.0;
       float b = bayer4(gl_FragCoord.xy);
       vec3 quantized = floor(col * levels + b * 0.85 + 0.5) / levels;
       col = mix(col, quantized, ditherAmt);
 
-      // Gentle pub vignette framing the cabinet without darkening the board or slate
-      vec2 vc = vUv - 0.5;
-      float vig = 1.0 - dot(vc * vec2(1.05, 1.02), vc * vec2(1.05, 1.02)) * 0.65;
-      col *= clamp(vig, 0.52, 1.02);
+      // Reactive cinema vignette — gently tightens like an Ally-Pally spotlight on 180-Darts & Match Darts!
+      float vigAmt = 0.66 + uTension * 0.44 - uFlowBoost * 0.07;
+      float vig = 1.0 - dot(vc * vec2(1.06, 1.03), vc * vec2(1.06, 1.03)) * vigAmt;
+      col *= clamp(vig, 0.44, 1.03);
 
-      // Whisper-subtle film grain
+      // Whisper-subtle analog pub film grain
       float grain = (hash12(gl_FragCoord.xy + fract(uTime * 17.3) * 100.0) - 0.5) * 0.011;
       col = clamp(col + grain, 0.0, 1.0);
 
@@ -2269,20 +2395,32 @@ function makeSisalBoardTextures() {
   const half = size / 2;
   const scale = half / R_BOARD_EDGE;
 
-  // Outer black surround
-  ctx.fillStyle = '#141618';
+  // Outer matte pub surround
+  ctx.fillStyle = '#14110f';
   ctx.fillRect(0, 0, size, size);
 
-  // Subtle dark surround ring texture
+  const surGrad = ctx.createRadialGradient(half, half, R_DOUBLE_OUT * scale, half, half, R_BOARD_EDGE * scale);
+  surGrad.addColorStop(0, '#161311');
+  surGrad.addColorStop(0.7, '#1c1815');
+  surGrad.addColorStop(1, '#110e0c');
   ctx.beginPath();
   ctx.arc(half, half, R_BOARD_EDGE * scale, 0, Math.PI * 2);
-  ctx.fillStyle = '#181a1d';
+  ctx.fillStyle = surGrad;
   ctx.fill();
 
-  const COL_DARK = '#1c1e22';
-  const COL_CREAM = '#e5d9bc';
-  const COL_RED = '#ad2a25';
-  const COL_GREEN = '#216e3f';
+  // Delicate gilded pinstripe framing the matte surround
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(half, half, (R_BOARD_EDGE - 0.055) * scale, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(218, 178, 102, 0.28)';
+  ctx.lineWidth = 4;
+  ctx.stroke();
+  ctx.restore();
+
+  const COL_DARK = '#181615';
+  const COL_CREAM = '#efe2c3';
+  const COL_RED = '#b0241e';
+  const COL_GREEN = '#1a683b';
 
   function drawWedge(rIn, rOut, i, color) {
     // Canvas angle: 0 at +X, clockwise down (+Y). Sector 0 (20) is at -PI/2 (top).
@@ -2312,7 +2450,12 @@ function makeSisalBoardTextures() {
   ctx.beginPath(); ctx.arc(half, half, R_INNER_BULL * scale, 0, Math.PI * 2);
   ctx.fillStyle = COL_RED; ctx.fill();
 
-  // Organic sisal bristle pores & subtle wear marks (especially around T20/T19!)
+  // Organic sisal bristle pores & subtle pub-match wear patina around T20 (top) & T19 (bottom-left)
+  const rTmid = (R_TREBLE_IN + R_TREBLE_OUT) * 0.5;
+  const t20x = 0, t20y = -rTmid;
+  const a19 = 11 * (Math.PI / 10);
+  const t19x = Math.sin(a19) * rTmid, t19y = -Math.cos(a19) * rTmid;
+
   const img = ctx.getImageData(0, 0, size, size);
   const data = img.data;
   for (let y = 0; y < size; y++) {
@@ -2323,25 +2466,32 @@ function makeSisalBoardTextures() {
       if (r > R_BOARD_EDGE) continue;
       const idx = (y * size + x) * 4;
       const n = ((Math.sin(x * 12.9898 + y * 78.233) * 43758.5453) % 1 + 1) % 1;
-      const fiber = (n - 0.5) * (r <= R_DOUBLE_OUT ? 22 : 12);
-      // Tiny sisal pinhole dimples
-      const pit = n > 0.986 && r <= R_DOUBLE_OUT ? -26 : 0;
-      data[idx]     = Math.max(0, Math.min(255, data[idx] + fiber + pit));
-      data[idx + 1] = Math.max(0, Math.min(255, data[idx + 1] + fiber + pit));
-      data[idx + 2] = Math.max(0, Math.min(255, data[idx + 2] + fiber * 0.9 + pit));
+      const d20 = Math.hypot(dx - t20x, dy - t20y);
+      const d19 = Math.hypot(dx - t19x, dy - t19y);
+      const wear = Math.max(0, 1 - d20 / 0.28) * 0.85 + Math.max(0, 1 - d19 / 0.24) * 0.55;
+      const fiber = (n - 0.5) * (r <= R_DOUBLE_OUT ? (24 + wear * 10) : 12);
+      const pitThresh = 0.985 - wear * 0.022;
+      const pit = n > pitThresh && r <= R_DOUBLE_OUT ? -28 : 0;
+      const patina = wear * 5.5;
+      data[idx]     = Math.max(0, Math.min(255, data[idx] + fiber + pit + patina));
+      data[idx + 1] = Math.max(0, Math.min(255, data[idx + 1] + fiber + pit + patina * 0.85));
+      data[idx + 2] = Math.max(0, Math.min(255, data[idx + 2] + fiber * 0.88 + pit + patina * 0.55));
     }
   }
   ctx.putImageData(img, 0, 0);
 
-  // Subtle painted pub brand stencil on bottom rim of surround
+  // Subtle gilded East End pub brand stencils on top & bottom rim of surround
   ctx.save();
-  ctx.fillStyle = 'rgba(209, 178, 118, 0.34)';
-  ctx.font = 'bold 34px Georgia, serif';
+  ctx.fillStyle = 'rgba(224, 186, 114, 0.38)';
+  ctx.font = '700 26px Georgia, serif';
   ctx.textAlign = 'center';
-  ctx.fillText('OCHE LIGHT · LONDON SISAL', half, half + 2.16 * scale);
+  ctx.fillText('OCHE LIGHT · LONDON SISAL', half, half + 2.10 * scale);
+  ctx.font = '600 19px Georgia, serif';
+  ctx.fillStyle = 'rgba(224, 186, 114, 0.30)';
+  ctx.fillText('EST. 1894 · DOUBLE OUT', half, half - 2.02 * scale);
   ctx.restore();
 
-  // Crisp vintage numerals painted with clean high-contrast pewter-cream highlight on surround
+  // Crisp vintage numerals painted in gilded ivory-cream with deep cast drop shadow
   ctx.save();
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
@@ -2350,9 +2500,9 @@ function makeSisalBoardTextures() {
     const nx = half + Math.sin(theta) * R_NUM_RING * scale;
     const ny = half - Math.cos(theta) * R_NUM_RING * scale;
     ctx.font = '700 88px Georgia, "Times New Roman", serif';
-    ctx.fillStyle = 'rgba(0,0,0,0.92)';
-    ctx.fillText(String(SECTORS[i]), nx + 2, ny + 3);
-    ctx.fillStyle = '#f3ebd7';
+    ctx.fillStyle = 'rgba(0,0,0,0.95)';
+    ctx.fillText(String(SECTORS[i]), nx + 2.5, ny + 3.5);
+    ctx.fillStyle = '#f6ecd4';
     ctx.fillText(String(SECTORS[i]), nx, ny);
   }
   ctx.restore();
@@ -2367,32 +2517,32 @@ function makeSisalBoardTextures() {
   const bctx = bc.getContext('2d');
   const bimg = bctx.createImageData(512, 512);
   for (let i = 0; i < bimg.data.length; i += 4) {
-    const v = 115 + Math.floor(Math.random() * 55);
+    const v = 112 + Math.floor(Math.random() * 62);
     bimg.data[i] = bimg.data[i+1] = bimg.data[i+2] = v;
     bimg.data[i+3] = 255;
   }
   bctx.putImageData(bimg, 0, 0);
   const bumpTex = new THREE.CanvasTexture(bc);
   bumpTex.wrapS = bumpTex.wrapT = THREE.RepeatWrapping;
-  bumpTex.repeat.set(3, 3);
+  bumpTex.repeat.set(3.4, 3.4);
 
   return { colorTex, bumpTex };
 }
 
-function makeWoodTexture(baseHex = '#2c1f16', grainHex = '#1b120c') {
+function makeWoodTexture(baseHex = '#3c2115', grainHex = '#190c07') {
   const c = document.createElement('canvas');
   c.width = 512; c.height = 512;
   const ctx = c.getContext('2d');
   ctx.fillStyle = baseHex;
   ctx.fillRect(0, 0, 512, 512);
-  for (let i = 0; i < 160; i++) {
+  for (let i = 0; i < 190; i++) {
     const x = Math.random() * 512;
-    ctx.strokeStyle = i % 3 === 0 ? 'rgba(110, 76, 44, 0.14)' : grainHex;
-    ctx.lineWidth = 1 + Math.random() * 3.5;
-    ctx.globalAlpha = 0.25 + Math.random() * 0.35;
+    ctx.strokeStyle = i % 4 === 0 ? 'rgba(138, 84, 42, 0.19)' : i % 7 === 0 ? 'rgba(168, 108, 52, 0.11)' : grainHex;
+    ctx.lineWidth = 1 + Math.random() * 3.8;
+    ctx.globalAlpha = 0.24 + Math.random() * 0.38;
     ctx.beginPath();
     ctx.moveTo(x, 0);
-    ctx.bezierCurveTo(x + (Math.random()-0.5)*18, 170, x + (Math.random()-0.5)*18, 340, x + (Math.random()-0.5)*10, 512);
+    ctx.bezierCurveTo(x + (Math.random()-0.5)*20, 170, x + (Math.random()-0.5)*20, 340, x + (Math.random()-0.5)*12, 512);
     ctx.stroke();
   }
   ctx.globalAlpha = 1;
@@ -2406,16 +2556,21 @@ function makeBrickTexture() {
   const c = document.createElement('canvas');
   c.width = 512; c.height = 512;
   const ctx = c.getContext('2d');
-  ctx.fillStyle = '#181e28';
+  // Aged East End pub dark mortar
+  ctx.fillStyle = '#15100d';
   ctx.fillRect(0, 0, 512, 512);
   const rows = 12, cols = 6;
   const bh = 512 / rows, bw = 512 / cols;
   for (let r = 0; r < rows; r++) {
     const off = (r % 2) * (bw * 0.5);
     for (let col = -1; col <= cols; col++) {
-      const shade = 30 + Math.floor(Math.random() * 18);
-      ctx.fillStyle = `rgb(${shade + 6}, ${shade + 4}, ${shade + 10})`;
+      const shade = 28 + Math.floor(Math.random() * 22);
+      const warmBias = Math.floor(Math.random() * 14);
+      ctx.fillStyle = `rgb(${shade + 16 + warmBias}, ${shade + 4 + Math.floor(warmBias * 0.4)}, ${shade})`;
       ctx.fillRect(col * bw + off + 3, r * bh + 3, bw - 6, bh - 6);
+      // Subtle soot-patina top edge on each brick
+      ctx.fillStyle = 'rgba(12, 7, 5, 0.26)';
+      ctx.fillRect(col * bw + off + 3, r * bh + 3, bw - 6, 4);
     }
   }
   const tex = new THREE.CanvasTexture(c);
@@ -2425,13 +2580,70 @@ function makeBrickTexture() {
   return tex;
 }
 
-// Live 2x Retina Slate Chalkboard Canvas on Right Cabinet Door
+// Live 2x Retina Hand-Chalked Welsh Slate Canvas on Right Cabinet Door
 const chalkCanvas = document.createElement('canvas');
 chalkCanvas.width = 1024; chalkCanvas.height = 1536;
 const chalkCtx = chalkCanvas.getContext('2d');
 const chalkTex = new THREE.CanvasTexture(chalkCanvas);
 chalkTex.colorSpace = THREE.SRGBColorSpace;
 chalkTex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+
+let lastChalkDraw = null;
+const CHALK_FONT = '"Caveat", "Bradley Hand", Georgia, cursive';
+const SLATE_SERIF = '"Fraunces", Georgia, serif';
+const SLATE_MONO = '"JetBrains Mono", ui-monospace, monospace';
+
+function drawSlateBackdrop(ctx) {
+  // Deep weathered Welsh pub slate with subtle bottle-charcoal warmth
+  const bg = ctx.createLinearGradient(0, 0, 0, 768);
+  bg.addColorStop(0, '#151c1d');
+  bg.addColorStop(0.55, '#192122');
+  bg.addColorStop(1, '#1c2322');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, 512, 768);
+
+  // Damp-sponge diagonal wipe marks (authentic pub chalk-rag patina)
+  ctx.save();
+  ctx.strokeStyle = 'rgba(236, 228, 206, 0.028)';
+  ctx.lineCap = 'round';
+  for (let i = 0; i < 9; i++) {
+    ctx.lineWidth = 28 + (i % 3) * 14;
+    ctx.beginPath();
+    const y0 = 110 + i * 72;
+    ctx.moveTo(36 + (i % 2) * 28, y0);
+    ctx.quadraticCurveTo(256, y0 - 28 + (i % 3) * 16, 470 - (i % 2) * 24, y0 + 22);
+    ctx.stroke();
+  }
+  // Dusty chalk powder accumulation along the bottom ledge edge
+  const dustGrad = ctx.createLinearGradient(0, 680, 0, 768);
+  dustGrad.addColorStop(0, 'rgba(238, 230, 210, 0)');
+  dustGrad.addColorStop(1, 'rgba(238, 230, 210, 0.085)');
+  ctx.fillStyle = dustGrad;
+  ctx.fillRect(0, 680, 512, 88);
+  ctx.restore();
+
+  // Subtle chalk smudge clouds
+  for (let i = 0; i < 18; i++) {
+    const cx = 64 + ((i * 97) % 384);
+    const cy = 76 + ((i * 151) % 620);
+    const g = ctx.createRadialGradient(cx, cy, 8, cx, cy, 105);
+    g.addColorStop(0, 'rgba(238, 230, 210, 0.032)');
+    g.addColorStop(1, 'rgba(238, 230, 210, 0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, 512, 768);
+  }
+}
+
+function drawChalkText(ctx, text, x, y, color, bloomAlpha = 0.24) {
+  ctx.save();
+  ctx.fillStyle = color;
+  ctx.globalAlpha = bloomAlpha;
+  ctx.fillText(text, x + 0.9, y + 0.8);
+  ctx.fillText(text, x - 0.7, y - 0.5);
+  ctx.globalAlpha = 0.96;
+  ctx.fillText(text, x, y);
+  ctx.restore();
+}
 
 function wrapText(ctx, text, maxW) {
   const words = String(text || '').split(' ');
@@ -2447,81 +2659,70 @@ function wrapText(ctx, text, maxW) {
 }
 
 function renderChalkboard({ header = 'OCHE SLATE', big = '148', sub = '', lines = [], footer = '' }) {
+  lastChalkDraw = { fn: 'single', args: { header, big, sub, lines, footer } };
   const ctx = chalkCtx;
   ctx.save();
   ctx.setTransform(2, 0, 0, 2, 0, 0); // crisp 2x logical scaling over 512x768 layout
-  // Weathered dark slate surface
-  ctx.fillStyle = '#181e26';
-  ctx.fillRect(0, 0, 512, 768);
-  // Subtle chalk smudge clouds
-  for (let i = 0; i < 16; i++) {
-    const g = ctx.createRadialGradient(
-      80 + (i * 97) % 360, 80 + (i * 153) % 600, 10,
-      80 + (i * 97) % 360, 80 + (i * 153) % 600, 120
-    );
-    g.addColorStop(0, 'rgba(232,225,207,0.036)');
-    g.addColorStop(1, 'rgba(232,225,207,0)');
-    ctx.fillStyle = g;
-    ctx.fillRect(0, 0, 512, 768);
-  }
-  // Chalk border frame
-  ctx.strokeStyle = 'rgba(232, 225, 207, 0.34)';
-  ctx.lineWidth = 3;
-  ctx.strokeRect(20, 20, 472, 728);
+  drawSlateBackdrop(ctx);
+
+  // Double-ruled brass/chalk pub slate frame
+  ctx.strokeStyle = 'rgba(236, 224, 196, 0.34)';
+  ctx.lineWidth = 2.6;
+  ctx.strokeRect(18, 18, 476, 732);
+  ctx.strokeStyle = 'rgba(218, 178, 102, 0.22)';
+  ctx.lineWidth = 1.2;
+  ctx.strokeRect(25, 25, 462, 718);
 
   // Header
-  ctx.fillStyle = '#f0ce8c';
-  ctx.font = '700 25px ui-monospace, monospace';
+  ctx.font = `700 24px ${SLATE_SERIF}`;
   ctx.textAlign = 'center';
-  ctx.fillText(header.toUpperCase(), 256, 68);
+  drawChalkText(ctx, header.toUpperCase(), 256, 68, '#f3d28b', 0.2);
 
-  ctx.strokeStyle = 'rgba(232, 225, 207, 0.25)';
+  ctx.strokeStyle = 'rgba(236, 226, 204, 0.28)';
+  ctx.lineWidth = 2;
   ctx.beginPath(); ctx.moveTo(46, 86); ctx.lineTo(466, 86); ctx.stroke();
 
-  // Main chalk score
-  ctx.fillStyle = '#f7f1e1';
-  ctx.font = '700 112px Georgia, serif';
-  ctx.fillText(String(big), 256, 204);
+  // Main hand-chalked score
+  ctx.font = `700 132px ${CHALK_FONT}`;
+  drawChalkText(ctx, String(big), 256, 206, '#faf3e2', 0.28);
 
   if (sub) {
-    ctx.fillStyle = '#e5c586';
-    ctx.font = 'italic 27px Georgia, serif';
-    const subLines = wrapText(ctx, sub, 430);
-    subLines.slice(0, 2).forEach((ln, idx) => ctx.fillText(ln, 256, 250 + idx * 33));
+    ctx.font = `700 32px ${CHALK_FONT}`;
+    const subLines = wrapText(ctx, sub, 434);
+    subLines.slice(0, 2).forEach((ln, idx) => drawChalkText(ctx, ln, 256, 252 + idx * 34, '#ebd093', 0.22));
   }
 
-  ctx.strokeStyle = 'rgba(232, 225, 207, 0.22)';
-  ctx.beginPath(); ctx.moveTo(46, 306); ctx.lineTo(466, 306); ctx.stroke();
+  ctx.strokeStyle = 'rgba(236, 226, 204, 0.22)';
+  ctx.beginPath(); ctx.moveTo(46, 308); ctx.lineTo(466, 308); ctx.stroke();
 
-  // Chalk notes / step trace
+  // Hand-chalked coaching notes / step trace
   ctx.textAlign = 'left';
   let y = 354;
   for (const entry of lines.slice(0, 7)) {
     const isWarn = typeof entry === 'object' && entry.kind === 'warn';
     const isGood = typeof entry === 'object' && entry.kind === 'ok';
     const txt = typeof entry === 'string' ? entry : entry.text;
-    ctx.fillStyle = isWarn ? '#f4b8b0' : isGood ? '#c2f0d0' : '#f2ece0';
-    ctx.font = '26px Georgia, serif';
+    const col = isWarn ? '#f6bbb4' : isGood ? '#c5f4d4' : '#f4eee0';
+    ctx.font = `600 31px ${CHALK_FONT}`;
     const wrapped = wrapText(ctx, txt, 424);
     for (const wln of wrapped) {
-      if (y > 670) break;
-      ctx.fillText(wln, 44, y);
-      y += 35;
+      if (y > 672) break;
+      drawChalkText(ctx, wln, 44, y, col, 0.2);
+      y += 36;
     }
-    y += 10;
+    y += 9;
   }
 
   if (footer) {
     ctx.textAlign = 'center';
-    ctx.fillStyle = 'rgba(183, 213, 238, 0.85)';
-    ctx.font = '21px ui-monospace, monospace';
-    ctx.fillText(footer, 256, 720);
+    ctx.font = `600 19px ${SLATE_MONO}`;
+    drawChalkText(ctx, footer, 256, 720, 'rgba(196, 222, 242, 0.9)', 0.16);
   }
   ctx.restore();
   chalkTex.needsUpdate = true;
 }
 
-// Authentic British Pub Match Chalkboard (Scored | Remaining columns with diagonal chalk strike-throughs!)
+// Authentic British Pub Match Chalkboard (Hand-Chalked Scored | To Go with curved chalk strike-throughs!)
 function renderMatchChalkboard({
   title = 'CHAMPIONSHIP 501',
   leftName = 'YOU',
@@ -2533,40 +2734,45 @@ function renderMatchChalkboard({
   footer = '',
   footer2 = '',
 }) {
+  lastChalkDraw = { fn: 'match', args: { title, leftName, rightName, leftRows, rightRows, pendingLeft, pendingRight, footer, footer2 } };
   const ctx = chalkCtx;
   ctx.save();
   ctx.setTransform(2, 0, 0, 2, 0, 0); // crisp 2x logical scaling over full 1024x1536 HiDPI chalkboard!
-  ctx.fillStyle = '#181e26';
-  ctx.fillRect(0, 0, 512, 768);
-  // Subtle chalk-dust smudge backdrop
-  for (let i = 0; i < 140; i++) {
-    ctx.fillStyle = `rgba(225,222,208,${Math.random() * 0.026})`;
-    ctx.beginPath();
-    ctx.arc(Math.random() * 512, Math.random() * 768, 12 + Math.random() * 44, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  ctx.strokeStyle = 'rgba(232, 225, 207, 0.36)';
-  ctx.lineWidth = 3;
+  drawSlateBackdrop(ctx);
+
+  // Double-ruled pub slate border
+  ctx.strokeStyle = 'rgba(236, 224, 196, 0.36)';
+  ctx.lineWidth = 2.6;
   ctx.strokeRect(18, 18, 476, 732);
+  ctx.strokeStyle = 'rgba(218, 178, 102, 0.22)';
+  ctx.lineWidth = 1.2;
+  ctx.strokeRect(25, 25, 462, 718);
 
   // Title bar
-  ctx.fillStyle = '#f0ce8c';
-  ctx.font = '700 24px ui-monospace, monospace';
+  ctx.font = `700 23px ${SLATE_SERIF}`;
   ctx.textAlign = 'center';
-  ctx.fillText(title.toUpperCase(), 256, 58);
+  drawChalkText(ctx, title.toUpperCase(), 256, 58, '#f3d28b', 0.2);
 
-  ctx.strokeStyle = 'rgba(232, 225, 207, 0.30)';
-  ctx.lineWidth = 2.5;
+  ctx.strokeStyle = 'rgba(236, 226, 204, 0.30)';
+  ctx.lineWidth = 2.4;
   ctx.beginPath(); ctx.moveTo(34, 74); ctx.lineTo(478, 74); ctx.stroke();
 
+  // Organic hand-drawn curved chalk strike-through!
   const drawStrike = (cx, cy, w) => {
     ctx.save();
-    ctx.strokeStyle = 'rgba(232, 225, 207, 0.72)';
-    ctx.lineWidth = 3.2;
     ctx.lineCap = 'round';
+    ctx.strokeStyle = 'rgba(242, 234, 214, 0.32)';
+    ctx.lineWidth = 5.5;
     ctx.beginPath();
-    ctx.moveTo(cx - w * 0.56, cy + 8);
-    ctx.lineTo(cx + w * 0.56, cy - 16);
+    ctx.moveTo(cx - w * 0.56, cy + 7);
+    ctx.quadraticCurveTo(cx - 2, cy - 6, cx + w * 0.56, cy - 17);
+    ctx.stroke();
+
+    ctx.strokeStyle = 'rgba(244, 236, 218, 0.80)';
+    ctx.lineWidth = 2.8;
+    ctx.beginPath();
+    ctx.moveTo(cx - w * 0.54, cy + 8);
+    ctx.quadraticCurveTo(cx + 1, cy - 5, cx + w * 0.55, cy - 16);
     ctx.stroke();
     ctx.restore();
   };
@@ -2578,20 +2784,19 @@ function renderMatchChalkboard({
 
     // Player Name header
     ctx.textAlign = 'center';
-    ctx.fillStyle = '#f3cc7d';
-    ctx.font = bigScale ? '700 28px Georgia, serif' : '700 24px Georgia, serif';
-    ctx.fillText(name.toUpperCase(), midX, 108);
+    ctx.font = bigScale ? `700 28px ${SLATE_SERIF}` : `700 23px ${SLATE_SERIF}`;
+    drawChalkText(ctx, name.toUpperCase(), midX, 108, '#f5d287', 0.2);
 
-    // Sub-headers: SCORED | LEFT
-    ctx.fillStyle = 'rgba(232, 225, 207, 0.52)';
-    ctx.font = '600 13px ui-monospace, monospace';
+    // Sub-headers: SCORED | TO GO
+    ctx.fillStyle = 'rgba(236, 226, 204, 0.55)';
+    ctx.font = `700 12px ${SLATE_MONO}`;
     ctx.fillText('SCORED', scoreX, 132);
     ctx.fillText('TO GO', remX, 132);
 
     // Build visible rows (auto-scroll to last 8 entries if leg gets long!)
     const all = rows.slice();
     if (pending) all.push({ ...pending, isPending: true });
-    const maxVisible = bigScale ? 8 : 8;
+    const maxVisible = 8;
     const visible = all.length > maxVisible ? all.slice(all.length - maxVisible) : all;
 
     const rowH = 58;
@@ -2602,42 +2807,41 @@ function renderMatchChalkboard({
       const isActiveRem = isLast && !r.isPending;
       const hasNextValid = !isLast && !(visible[i + 1].isPending && visible[i + 1].rem === '…');
 
-      // Scored column (left half)
+      // Scored column (left half) — hand-chalked Caveat numerals
       if (r.scored !== null && r.scored !== undefined && r.scored !== '') {
         ctx.textAlign = 'center';
         if (r.scored === '?') {
-          ctx.fillStyle = '#ffd97d';
-          ctx.font = bigScale ? '700 34px ui-monospace, monospace' : '700 29px ui-monospace, monospace';
+          ctx.font = bigScale ? `700 40px ${CHALK_FONT}` : `700 35px ${CHALK_FONT}`;
+          drawChalkText(ctx, '?', scoreX, y + 2, '#ffe08a', 0.26);
         } else if (r.scored === 'BUST') {
-          ctx.fillStyle = '#f29b94';
-          ctx.font = '700 20px ui-monospace, monospace';
+          ctx.font = `700 23px ${CHALK_FONT}`;
+          drawChalkText(ctx, 'BUST', scoreX, y, '#f6a29a', 0.22);
         } else {
           const bigHit = typeof r.scored === 'number' && r.scored >= 100;
-          ctx.fillStyle = r.isPending ? '#9be8b5' : bigHit ? '#ffe39a' : 'rgba(232, 225, 207, 0.78)';
-          ctx.font = bigScale ? '700 30px ui-monospace, monospace' : '700 25px ui-monospace, monospace';
+          const col = r.isPending ? '#a5f0be' : bigHit ? '#ffe79e' : 'rgba(240, 232, 212, 0.84)';
+          ctx.font = bigScale ? `700 38px ${CHALK_FONT}` : `700 33px ${CHALK_FONT}`;
+          drawChalkText(ctx, String(r.scored), scoreX, y + 2, col, 0.22);
         }
-        ctx.fillText(String(r.scored), scoreX, y);
       }
 
-      // Remaining ("TO GO") column (right half)
+      // Remaining ("TO GO") column (right half) — bold hand-chalked Caveat score!
       if (r.rem !== null && r.rem !== undefined && r.rem !== '') {
         ctx.textAlign = 'center';
         if (r.rem === '?') {
-          ctx.fillStyle = '#ffd97d';
-          ctx.font = bigScale ? '700 44px Georgia, serif' : '700 38px Georgia, serif';
-          ctx.fillText('?', remX, y + 2);
+          ctx.font = bigScale ? `700 54px ${CHALK_FONT}` : `700 48px ${CHALK_FONT}`;
+          drawChalkText(ctx, '?', remX, y + 4, '#ffe08a', 0.28);
         } else if (r.rem === '…') {
-          ctx.fillStyle = 'rgba(232, 225, 207, 0.35)';
-          ctx.font = '700 30px Georgia, serif';
+          ctx.fillStyle = 'rgba(236, 226, 204, 0.36)';
+          ctx.font = `700 34px ${CHALK_FONT}`;
           ctx.fillText('…', remX, y);
         } else {
           const isZero = r.rem === 0 || r.rem === 'OUT';
-          ctx.fillStyle = isZero ? '#8ee8ad' : isActiveRem ? '#fff8e6' : 'rgba(232, 225, 207, 0.56)';
+          const col = isZero ? '#92eda8' : isActiveRem ? '#fff9e8' : 'rgba(236, 226, 204, 0.58)';
           ctx.font = isActiveRem || isZero
-            ? (bigScale ? '700 44px Georgia, serif' : '700 38px Georgia, serif')
-            : (bigScale ? '700 34px Georgia, serif' : '700 30px Georgia, serif');
+            ? (bigScale ? `700 54px ${CHALK_FONT}` : `700 48px ${CHALK_FONT}`)
+            : (bigScale ? `700 42px ${CHALK_FONT}` : `700 37px ${CHALK_FONT}`);
           const txt = isZero ? '0 ✓' : String(r.rem);
-          ctx.fillText(txt, remX, y + 2);
+          drawChalkText(ctx, txt, remX, y + 4, col, isActiveRem || isZero ? 0.28 : 0.16);
           if (hasNextValid && !isZero) {
             drawStrike(remX, y, Math.max(46, ctx.measureText(txt).width + 10));
           }
@@ -2649,13 +2853,13 @@ function renderMatchChalkboard({
 
   if (rightRows) {
     // Classic 2-Column Pub 501 Chalkboard (YOU | RIVAL)
-    ctx.strokeStyle = 'rgba(232, 225, 207, 0.34)';
+    ctx.strokeStyle = 'rgba(236, 226, 204, 0.36)';
     ctx.lineWidth = 2.5;
     ctx.beginPath(); ctx.moveTo(256, 76); ctx.lineTo(256, 658); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(34, 142); ctx.lineTo(478, 142); ctx.stroke();
 
     // Subtle thin sub-dividers between SCORED and TO GO inside each half
-    ctx.strokeStyle = 'rgba(232, 225, 207, 0.14)';
+    ctx.strokeStyle = 'rgba(236, 226, 204, 0.16)';
     ctx.lineWidth = 1.5;
     ctx.beginPath(); ctx.moveTo(132, 142); ctx.lineTo(132, 656); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(366, 142); ctx.lineTo(366, 656); ctx.stroke();
@@ -2664,53 +2868,105 @@ function renderMatchChalkboard({
     drawColumn(rightName, rightRows, pendingRight, 262, 222, false);
   } else {
     // Single-Player 301/260 Pub Countdown Slate (SCORED | TO GO)
-    ctx.strokeStyle = 'rgba(232, 225, 207, 0.30)';
+    ctx.strokeStyle = 'rgba(236, 226, 204, 0.32)';
     ctx.lineWidth = 2.2;
     ctx.beginPath(); ctx.moveTo(34, 142); ctx.lineTo(478, 142); ctx.stroke();
-    ctx.strokeStyle = 'rgba(232, 225, 207, 0.22)';
+    ctx.strokeStyle = 'rgba(236, 226, 204, 0.22)';
     ctx.beginPath(); ctx.moveTo(222, 142); ctx.lineTo(222, 656); ctx.stroke();
 
     drawColumn(leftName, leftRows, pendingLeft, 44, 424, true);
   }
 
   // Bottom chalk tray note area
-  ctx.strokeStyle = 'rgba(232, 225, 207, 0.26)';
+  ctx.strokeStyle = 'rgba(236, 226, 204, 0.28)';
   ctx.lineWidth = 2;
   ctx.beginPath(); ctx.moveTo(34, 662); ctx.lineTo(478, 662); ctx.stroke();
   ctx.textAlign = 'center';
   if (footer) {
-    ctx.fillStyle = '#f2ece0';
-    ctx.font = '700 20px ui-monospace, monospace';
-    ctx.fillText(footer.slice(0, 38), 256, 696);
+    ctx.font = `700 18.5px ${SLATE_MONO}`;
+    drawChalkText(ctx, footer.slice(0, 38), 256, 695, '#f6eedc', 0.16);
   }
   if (footer2) {
-    ctx.fillStyle = '#e5c586';
-    ctx.font = 'italic 20px Georgia, serif';
-    ctx.fillText(footer2.slice(0, 42), 256, 728);
+    ctx.font = `700 26px ${CHALK_FONT}`;
+    drawChalkText(ctx, footer2.slice(0, 44), 256, 731, '#ebd093', 0.2);
   }
 
   ctx.restore();
   chalkTex.needsUpdate = true;
 }
 
+// Re-render live 3D chalkboard once Caveat & Fraunces finish loading so hand-chalked glyphs snap in cleanly!
+if (document.fonts && document.fonts.ready) {
+  document.fonts.ready.then(() => {
+    if (!lastChalkDraw) return;
+    if (lastChalkDraw.fn === 'match') renderMatchChalkboard(lastChalkDraw.args);
+    else renderChalkboard(lastChalkDraw.args);
+  });
+}
+
 /* ============================================================================
    6. BUILD THE 3D PUB SCENE, CABINET, BOARD, LAMPS & PROPS
    ============================================================================ */
-const woodTex = makeWoodTexture('#3e2b1d', '#23160d');
-const darkWoodMat = new THREE.MeshStandardMaterial({ map: woodTex, roughness: 0.76, metalness: 0.08 });
-const brassMat = new THREE.MeshStandardMaterial({ color: 0xc9a258, roughness: 0.38, metalness: 0.78 });
-const wireMat = new THREE.MeshStandardMaterial({ color: 0xc2b393, roughness: 0.42, metalness: 0.72 });
+const woodTex = makeWoodTexture('#452315', '#1b0c06');
+const darkWoodMat = new THREE.MeshStandardMaterial({ map: woodTex, roughness: 0.64, metalness: 0.10 });
+const brassMat = new THREE.MeshStandardMaterial({ color: 0xd8ad5a, roughness: 0.29, metalness: 0.84 });
+const wireMat = new THREE.MeshStandardMaterial({ color: 0xd0c2a2, roughness: 0.32, metalness: 0.82 });
 
-// Back Pub Brick & Wainscot Wall
+// Back Pub Victorian Brick Wall + Peripheral Warm Leaded Pub-Glass Mullion Glow
 const brickWall = new THREE.Mesh(
-  new THREE.PlaneGeometry(22, 13),
-  new THREE.MeshStandardMaterial({ map: makeBrickTexture(), roughness: 0.95, metalness: 0.02 })
+  new THREE.PlaneGeometry(24, 14),
+  new THREE.MeshStandardMaterial({ map: makeBrickTexture(), roughness: 0.94, metalness: 0.02 })
 );
 brickWall.position.set(0.4, 0, -1.2);
 brickWall.receiveShadow = true;
 scene.add(brickWall);
 
-// Open Dark-Oak Dartboard Cabinet
+function makePubGlassTexture() {
+  const c = document.createElement('canvas');
+  c.width = 256; c.height = 512;
+  const ctx = c.getContext('2d');
+  // Warm candlelit East End bar-room amber glass glow
+  const g = ctx.createRadialGradient(128, 250, 20, 128, 250, 240);
+  g.addColorStop(0, 'rgba(226, 152, 64, 0.52)');
+  g.addColorStop(0.55, 'rgba(146, 78, 26, 0.28)');
+  g.addColorStop(1, 'rgba(26, 14, 8, 0.04)');
+  ctx.fillStyle = '#150d08';
+  ctx.fillRect(0, 0, 256, 512);
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, 256, 512);
+  // Victorian diamond leadwork mullions
+  ctx.strokeStyle = 'rgba(22, 13, 8, 0.78)';
+  ctx.lineWidth = 5;
+  for (let y = -256; y < 768; y += 64) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(256, y + 256); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(256, y); ctx.lineTo(0, y + 256); ctx.stroke();
+  }
+  // Etched brass-frosted arch motif
+  ctx.strokeStyle = 'rgba(246, 210, 136, 0.22)';
+  ctx.lineWidth = 4;
+  ctx.strokeRect(18, 18, 220, 476);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+const pubGlassMat = new THREE.MeshBasicMaterial({ map: makePubGlassTexture(), transparent: true, opacity: 0.56 });
+[-7.1, 8.0].forEach(wx => {
+  const winGroup = new THREE.Group();
+  winGroup.position.set(wx, 0.45, -1.14);
+  const pane = new THREE.Mesh(new THREE.PlaneGeometry(2.6, 5.2), pubGlassMat);
+  winGroup.add(pane);
+  const frameTop = new THREE.Mesh(new THREE.BoxGeometry(2.85, 0.16, 0.16), darkWoodMat);
+  frameTop.position.y = 2.62; winGroup.add(frameTop);
+  const frameBot = new THREE.Mesh(new THREE.BoxGeometry(2.85, 0.18, 0.2), darkWoodMat);
+  frameBot.position.y = -2.62; winGroup.add(frameBot);
+  [-1.34, 1.34].forEach(sx => {
+    const stile = new THREE.Mesh(new THREE.BoxGeometry(0.16, 5.4, 0.16), darkWoodMat);
+    stile.position.x = sx; winGroup.add(stile);
+  });
+  scene.add(winGroup);
+});
+
+// Open Mahogany Dartboard Cabinet
 const cabinetGroup = new THREE.Group();
 scene.add(cabinetGroup);
 
@@ -2720,14 +2976,20 @@ backBoard.position.set(0, 0, -0.52);
 backBoard.receiveShadow = true;
 cabinetGroup.add(backBoard);
 
-// Cabinet frame rails (top, bottom, left, right)
-const topRail = new THREE.Mesh(new THREE.BoxGeometry(5.5, 0.32, 0.65), darkWoodMat);
+// Cabinet frame rails (top, bottom, left, right) + subtle brass inner molding
+const topRail = new THREE.Mesh(new THREE.BoxGeometry(5.55, 0.34, 0.68), darkWoodMat);
 topRail.position.set(0, 2.7, -0.3); topRail.castShadow = true; topRail.receiveShadow = true;
 cabinetGroup.add(topRail);
+const topBrassTrim = new THREE.Mesh(new THREE.BoxGeometry(5.3, 0.04, 0.04), brassMat);
+topBrassTrim.position.set(0, 2.53, 0.04);
+cabinetGroup.add(topBrassTrim);
 
-const botRail = new THREE.Mesh(new THREE.BoxGeometry(5.5, 0.34, 0.72), darkWoodMat);
+const botRail = new THREE.Mesh(new THREE.BoxGeometry(5.55, 0.34, 0.72), darkWoodMat);
 botRail.position.set(0, -2.72, -0.26); botRail.castShadow = true; botRail.receiveShadow = true;
 cabinetGroup.add(botRail);
+const botBrassTrim = new THREE.Mesh(new THREE.BoxGeometry(5.3, 0.04, 0.04), brassMat);
+botBrassTrim.position.set(0, -2.55, 0.08);
+cabinetGroup.add(botBrassTrim);
 
 const leftSide = new THREE.Mesh(new THREE.BoxGeometry(0.26, 5.4, 0.62), darkWoodMat);
 leftSide.position.set(-2.62, 0, -0.3); leftSide.castShadow = true; leftSide.receiveShadow = true;
@@ -2737,7 +2999,7 @@ const rightSide = new THREE.Mesh(new THREE.BoxGeometry(0.26, 5.4, 0.62), darkWoo
 rightSide.position.set(2.62, 0, -0.3); rightSide.castShadow = true; rightSide.receiveShadow = true;
 cabinetGroup.add(rightSide);
 
-// Open Left Door (angled slightly forward into shadow)
+// Open Left Door (Bottle-Green Baize Inset + Live 3D Brass Dart Rack + Pinned Vintage Beer Mats!)
 const leftDoorPivot = new THREE.Group();
 leftDoorPivot.position.set(-2.72, 0, 0.02);
 leftDoorPivot.rotation.y = 0.26;
@@ -2746,13 +3008,137 @@ const leftDoor = new THREE.Mesh(new THREE.BoxGeometry(2.35, 5.15, 0.16), darkWoo
 leftDoor.position.set(-1.18, 0, 0); leftDoor.castShadow = true; leftDoor.receiveShadow = true;
 leftDoorPivot.add(leftDoor);
 const leftInset = new THREE.Mesh(
-  new THREE.BoxGeometry(1.9, 4.45, 0.06),
-  new THREE.MeshStandardMaterial({ color: 0x161b22, roughness: 0.92 })
+  new THREE.BoxGeometry(1.92, 4.48, 0.06),
+  new THREE.MeshStandardMaterial({ color: 0x13271c, roughness: 0.96, metalness: 0.02 })
 );
 leftInset.position.set(-1.18, 0, 0.08);
 leftDoorPivot.add(leftInset);
+// Thin brass inset border rails on left baize door
+[2.24, -2.24].forEach(by => {
+  const bar = new THREE.Mesh(new THREE.BoxGeometry(1.96, 0.032, 0.04), brassMat);
+  bar.position.set(-1.18, by, 0.11);
+  leftDoorPivot.add(bar);
+});
 
-// Open Right Door with Live 3D Slate Chalkboard
+// Procedural Vintage East End Beer Mats pinned on Left Door Baize!
+function makeBeerMatTexture(kind = 'round') {
+  const c = document.createElement('canvas');
+  c.width = c.height = 256;
+  const ctx = c.getContext('2d');
+  if (kind === 'round') {
+    ctx.clearRect(0, 0, 256, 256);
+    ctx.beginPath(); ctx.arc(128, 128, 120, 0, Math.PI * 2);
+    ctx.fillStyle = '#efe0be'; ctx.fill();
+    ctx.strokeStyle = '#99261d'; ctx.lineWidth = 8; ctx.stroke();
+    ctx.beginPath(); ctx.arc(128, 128, 102, 0, Math.PI * 2);
+    ctx.strokeStyle = '#b48234'; ctx.lineWidth = 3; ctx.stroke();
+    ctx.fillStyle = '#8b2119'; ctx.font = '800 26px Georgia, serif'; ctx.textAlign = 'center';
+    ctx.fillText('OCHE LIGHT', 128, 96);
+    ctx.fillStyle = '#2a1b10'; ctx.font = '700 18px Georgia, serif';
+    ctx.fillText('EAST END ALE', 128, 134);
+    ctx.fillStyle = '#7e551e'; ctx.font = '700 16px monospace';
+    ctx.fillText('EST. 1894', 128, 168);
+  } else {
+    ctx.fillStyle = '#183a27';
+    ctx.fillRect(8, 8, 240, 240);
+    ctx.strokeStyle = '#e5bf72'; ctx.lineWidth = 8;
+    ctx.strokeRect(18, 18, 220, 220);
+    ctx.strokeStyle = 'rgba(244, 224, 178, 0.48)'; ctx.lineWidth = 2;
+    ctx.strokeRect(30, 30, 196, 196);
+    ctx.fillStyle = '#f6e3b4'; ctx.font = '800 28px Georgia, serif'; ctx.textAlign = 'center';
+    ctx.fillText('DOUBLE', 128, 102);
+    ctx.fillText('OUT', 128, 136);
+    ctx.fillStyle = '#dfb462'; ctx.font = '700 22px monospace';
+    ctx.fillText('· 501 ·', 128, 180);
+  }
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
+const matSquare = new THREE.Mesh(
+  new THREE.PlaneGeometry(0.60, 0.60),
+  new THREE.MeshStandardMaterial({ map: makeBeerMatTexture('square'), roughness: 0.92 })
+);
+matSquare.position.set(-1.02, 1.62, 0.114);
+matSquare.rotation.z = 0.14;
+leftDoorPivot.add(matSquare);
+const pin2 = new THREE.Mesh(new THREE.SphereGeometry(0.024, 10, 10), brassMat);
+pin2.position.set(-1.06, 1.85, 0.128);
+leftDoorPivot.add(pin2);
+
+const matRound = new THREE.Mesh(
+  new THREE.CircleGeometry(0.38, 32),
+  new THREE.MeshStandardMaterial({ map: makeBeerMatTexture('round'), roughness: 0.92, transparent: true })
+);
+matRound.position.set(-0.56, 1.78, 0.122);
+matRound.rotation.z = -0.12;
+leftDoorPivot.add(matRound);
+const pin1 = new THREE.Mesh(new THREE.SphereGeometry(0.024, 10, 10), brassMat);
+pin1.position.set(-0.56, 2.07, 0.136);
+leftDoorPivot.add(pin1);
+
+// Live 3D Brass & Mahogany 3-Dart Rack on Left Cabinet Door (darts vanish 3 -> 2 -> 1 -> 0 as you throw!)
+const dartRackGroup = new THREE.Group();
+dartRackGroup.position.set(-0.68, 0.16, 0.14);
+leftDoorPivot.add(dartRackGroup);
+
+const rackBlock = new THREE.Mesh(new THREE.BoxGeometry(0.82, 0.14, 0.16), darkWoodMat);
+dartRackGroup.add(rackBlock);
+const rackBrassRail = new THREE.Mesh(new THREE.BoxGeometry(0.84, 0.036, 0.175), brassMat);
+rackBrassRail.position.set(0, 0.075, 0.004);
+dartRackGroup.add(rackBrassRail);
+[-0.34, 0.34].forEach(rx => {
+  const stud = new THREE.Mesh(new THREE.SphereGeometry(0.022, 8, 8), brassMat);
+  stud.position.set(rx, -0.01, 0.088);
+  dartRackGroup.add(stud);
+});
+
+const rackDarts = [];
+const rackTipMat = new THREE.MeshStandardMaterial({ color: 0xc2c8ce, roughness: 0.28, metalness: 0.88 });
+const rackBarrelMat = new THREE.MeshStandardMaterial({ color: 0x868c94, roughness: 0.34, metalness: 0.86 });
+const rackStemMat = new THREE.MeshStandardMaterial({ color: 0x181412, roughness: 0.6 });
+const rackFlightMat = new THREE.MeshStandardMaterial({ color: 0xa4261e, roughness: 0.65, side: THREE.DoubleSide });
+const rackTrimMat = new THREE.MeshStandardMaterial({ color: 0xebca7e, roughness: 0.42, metalness: 0.45, side: THREE.DoubleSide });
+
+[-0.22, 0, 0.22].forEach((dx, idx) => {
+  const dg = new THREE.Group();
+  dg.position.set(dx, 0.09, 0.01);
+  dg.rotation.z = (idx - 1) * -0.035;
+  dg.rotation.x = 0.08;
+  // Steel point seated in brass socket
+  const pt = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.004, 0.16, 8), rackTipMat);
+  pt.position.y = 0.04; dg.add(pt);
+  // Knurled barrel + brass grip rings
+  const bar = new THREE.Mesh(new THREE.CylinderGeometry(0.028, 0.022, 0.34, 12), rackBarrelMat);
+  bar.position.y = 0.27; dg.add(bar);
+  [0.20, 0.28, 0.36].forEach(ry => {
+    const gr = new THREE.Mesh(new THREE.TorusGeometry(0.028, 0.005, 6, 12), brassMat);
+    gr.rotation.x = Math.PI / 2; gr.position.y = ry; dg.add(gr);
+  });
+  // Stem + brass collar
+  const st = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.015, 0.30, 8), rackStemMat);
+  st.position.y = 0.57; dg.add(st);
+  const col = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.015, 0.04, 8), brassMat);
+  col.position.y = 0.68; dg.add(col);
+  // 4-vane cross flights standing tall in the rack!
+  for (let v = 0; v < 4; v++) {
+    const fin = new THREE.Mesh(new THREE.PlaneGeometry(0.11, 0.27), rackFlightMat);
+    fin.position.set(0, 0.80, 0);
+    fin.rotation.y = v * (Math.PI / 2);
+    fin.translateX(0.055);
+    dg.add(fin);
+    const band = new THREE.Mesh(new THREE.PlaneGeometry(0.108, 0.026), rackTrimMat);
+    band.position.set(0, 0.87, 0);
+    band.rotation.y = v * (Math.PI / 2);
+    band.translateX(0.055);
+    dg.add(band);
+  }
+  dartRackGroup.add(dg);
+  rackDarts.push(dg);
+});
+
+// Open Right Door with Live 3D Hand-Chalked Welsh Slate
 const rightDoorPivot = new THREE.Group();
 rightDoorPivot.position.set(2.72, 0, 0.02);
 rightDoorPivot.rotation.y = -0.36;
@@ -2769,29 +3155,59 @@ slateMesh.position.set(1.32, 0.04, 0.095);
 slateMesh.receiveShadow = true;
 rightDoorPivot.add(slateMesh);
 
-// Chalk ledge under slate + white chalk stub
-const chalkLedge = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.12, 0.24), darkWoodMat);
+// Chalk ledge under slate + white chalk stub + damp yellow pub chalk sponge!
+const chalkLedge = new THREE.Mesh(new THREE.BoxGeometry(2.14, 0.12, 0.26), darkWoodMat);
 chalkLedge.position.set(1.32, -2.26, 0.16);
 rightDoorPivot.add(chalkLedge);
 const chalkStick = new THREE.Mesh(
   new THREE.CylinderGeometry(0.03, 0.03, 0.34, 8),
-  new THREE.MeshStandardMaterial({ color: 0xe9e2cf, roughness: 0.95 })
+  new THREE.MeshStandardMaterial({ color: 0xf0e9d6, roughness: 0.95 })
 );
 chalkStick.rotation.z = Math.PI / 2 - 0.08;
-chalkStick.position.set(1.12, -2.18, 0.2);
+chalkStick.position.set(1.06, -2.18, 0.21);
 rightDoorPivot.add(chalkStick);
+
+function makeSpongeTexture() {
+  const c = document.createElement('canvas');
+  c.width = c.height = 128;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#c89b38';
+  ctx.fillRect(0, 0, 128, 128);
+  for (let i = 0; i < 160; i++) {
+    ctx.fillStyle = i % 3 === 0 ? 'rgba(92, 62, 16, 0.45)' : 'rgba(232, 200, 108, 0.32)';
+    ctx.beginPath();
+    ctx.arc(Math.random() * 128, Math.random() * 128, 1.5 + Math.random() * 4, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  // Dusty chalk smudge across one edge of the damp sponge
+  const sm = ctx.createRadialGradient(34, 34, 4, 34, 34, 58);
+  sm.addColorStop(0, 'rgba(244, 240, 228, 0.55)');
+  sm.addColorStop(1, 'rgba(244, 240, 228, 0)');
+  ctx.fillStyle = sm;
+  ctx.fillRect(0, 0, 128, 128);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+const chalkSponge = new THREE.Mesh(
+  new THREE.BoxGeometry(0.36, 0.13, 0.19),
+  new THREE.MeshStandardMaterial({ map: makeSpongeTexture(), roughness: 0.96, metalness: 0.0 })
+);
+chalkSponge.position.set(1.76, -2.135, 0.20);
+chalkSponge.rotation.y = 0.15;
+rightDoorPivot.add(chalkSponge);
 
 // Brass Cabinet Hinges
 [-1.7, 1.7].forEach(hy => {
   [-2.74, 2.74].forEach(hx => {
-    const hinge = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 0.36, 10), brassMat);
+    const hinge = new THREE.Mesh(new THREE.CylinderGeometry(0.048, 0.048, 0.38, 12), brassMat);
     hinge.position.set(hx, hy, 0.05);
     cabinetGroup.add(hinge);
   });
 });
 
-// Wooden pub shelf & moody props (brass dart caddy + dark pint glass silhouette in shadow)
-const pubShelf = new THREE.Mesh(new THREE.BoxGeometry(11.5, 0.22, 1.1), darkWoodMat);
+// Wooden pub shelf & atmospheric props (brass dart caddy + amber London bitter pint glass)
+const pubShelf = new THREE.Mesh(new THREE.BoxGeometry(11.8, 0.24, 1.15), darkWoodMat);
 pubShelf.position.set(0.4, -3.52, -0.35);
 pubShelf.receiveShadow = true;
 scene.add(pubShelf);
@@ -2803,42 +3219,101 @@ scene.add(brassCup);
 
 const pintGlass = new THREE.Mesh(
   new THREE.CylinderGeometry(0.24, 0.17, 0.85, 18),
-  new THREE.MeshStandardMaterial({ color: 0x3b2612, roughness: 0.32, metalness: 0.15, transparent: true, opacity: 0.72 })
+  new THREE.MeshStandardMaterial({ color: 0x7b3e12, emissive: 0x261002, emissiveIntensity: 0.45, roughness: 0.24, metalness: 0.12, transparent: true, opacity: 0.78 })
 );
 pintGlass.position.set(4.15, -2.98, 0.05);
 pintGlass.castShadow = true;
 scene.add(pintGlass);
 const pintFoam = new THREE.Mesh(
-  new THREE.CylinderGeometry(0.235, 0.23, 0.12, 18),
-  new THREE.MeshStandardMaterial({ color: 0xcab993, roughness: 0.95 })
+  new THREE.CylinderGeometry(0.236, 0.23, 0.13, 18),
+  new THREE.MeshStandardMaterial({ color: 0xe6d7b6, roughness: 0.94 })
 );
 pintFoam.position.set(4.15, -2.53, 0.05);
 scene.add(pintFoam);
 
-// Overhead Vintage Brass Pub Lamp Hood
+// Overhead Victorian Green-Enamel & Brass Gooseneck Oche Lamp + Volumetric Amber Haze Cone
 const lampGroup = new THREE.Group();
 lampGroup.position.set(0, 3.35, 1.65);
 scene.add(lampGroup);
-const lampArm = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 2.1, 10), brassMat);
-lampArm.rotation.x = Math.PI / 2;
-lampArm.position.set(0, 0.18, -1.0);
+
+// Curved brass gooseneck bracket rising from top rail into the green enamel shade
+const gooseCurve = new THREE.CatmullRomCurve3([
+  new THREE.Vector3(0, -0.58, -1.96),
+  new THREE.Vector3(0, 0.42, -1.78),
+  new THREE.Vector3(0, 0.56, -0.82),
+  new THREE.Vector3(0, 0.24, -0.05),
+]);
+const lampArm = new THREE.Mesh(new THREE.TubeGeometry(gooseCurve, 24, 0.042, 10, false), brassMat);
 lampGroup.add(lampArm);
+const lampMount = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.13, 0.08, 16), brassMat);
+lampMount.position.set(0, -0.56, -1.94);
+lampGroup.add(lampMount);
+const lampNeck = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.11, 0.16, 14), brassMat);
+lampNeck.position.set(0, 0.22, -0.04);
+lampNeck.rotation.x = 0.28;
+lampGroup.add(lampNeck);
+
 const lampShade = new THREE.Mesh(
-  new THREE.ConeGeometry(0.62, 0.44, 24, 1, true),
-  new THREE.MeshStandardMaterial({ color: 0x1d4029, roughness: 0.55, metalness: 0.25, side: THREE.DoubleSide })
+  new THREE.ConeGeometry(0.65, 0.46, 28, 1, true),
+  new THREE.MeshStandardMaterial({ color: 0x164226, roughness: 0.38, metalness: 0.28, side: THREE.DoubleSide })
 );
 lampShade.rotation.x = 0.34;
 lampGroup.add(lampShade);
-const lampRim = new THREE.Mesh(new THREE.TorusGeometry(0.62, 0.025, 8, 28), brassMat);
+const lampRim = new THREE.Mesh(new THREE.TorusGeometry(0.65, 0.026, 8, 32), brassMat);
 lampRim.rotation.x = Math.PI / 2 + 0.34;
-lampRim.position.set(0, -0.2, 0.07);
+lampRim.position.set(0, -0.21, 0.075);
 lampGroup.add(lampRim);
 const lampBulb = new THREE.Mesh(
-  new THREE.SphereGeometry(0.14, 12, 12),
-  new THREE.MeshBasicMaterial({ color: 0xffd792 })
+  new THREE.SphereGeometry(0.145, 14, 14),
+  new THREE.MeshBasicMaterial({ color: 0xffe0a3 })
 );
 lampBulb.position.set(0, -0.1, 0.03);
 lampGroup.add(lampBulb);
+
+// Silky Volumetric Amber Oche Lamp Cone (soft view-normal Fresnel edge & vertical dissipation!)
+const lampConeMat = new THREE.ShaderMaterial({
+  uniforms: {
+    uColor: { value: new THREE.Color(0xffd07a) },
+    uIntensity: { value: 0.13 },
+  },
+  vertexShader: `
+    varying vec2 vUv;
+    varying vec3 vNormalV;
+    varying vec3 vViewDir;
+    void main() {
+      vUv = uv;
+      vec4 mvPos = modelViewMatrix * vec4(position, 1.0);
+      vNormalV = normalize(normalMatrix * normal);
+      vViewDir = normalize(-mvPos.xyz);
+      gl_Position = projectionMatrix * mvPos;
+    }
+  `,
+  fragmentShader: `
+    precision highp float;
+    uniform vec3 uColor;
+    uniform float uIntensity;
+    varying vec2 vUv;
+    varying vec3 vNormalV;
+    varying vec3 vViewDir;
+    void main() {
+      // Smooth vertical falloff from bright bulb mouth (vUv.y = 1) down to invisible floor (vUv.y = 0)
+      float vert = smoothstep(0.0, 0.82, vUv.y) * smoothstep(1.0, 0.88, vUv.y);
+      // Soft edge fade so cone edges never look hard-edged
+      float fresnel = pow(abs(dot(normalize(vNormalV), normalize(vViewDir))), 1.75);
+      float alpha = vert * fresnel * uIntensity;
+      gl_FragColor = vec4(uColor, alpha);
+    }
+  `,
+  transparent: true,
+  depthWrite: false,
+  blending: THREE.AdditiveBlending,
+  side: THREE.DoubleSide,
+});
+const lampCone = new THREE.Mesh(new THREE.ConeGeometry(2.75, 5.1, 32, 1, true), lampConeMat);
+lampCone.position.set(0, -2.55, -0.78);
+lampCone.rotation.x = 0.24;
+lampCone.renderOrder = 2;
+lampGroup.add(lampCone);
 
 // The 3D Sisal Dartboard!
 const boardGroup = new THREE.Group();
@@ -2901,13 +3376,13 @@ for (let i = 0; i < 20; i++) {
 }
 
 /* ============================================================================
-   7. LIGHTING (EVEN PRO BOARD ILLUMINATION + WARM/COOL PUB CONTRAST)
+   7. LIGHTING (2700K EAST END PUB TUNGSTEN + MAHOGANY/BOTTLE AMBIENT)
    ============================================================================ */
-// Balanced cool blue-slate ambient so oak cabinet, left door & brick silhouettes read crisply
-scene.add(new THREE.HemisphereLight(0x88acd4, 0x252d3b, 0.92));
+// Warm candlelit pub hemisphere so mahogany cabinet, baize door & London brick read richly
+scene.add(new THREE.HemisphereLight(0xc29e74, 0x1c1410, 0.86));
 
-// Primary Warm-Neutral Overhead Pub Lamp (broad, even coverage across top & middle of board)
-const mainSpot = new THREE.SpotLight(0xffe6c2, 42, 22, Math.PI / 2.15, 0.85, 0.85);
+// Primary Warm 2700K Overhead Oche Lamp (broad, even coverage across top & middle of board)
+const mainSpot = new THREE.SpotLight(0xffe2b4, 44, 22, Math.PI / 2.15, 0.85, 0.85);
 mainSpot.position.set(0.05, 3.05, 3.85);
 mainSpot.target.position.set(0.15, -0.15, 0);
 mainSpot.castShadow = true;
@@ -2919,21 +3394,21 @@ scene.add(mainSpot);
 scene.add(mainSpot.target);
 
 // Soft Lower-Front Corona Fill (eliminates dark bottom half on 19/3/17 so entire 360 deg board reads evenly!)
-const boardLowerFill = new THREE.PointLight(0xffe9ca, 18.0, 12, 1.15);
+const boardLowerFill = new THREE.PointLight(0xffe5bd, 18.5, 12, 1.15);
 boardLowerFill.position.set(0.0, -1.65, 3.75);
 scene.add(boardLowerFill);
 
-// Dedicated Even Warm Fill for the 3D Slate Chalkboard Door
-const slateLight = new THREE.PointLight(0xfff0d4, 24.0, 12, 1.2);
+// Dedicated Even Warm Fill for the 3D Hand-Chalked Welsh Slate Door
+const slateLight = new THREE.PointLight(0xffedd0, 25.0, 12, 1.2);
 slateLight.position.set(3.65, 0.65, 3.35);
 scene.add(slateLight);
 
-// Cool Blue-Slate Pub Accent Light from Left (sculpts left oak door, brass hinges & brick wall)
-const coldRim = new THREE.DirectionalLight(0x7caae0, 1.65);
+// Sculptural Pub Wall Sconce Glow from Left (illuminates bottle-green baize, vintage beer mats & 3D brass dart rack!)
+const coldRim = new THREE.DirectionalLight(0x7c9eb2, 1.05);
 coldRim.position.set(-5.8, 2.0, 3.4);
 scene.add(coldRim);
-const leftDoorAccent = new THREE.PointLight(0x6d99cc, 10.5, 10, 1.3);
-leftDoorAccent.position.set(-4.35, 0.4, 2.8);
+const leftDoorAccent = new THREE.PointLight(0xe5ab5a, 12.5, 10.5, 1.25);
+leftDoorAccent.position.set(-4.1, 0.75, 2.75);
 scene.add(leftDoorAccent);
 
 // Floating Chalk-Dust Motes inside the Warm Lamp Cone
@@ -5015,6 +5490,9 @@ function updateHudStats() {
   elGhostPill.classList.toggle('active-player', !state.ghostMode);
   const dartPips = elDartIcons.querySelectorAll('.dart-pip');
   dartPips.forEach((p, idx) => p.classList.toggle('spent', idx >= state.dartsLeft));
+  if (typeof rackDarts !== 'undefined' && rackDarts.length) {
+    rackDarts.forEach((d, idx) => { d.visible = idx < state.dartsLeft; });
+  }
 
   // Render Practice Pips / Pub Trial / 501 Scoreboard Bar
   if (state.spectator.active) {
@@ -8107,6 +8585,8 @@ function renderDrawer() {
 let cameraKick = 0;
 let lastTime = performance.now();
 let clockSec = 0;
+let curTension = 0;
+let curRattled = 0;
 const curCamPos = BASE_CAM.clone();
 const curLookAt = BASE_LOOK.clone();
 
@@ -8205,13 +8685,37 @@ function animate(now) {
     state.challengeStartMs = now;
   }
 
-  // Subtle organic tungsten lamp warmth + Oche Flow boost (balanced, even illumination!)
-  const flowBoost = Math.min(1, mastery.data.streak / 8);
+  // Reactive Cinema Lighting: Oche Flow warmth, Ally-Pally 180/Match-Dart spotlight tension & Rattled chill!
+  const flowBoost = Math.min(1, (mastery.data.streak || 0) / 8);
+  const chNow = state.challenge;
+  const is180Dart = Boolean(
+    chNow && Array.isArray(chNow.darts) && chNow.darts.length === 2 &&
+    chNow.darts[0].bed === 'T20' && chNow.darts[1].bed === 'T20'
+  );
+  const isMatchDart = Boolean(
+    chNow && (chNow.kind === 'match501' || chNow.kind === 'countdown301') &&
+    chNow.phase === 'throw' && !state.ghostMode &&
+    chNow.rem > 0 && (chNow.rem === 50 || (chNow.rem <= 40 && chNow.rem % 2 === 0))
+  );
+  const targetTension = (is180Dart || isMatchDart) ? 1.0 : 0.0;
+  const targetRattled = (state.mathFlow && state.mathFlow.tier === 'cold' && !state.ghostMode) ? 1.0 : 0.0;
+  const moodAlpha = 1 - Math.exp(-dt * 3.4);
+  curTension += (targetTension - curTension) * moodAlpha;
+  curRattled += (targetRattled - curRattled) * moodAlpha;
+
   const flicker = 1 + Math.sin(clockSec * 7.3) * 0.012 + Math.sin(clockSec * 19.7) * 0.007;
-  mainSpot.intensity = (42 + flowBoost * 8) * flicker;
-  boardLowerFill.intensity = (18.0 + flowBoost * 3.0) * flicker;
-  slateLight.intensity = (24.0 + flowBoost * 3.5) * flicker;
+  mainSpot.intensity = (44 + flowBoost * 7.5 + curTension * 9.5) * flicker;
+  boardLowerFill.intensity = (18.5 + flowBoost * 3.0 + curTension * 2.0) * flicker;
+  slateLight.intensity = (25.0 + flowBoost * 3.5 - curTension * 3.0) * flicker;
+  leftDoorAccent.intensity = Math.max(5.5, 12.5 + flowBoost * 1.5 - curTension * 5.0);
+  if (typeof lampConeMat !== 'undefined') {
+    lampConeMat.uniforms.uIntensity.value = (0.115 + flowBoost * 0.065 + curTension * 0.075) * flicker;
+  }
+  dustMat.opacity = 0.36 + flowBoost * 0.28 + curTension * 0.16;
+  dustMat.size = 0.038 + flowBoost * 0.012;
   postMat.uniforms.uFlowBoost.value = flowBoost;
+  postMat.uniforms.uTension.value = curTension;
+  postMat.uniforms.uRattled.value = curRattled;
   postMat.uniforms.uTime.value = clockSec;
 
   // Gently pulse highlighted target beds on the 3D board so cues read effortlessly
