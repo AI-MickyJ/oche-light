@@ -174,7 +174,7 @@ async function run() {
   assert(d6Lbls.right === 'OUT' && d6Lbls.high === '13' && d6Lbls.low === '10', `D6 axis labels mismatch: ${JSON.stringify(d6Lbls)}`);
   assert(engine.subtractionMethodInfo(301, 85).badge === 'Method: -100, +?', 'Round-100 subtraction method badge');
   assert(engine.subtractionMethodInfo(301, 57).badge === 'Method: -60, +?', 'Round-up tens subtraction method badge');
-  for (const domId of ['aim-row-focus', 'aim-row-horiz', 'aim-row-vert', 'aim-f-needle', 'aim-h-needle', 'aim-v-needle', 'aim-flow-pill', 'aim-low-lbl', 'aim-high-lbl', 'aim-tac-row', 'aim-lie-pill', 'aim-bias-btn', 'chalk-assist', 'chalk-assist-btn']) {
+  for (const domId of ['aim-row-focus', 'aim-row-horiz', 'aim-row-vert', 'aim-f-needle', 'aim-h-needle', 'aim-v-needle', 'aim-flow-pill', 'aim-low-lbl', 'aim-high-lbl', 'aim-tac-row', 'aim-lie-pill', 'aim-bias-btn', 'chalk-assist', 'chalk-assist-btn', 'np-eq', 'np-val', 'np-autocall-btn', 'intro-skip-btn', 'briefing-demo']) {
     assert(idxHtml.includes(`id="${domId}"`), `Missing DOM element #${domId}`);
   }
   // Unified Chalk Chain (Croupier Snap, Chunk Hop) & Universal Slip Recovery assertions
@@ -278,13 +278,39 @@ async function run() {
     assert(aft.route2.reduce((s, c) => s + engine.bedValue(c), 0) === aft.rem1, `170 Down ${gs} 2-dart route sums to ${aft.rem1}`);
   }
 
-  // Cockney Trev Chatterbox Studio Voice Pack verification
+  // Phase 7: Interactive Chalk-Talk Intros, 3-Act 8-Pip Staircase, Complexity Par & Adaptive Auto Pace
+  for (const lvl of ['LEVEL_1', 'LEVEL_2', 'LEVEL_3', 'LEVEL_4', 'LEVEL_5', 'LEVEL_6']) {
+    const demo = engine.getLevelIntroDemo(lvl);
+    assert(demo && demo.challenge && demo.challenge.isIntroDemo && demo.coachLines.length >= 2, `getLevelIntroDemo(${lvl}) valid`);
+    assert(engine.getPipBandForStage(lvl, 0).act === 1, `${lvl} pip 0 -> Act 1`);
+    assert(engine.getPipBandForStage(lvl, 3).act === 2, `${lvl} pip 3 -> Act 2`);
+    assert(engine.getPipBandForStage(lvl, 6).act === 3, `${lvl} pip 6 -> Act 3`);
+  }
+  assert(engine.getLevelIntroDemo('LEVEL_7') === null, 'LEVEL_7 has no 1-shot intro demo');
+  const parEasySub = engine.computeComplexityParMs({ kind: 'countdown301', phase: 'chalk_rem', startScore: 301, visitTotal: 60, chalkSpeedMs: 13500 }, true);
+  const parBorrowSub = engine.computeComplexityParMs({ kind: 'countdown301', phase: 'chalk_rem', startScore: 243, visitTotal: 87, chalkSpeedMs: 13500 }, true);
+  assert(parBorrowSub > parEasySub + 4000, `Complex borrow subtraction (${parBorrowSub}ms) should get more fair par than round -60 (${parEasySub}ms)`);
+  const parSame3 = engine.computeComplexityParMs({ kind: 'marking', item: { darts: ['S20', 'S20', 'S20'] }, speedMs: 8500 }, false);
+  const parDistinct3 = engine.computeComplexityParMs({ kind: 'marking', item: { darts: ['T17', 'S13', '25'] }, speedMs: 8500 }, false);
+  assert(parDistinct3 > parSame3 + 3000, `3-distinct-bed visit (${parDistinct3}ms) should get more fair par than triple S20 (${parSame3}ms)`);
+  let ad = { ...engine.DEFAULT_ADAPTIVE_STAGE };
+  for (let k = 0; k < 3; k++) ad = engine.updateAdaptiveStage(ad, { correct: true, ratio: 0.45, ms: 1600 });
+  assert(ad.mult < engine.DEFAULT_ADAPTIVE_STAGE.mult && ad.pbMs === 1600, `Adaptive tightens after 3 fast clean calls (mult=${ad.mult})`);
+  const tightMult = ad.mult;
+  ad = engine.updateAdaptiveStage(ad, { correct: false, ratio: 1.0, ms: 4200, timedOut: true });
+  ad = engine.updateAdaptiveStage(ad, { correct: false, ratio: 1.0, ms: 4200, timedOut: true });
+  assert(ad.mult > tightMult, `Adaptive eases +15% after 2 misses (mult=${ad.mult} > ${tightMult})`);
+  assert(engine.computeAdaptiveMultiplier({ mult: 0.1 }) === 0.72 && engine.computeAdaptiveMultiplier({ mult: 9.0 }) === 2.10, 'Adaptive mult clamps cleanly to [0.72, 2.10]');
+
+  // Cockney Trev & Bev Chatterbox Studio Voice Pack verification
   const voiceDir = path.join(ROOT, 'assets', 'trev_voice');
   const manifestPath = path.join(voiceDir, 'manifest.json');
   assert(fs.existsSync(manifestPath), 'Missing assets/trev_voice/manifest.json');
   const voiceManifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
   const clipIds = Object.keys(voiceManifest.clips || {});
-  assert(clipIds.length >= 90, `Expected >=90 Cockney Trev studio clips (got ${clipIds.length})`);
+  assert(clipIds.length >= 111, `Expected >=111 Cockney Trev & Bev studio clips (got ${clipIds.length})`);
+  const bevClips = clipIds.filter(id => id.startsWith('bev_'));
+  assert(bevClips.length === 14, `Expected 14 Bev banter clips (got ${bevClips.length})`);
   for (const cid of clipIds) {
     const fp = path.join(voiceDir, `${cid}.mp3`);
     assert(fs.existsSync(fp) && fs.statSync(fp).size > 2000, `Missing or tiny MP3 clip: ${cid}.mp3`);
@@ -293,11 +319,14 @@ async function run() {
     ...[...rawScript.matchAll(/clipId:\s*['"]([a-z0-9_]+)['"]/g)].map(m => m[1]),
     ...[...rawScript.matchAll(/cid:\s*['"]([a-z0-9_]+)['"]/g)].map(m => m[1]),
   ];
-  assert(usedClipIds.length >= 75, `Expected >=75 wired clipId/deck references in index.html (got ${usedClipIds.length})`);
+  assert(usedClipIds.length >= 90, `Expected >=90 wired clipId/deck references in index.html (got ${usedClipIds.length})`);
+  for (const bc of bevClips) {
+    assert(usedClipIds.includes(bc), `Bev clip "${bc}" is not wired in index.html!`);
+  }
   for (const cid of usedClipIds) {
     assert(cid in voiceManifest.clips, `index.html references missing clipId "${cid}"`);
   }
-  console.log(`PASS: Cockney Trev Chatterbox voice pack (${clipIds.length} MP3 clips, ${usedClipIds.length} wired call sites & deck items)`);
+  console.log(`PASS: Cockney Trev & Bev Chatterbox voice pack (${clipIds.length} MP3 clips incl. 14 Bev clips, ${usedClipIds.length} wired call sites & deck items)`);
   console.log('PASS: Curriculum, auditor, 3-beat physics, subtraction method, maths-flow, FDI outer-ring & Phase 6 mechanics assertions (all green)');
 
   // 4. Smoke test all 5 physics bots

@@ -1796,3 +1796,260 @@ export function build170GauntletStep(score) {
     resolveAfterOpener,
   };
 }
+
+/* ============================================================================
+   INTERACTIVE CHALK-TALK INTROS, 3-ACT 8-PIP STAIRCASE & ADAPTIVE PAR ENGINE
+   ============================================================================ */
+
+export function getLevelIntroDemo(stageId) {
+  if (stageId === 'LEVEL_1') {
+    return {
+      stageId,
+      title: 'Chalk-Talk · Doubles (2×)',
+      hook: 'Every double is 2× the outer ring — tap glowing D16 (32), the king of halving doubles!',
+      coachLines: [
+        'Double = outer narrow ring (2×)',
+        'D16 = 32 → halves cleanly: 16→8→4→2→1',
+        'Untimed warm-up: click D16 on the board!',
+      ],
+      challenge: {
+        kind: 'double_find', id: 'INTRO_L1', target: 'D16', val: 32, speedMs: 8000,
+        cue: 'D16 = 2 × 16 = 32 — halves all the way to D1!', isIntroDemo: true,
+      },
+    };
+  }
+  if (stageId === 'LEVEL_2') {
+    return {
+      stageId,
+      title: 'Chalk-Talk · Trebles (3×)',
+      hook: 'Trebles sit on the inner thin ring — hit T19 (57), just 3 less than T20 (60)!',
+      coachLines: [
+        'Treble = inner narrow ring (3×)',
+        'Anchor steps of 3: T20=60, T19=57, T18=54',
+        'Untimed warm-up: click T19 on the board!',
+      ],
+      challenge: {
+        kind: 'treble_find', id: 'INTRO_L2', target: 'T19', val: 57, speedMs: 8000,
+        cue: 'T19 = 3 × 19 = 57 (one step below T20 = 60!)', isIntroDemo: true,
+      },
+    };
+  }
+  if (stageId === 'LEVEL_3') {
+    return {
+      stageId,
+      title: 'Chalk-Talk · Snap the Easy Pair',
+      hook: 'Never count 1 + 2 + 3! Snap the 2 easy darts first (T20+S20 = 80), then add the 3rd (+5 = 85)!',
+      coachLines: [
+        '1. Snap the amber pair: T20 + S20 = 80',
+        '2. Add the 3rd dart on top: 80 + 5 = 85',
+        'Untimed warm-up: type 85 (auto-calls!)',
+      ],
+      challenge: {
+        kind: 'marking',
+        item: {
+          id: 'INTRO_L3', cat: 'core', darts: ['T20', 'S20', 'S5'], total: 85, groupIdx: [0, 1],
+          cue: 'Snap T20 + S20 = 80, then add S5 -> 85!',
+        },
+        speedMs: 12000, isIntroDemo: true,
+      },
+    };
+  }
+  if (stageId === 'LEVEL_4') {
+    return {
+      stageId,
+      title: 'Chalk-Talk · The −100, +? Hop',
+      hook: 'Chalk 241 − 85 the pub way: knock 100 off first (141), then add back the 15 spare → 156!',
+      coachLines: [
+        'Step 1: T20 + S20 + S5 = 85',
+        'Step 2: 241 − 100 = 141, then +15 = 156!',
+        'Untimed warm-up: call 85, then try 156!',
+      ],
+      challenge: {
+        kind: 'countdown301', id: 'INTRO_L4', startScore: 241, visitMode: 'chalker',
+        visit: {
+          darts: ['T20', 'S20', 'S5'], total: 85, groupIdx: [0, 1],
+          cue: 'Snap T20 + S20 = 80, then add S5 -> 85!',
+        },
+        speedMs: 14000, chalkSpeedMs: 14000, isIntroDemo: true,
+      },
+    };
+  }
+  if (stageId === 'LEVEL_5') {
+    return {
+      stageId,
+      title: 'Chalk-Talk · Rule of 25 (60s FDI)',
+      hook: 'On any 60s finish, your Treble + Double ALWAYS add to 25! For 65, 19 + 6 = 25 (T19 D6)!',
+      coachLines: [
+        '60s Rule of 25: Treble + Double = 25',
+        'On 65, T19 is ringed in gold → find partner 6!',
+        'Untimed warm-up: tap outer number 6 now!',
+      ],
+      challenge: {
+        kind: 'fdi_pair', id: 'INTRO_L5', score: 65, variant: 'partner',
+        speedMs: 10000, isIntroDemo: true,
+      },
+    };
+  }
+  if (stageId === 'LEVEL_6') {
+    const item124 = TON_PLUS_BY_SCORE[124] || TON_PLUS_ITEMS[0];
+    return {
+      stageId,
+      title: 'Chalk-Talk · Rule of 40 Bridge',
+      hook: 'Drop the leading 1 and add +40 for T20! On 124: 24 + 40 = 64 → T16 (48) + D8 (16)!',
+      coachLines: [
+        'Rule of 40 (T20): drop the 1, add +40',
+        '124 → 24 + 40 = 64 → 60s FDI (16 + 8 = 24)',
+        'Untimed warm-up: tap T20 → T16 → D8!',
+      ],
+      challenge: {
+        kind: 'tonplus', item: item124, speedMs: 10000, isIntroDemo: true,
+      },
+    };
+  }
+  return null;
+}
+
+const PIP_ACT_META = {
+  LEVEL_1: [
+    { act: 1, tag: 'ACT 1/3 · FOUNDATION', short: 'Top Doubles (D20–D15)', focus: 'Core match doubles 20 down to 15 & Bull' },
+    { act: 2, tag: 'ACT 2/3 · PUB TWIST', short: 'Halving Escapes & Neighbors', focus: 'Inside-miss halving + wire neighbors' },
+    { act: 3, tag: 'ACT 3/3 · COLD MIX', short: 'Full Clock Cold Mix', focus: 'All doubles + trouble beds before Trial' },
+  ],
+  LEVEL_2: [
+    { act: 1, tag: 'ACT 1/3 · FOUNDATION', short: 'Power Trebles (T20–T15)', focus: 'High-frequency scoring trebles 20–15' },
+    { act: 2, tag: 'ACT 2/3 · PUB TWIST', short: 'Wire Neighbors & T14/T13', focus: 'Stray wire trebles (T5,T1,T7,T3,T14)' },
+    { act: 3, tag: 'ACT 3/3 · COLD MIX', short: 'Full Clock Cold Mix', focus: 'All T1–T20 fast recall before Trial' },
+  ],
+  LEVEL_3: [
+    { act: 1, tag: 'ACT 1/3 · FOUNDATION', short: 'Matched Core Pairs', focus: 'Spot 2-dart pairs (4×–9× on 20/19/18/17)' },
+    { act: 2, tag: 'ACT 2/3 · PUB TWIST', short: 'Stray Misses & Bull/25', focus: 'Real pub drifts (1,5,3,7) + Bull (50)/25' },
+    { act: 3, tag: 'ACT 3/3 · COLD MIX', short: 'Cold Pub Visits', focus: 'Unscripted 3-dart totals at match pace' },
+  ],
+  LEVEL_4: [
+    { act: 1, tag: 'ACT 1/3 · FOUNDATION', short: 'Clean Chalker Hops', focus: 'Round -100/-60 hops on clean visits' },
+    { act: 2, tag: 'ACT 2/3 · PUB TWIST', short: 'Your Throw + Bogey Watch', focus: 'Throw 3 darts + dodge 179–189 bogeys' },
+    { act: 3, tag: 'ACT 3/3 · COLD MIX', short: 'Live 260 Countdown', focus: 'Full throw-and-chalk rhythm before Trial' },
+  ],
+  LEVEL_5: [
+    { act: 1, tag: 'ACT 1/3 · FOUNDATION', short: 'Fav Double & 60s (Rule 25)', focus: 'Below-60 setups + 60s Rule of 25 pairs' },
+    { act: 2, tag: 'ACT 2/3 · PUB TWIST', short: '70s/80s FDIs & Sod\'s Law', focus: 'Rule of 30/35 No-Peek + single-miss saves' },
+    { act: 3, tag: 'ACT 3/3 · COLD MIX', short: 'Full 2-Dart Blend', focus: 'All ≤110 outs + tricky red outlaws' },
+  ],
+  LEVEL_6: [
+    { act: 1, tag: 'ACT 1/3 · FOUNDATION', short: 'Rule of 40 & 43 Bridges', focus: 'Drop the 1, +40 (T20) or +43 (T19)' },
+    { act: 2, tag: 'ACT 2/3 · PUB TWIST', short: '5-Treble Audits & Bogeys', focus: '101–109 splash traps + teen covers' },
+    { act: 3, tag: 'ACT 3/3 · COLD MIX', short: 'Full 101–170 Mix', focus: 'Bridges, traps & bogeys cold before Trial' },
+  ],
+};
+
+export function getPipBandForStage(stageId, pips = 0) {
+  const list = PIP_ACT_META[stageId];
+  const idx = pips < 3 ? 0 : pips < 6 ? 1 : 2;
+  if (!list) {
+    return {
+      act: idx + 1,
+      tag: idx === 0 ? 'ACT 1/3 · FOUNDATION' : idx === 1 ? 'ACT 2/3 · PUB TWIST' : 'ACT 3/3 · COLD MIX',
+      short: idx === 0 ? 'Foundation' : idx === 1 ? 'Pub Twist' : 'Cold Mix',
+      focus: '',
+      guidedBoost: idx === 0,
+    };
+  }
+  return { ...list[idx], guidedBoost: idx === 0 };
+}
+
+// Fair Complexity-Weighted Par Time (ms): harder carries, borrows, and 3-distinct-bed sums earn extra fair seconds!
+export function computeComplexityParMs(ch, isMathPhase = false) {
+  if (!ch) return 3600;
+  let base = isMathPhase
+    ? (ch.chalkSpeedMs || (ch.missPrompt ? 9500 : 14000))
+    : (ch.speedMs || 3400);
+
+  if (!isMathPhase && (ch.kind === 'double_find' || ch.kind === 'treble_find')) {
+    const p = parseBedCode(ch.target || '');
+    if (p && p.sector && [17, 14, 13, 11, 9, 7].includes(p.sector)) base += 650;
+    else if (p && p.sector && [20, 10, 5, 16].includes(p.sector)) base -= 200;
+  } else if (ch.kind === 'double_val' || ch.kind === 'treble_val') {
+    const p = parseBedCode(ch.target || '');
+    if (p && p.sector && [20, 10, 5, 15].includes(p.sector)) base -= 450;
+    else if (p && p.sector && [19, 18, 17, 14, 13].includes(p.sector)) base += 950;
+  } else if (ch.kind === 'marking' || (isMathPhase && (ch.phase === 'chalk_visit' || ch.phase === 'mark_rival'))) {
+    const darts = ch.kind === 'marking'
+      ? (ch.item ? ch.item.darts : [])
+      : (ch.phase === 'mark_rival' ? (ch.rivalVisitDarts || []) : (ch.darts || []));
+    if (darts && darts.length === 3) {
+      const uniq = new Set(darts).size;
+      if (uniq === 1) base -= 1600; // e.g. S20+S20+S20 or T20+T20+T20
+      else if (uniq === 3) base += 1800; // 3 distinct beds
+      const hasOddTreble = darts.some(d => /^T(19|18|17|14|13|16|12|9|7)$/.test(d));
+      const hasBullMix = darts.some(d => d === '25' || d === 'BULL') && darts.some(d => bedValue(d) % 5 !== 0);
+      if (hasOddTreble) base += 950;
+      if (hasBullMix) base += 900;
+    }
+  } else if (isMathPhase && (ch.phase === 'chalk_rem' || ch.phase === 'miss_check' || ch.missPrompt)) {
+    const start = ch.phase === 'chalk_rem' ? ch.startScore
+      : ch.phase === 'miss_check' ? (ch.afterOpen ? ch.afterOpen.rem1 : ch.missPromptFrom)
+      : (ch.item ? ch.item.score : 100);
+    const sub = ch.phase === 'chalk_rem' ? ch.visitTotal
+      : ch.phase === 'miss_check' ? (ch.afterOpen ? ch.afterOpen.miss2Val : bedValue(ch.missSingle || 'S20'))
+      : (ch.item ? bedValue('S' + ch.item.route[0].slice(1)) : 20);
+    if (Number.isFinite(start) && Number.isFinite(sub)) {
+      if (sub % 10 === 0) {
+        base -= 2100; // clean multiple of 10 (e.g. -60, -100, -40)
+      } else {
+        const onesBorrow = (start % 10) < (sub % 10);
+        const crossesHundred = Math.floor(start / 100) !== Math.floor((start - sub) / 100) && sub < 100;
+        if (onesBorrow) base += 2200;
+        if (crossesHundred) base += 1200;
+      }
+    }
+  } else if (ch.kind === 'board_audit') {
+    base += 1400; // 5-treble danger matrix needs quick scan
+  } else if ((ch.kind === 'tonplus' || ch.kind === 'gauntlet170') && !isMathPhase) {
+    const open = ch.item && ch.item.open ? ch.item.open[0] : (ch.step ? ch.step.primary : 'T20');
+    if (open && open !== 'T20') base += 1100; // +43 / +46 / Bull openers
+  }
+
+  return Math.max(isMathPhase ? 4600 : 2100, Math.round(base));
+}
+
+// Personalized Adaptive Pace: tightens ~6% after 3 fast clean calls, eases +15% after 2 misses/timeouts!
+export const DEFAULT_ADAPTIVE_STAGE = Object.freeze({
+  mult: 1.35,
+  fastStreak: 0,
+  missStreak: 0,
+  pbMs: 99999,
+  samples: 0,
+});
+
+export function updateAdaptiveStage(prev = null, { correct = true, ratio = 0.6, ms = 0, usedHint = false, timedOut = false } = {}) {
+  const cur = { ...DEFAULT_ADAPTIVE_STAGE, ...(prev || {}) };
+  cur.samples = (cur.samples || 0) + 1;
+  if (correct && !usedHint && ms > 150 && ms < cur.pbMs) {
+    cur.pbMs = Math.round(ms);
+  }
+  if (correct && !usedHint && !timedOut && ratio <= 0.74) {
+    cur.fastStreak = (cur.fastStreak || 0) + 1;
+    cur.missStreak = 0;
+    if (cur.fastStreak >= 3) {
+      cur.mult = Math.max(0.72, +(cur.mult * 0.94).toFixed(3));
+      cur.fastStreak = 0;
+    }
+  } else if (!correct || timedOut) {
+    cur.missStreak = (cur.missStreak || 0) + 1;
+    cur.fastStreak = 0;
+    if (cur.missStreak >= 2) {
+      cur.mult = Math.min(2.10, +(cur.mult * 1.15).toFixed(3));
+      cur.missStreak = 0;
+    }
+  } else {
+    cur.fastStreak = 0;
+    cur.missStreak = 0;
+  }
+  return cur;
+}
+
+export function computeAdaptiveMultiplier(stageStats = null) {
+  if (!stageStats || !Number.isFinite(stageStats.mult)) return DEFAULT_ADAPTIVE_STAGE.mult;
+  return Math.max(0.72, Math.min(2.10, stageStats.mult));
+}
+

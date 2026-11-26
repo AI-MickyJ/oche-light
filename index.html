@@ -216,6 +216,53 @@
   }
   .timer-fill.warn { background: linear-gradient(90deg, #b85b2c, #f0a152); }
   .timer-fill.urgent { background: linear-gradient(90deg, #9c2b23, #ea5c4f); }
+  .timer-fill.learn { background: linear-gradient(90deg, #4f946d, #d8b56c, #f5dea4); box-shadow: 0 0 8px rgba(216, 181, 108, 0.42); }
+  .timer-sec.learn { color: #b5f0c8; }
+  .intro-skip-btn {
+    display: none; pointer-events: auto; white-space: nowrap; flex-shrink: 0;
+    padding: 2px 8px; border-radius: 99px; cursor: pointer;
+    border: 1px solid rgba(242, 210, 139, 0.72);
+    background: linear-gradient(180deg, rgba(168, 122, 46, 0.42), rgba(92, 62, 18, 0.56));
+    color: #fff3d2; font-family: var(--font-mono); font-size: 9.5px; font-weight: 700;
+    letter-spacing: 0.5px; text-transform: uppercase; transition: filter 0.14s;
+  }
+  .intro-skip-btn.visible { display: inline-block; }
+  .intro-skip-btn:hover { filter: brightness(1.18); }
+  .drawer-subtabs {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;
+    padding: 4px; border-radius: 7px;
+    background: rgba(14, 10, 7, 0.72); border: 1px solid rgba(207, 162, 85, 0.34);
+  }
+  .dsub-btn {
+    padding: 7px 6px; border-radius: 5px; border: 1px solid transparent;
+    background: transparent; color: var(--chalk-dim); cursor: pointer;
+    font-family: var(--font-mono); font-size: 10.5px; font-weight: 700;
+    letter-spacing: 0.5px; text-transform: uppercase; transition: all 0.14s;
+  }
+  .dsub-btn:hover { color: var(--brass-foil); background: rgba(207, 162, 85, 0.10); }
+  .dsub-btn.active {
+    background: linear-gradient(180deg, rgba(168, 122, 46, 0.44), rgba(92, 62, 18, 0.58));
+    border-color: rgba(242, 210, 139, 0.72); color: #fff5d8;
+  }
+  .armory-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 7px; }
+  .armory-card {
+    padding: 8px 9px; border-radius: 6px; cursor: pointer;
+    background: rgba(22, 16, 12, 0.82); border: 1px solid rgba(207, 162, 85, 0.32);
+    display: flex; flex-direction: column; gap: 3px; transition: all 0.14s; text-align: left;
+  }
+  .armory-card:hover:not(.locked) { border-color: var(--brass-bright); background: rgba(42, 29, 18, 0.88); }
+  .armory-card.equipped { border-color: #8ee5ae; background: rgba(22, 58, 36, 0.45); }
+  .armory-card.locked { opacity: 0.58; cursor: not-allowed; }
+  .armory-top { display: flex; justify-content: space-between; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 10.5px; font-weight: 700; color: var(--brass-foil); }
+  .armory-sub { font-size: 10.5px; color: var(--chalk-dim); line-height: 1.3; }
+  .arcade-card {
+    padding: 10px 11px; border-radius: 7px; cursor: pointer;
+    background: linear-gradient(180deg, rgba(32, 22, 15, 0.9), rgba(18, 12, 8, 0.94));
+    border: 1px solid rgba(207, 162, 85, 0.42);
+    display: flex; flex-direction: column; gap: 4px; transition: all 0.15s; text-align: left;
+  }
+  .arcade-card:hover { border-color: var(--brass-bright); transform: translateY(-1px); }
+  .arcade-card.active { border-color: #8ee5ae; box-shadow: 0 0 14px rgba(126, 224, 160, 0.2); }
 
   /* Right Controls — Brushed Brass Switches */
   .right-stack { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
@@ -359,33 +406,48 @@
   }
   .hover-bed span { color: var(--chalk-dim); font-size: 9.5px; display: block; text-transform: uppercase; }
 
-  /* Vintage Brass-and-Bakelite Pub Till Numpad */
+  /* Vintage Brass-and-Bakelite Pub Till Numpad (Classic 3x4 layout!) */
   .numpad-panel {
-    position: fixed; right: 20px; bottom: 64px; z-index: 26;
-    width: 218px; padding: 11px 11px 10px; display: none; flex-direction: column; gap: 7px;
+    position: fixed; right: 20px; bottom: 56px; z-index: 26;
+    width: 238px; padding: 9px 10px 9px; display: none; flex-direction: column; gap: 6px;
   }
   @media (min-width: 1080px) and (min-height: 760px) {
-    /* Centered sleek horizontal pub-till bar below the dartboard so BOTH left Instructions slate, right Score slate & Coach Trev stay 100% unobstructed! */
+    /* Docked cleanly in the lower-right wing beside the dartboard (below Right Slate score rows) so Board, Left Coach Slate & Trev stay 100% unobstructed! */
     .numpad-panel {
-      left: 50%; right: auto; top: auto; bottom: 58px; transform: translateX(-50%);
-      width: 432px; padding: 8px 11px 9px; gap: 6px;
+      right: 20px; left: auto; top: auto; bottom: 54px; transform: none;
+      width: 246px; padding: 8px 10px 9px; gap: 5px;
     }
-    .numpad-panel .numpad-display { min-height: 34px; padding: 4px 10px; font-size: 20px; }
-    .numpad-panel .numpad-display.placeholder { font-size: 12.5px; line-height: 24px; }
-    .numpad-panel .numpad-grid { grid-template-columns: repeat(6, 1fr); gap: 5px; }
-    .numpad-panel .np-key { padding: 7px 0; font-size: 14px; }
-    .numpad-panel .np-key.enter { font-size: 11.5px; letter-spacing: 0.4px; }
+    .numpad-panel .numpad-display { min-height: 36px; padding: 4px 9px; font-size: 20px; }
+    .numpad-panel .numpad-display.placeholder { font-size: 12px; }
+    .numpad-panel .numpad-grid { grid-template-columns: repeat(3, 1fr); gap: 5px; }
+    .numpad-panel .np-key { padding: 8px 0; font-size: 15px; }
+    .numpad-panel .np-key.enter { font-size: 12px; letter-spacing: 0.5px; }
   }
   .numpad-panel.visible { display: flex; }
+  .numpad-meta {
+    display: flex; align-items: center; justify-content: space-between; gap: 6px;
+    font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.6px; text-transform: uppercase;
+    color: var(--chalk-dim);
+  }
+  .np-autocall-btn {
+    border: 1px solid rgba(207, 162, 85, 0.42); border-radius: 99px;
+    background: rgba(24, 18, 12, 0.72); color: var(--chalk-dim);
+    font-family: var(--font-mono); font-size: 9px; font-weight: 700; letter-spacing: 0.45px;
+    padding: 2px 7px; cursor: pointer; text-transform: uppercase; transition: all 0.14s;
+  }
+  .np-autocall-btn.on {
+    border-color: rgba(126, 224, 160, 0.68); background: rgba(26, 78, 46, 0.62); color: #d6f9e2;
+  }
+  .np-autocall-btn:hover { filter: brightness(1.14); }
   .chalk-assist {
-    display: none; flex-direction: column; gap: 4px;
+    display: none; flex-direction: column; gap: 3px;
     padding: 5px 6px; border-radius: 5px;
     background: linear-gradient(180deg, rgba(207, 162, 85, 0.16), rgba(116, 80, 26, 0.18));
     border: 1px solid rgba(242, 210, 139, 0.5);
   }
   .chalk-assist.visible { display: flex; }
   .chalk-assist-btn {
-    width: 100%; padding: 6px 7px; border-radius: 4px; cursor: pointer;
+    width: 100%; padding: 5px 7px; border-radius: 4px; cursor: pointer;
     background: linear-gradient(180deg, #c28e3c 0%, #865a1a 100%);
     border: 1px solid #f7dc9b; color: #fff8e4;
     box-shadow: 0 2px 0 rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,244,206,0.38);
@@ -401,20 +463,39 @@
   }
   .chalk-assist-readout {
     display: none; font-family: var(--font-mono);
-    font-size: 10px; line-height: 1.32; color: #ffe9ab; text-align: center;
+    font-size: 10px; line-height: 1.28; color: #ffe9ab; text-align: center;
   }
   .chalk-assist-readout.visible { display: block; }
   .numpad-display {
+    display: flex; align-items: center; justify-content: space-between; gap: 6px;
     background: linear-gradient(180deg, #0d1210 0%, #141b17 100%);
     border: 1.5px solid rgba(207, 162, 85, 0.52);
     box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.85), 0 1px 0 rgba(255, 232, 176, 0.14);
-    border-radius: 4px; padding: 7px 10px;
+    border-radius: 4px; padding: 6px 10px;
     font-family: var(--font-mono);
-    font-size: 24px; font-weight: 700; text-align: right; color: #f6edd8;
+    font-size: 22px; font-weight: 700; color: #f6edd8;
     text-shadow: 0 0 10px rgba(242, 210, 139, 0.25);
-    letter-spacing: 2px; min-height: 44px;
+    letter-spacing: 1.5px; min-height: 40px;
+    transition: border-color 0.16s, background 0.16s;
   }
-  .numpad-display.placeholder { color: rgba(240, 230, 207, 0.3); font-size: 13px; line-height: 28px; letter-spacing: 0.4px; font-weight: 500; }
+  .numpad-display .np-eq {
+    font-size: 12px; font-weight: 600; letter-spacing: 0.3px;
+    color: rgba(242, 210, 139, 0.78); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .numpad-display .np-val { margin-left: auto; text-align: right; white-space: nowrap; }
+  .numpad-display.placeholder .np-val { color: rgba(240, 230, 207, 0.32); font-size: 12.5px; letter-spacing: 0.4px; font-weight: 500; }
+  .numpad-display.delta {
+    border-color: rgba(242, 174, 72, 0.92);
+    background: linear-gradient(180deg, #2d1b0c 0%, #1c1209 100%);
+  }
+  .numpad-display.delta .np-val {
+    color: #ffd37d; font-size: 13.5px; letter-spacing: 0.35px; font-weight: 700;
+  }
+  .numpad-display.snap-ok {
+    border-color: rgba(126, 224, 160, 0.92);
+    background: linear-gradient(180deg, #112a1c 0%, #0d1f15 100%);
+  }
+  .numpad-display.snap-ok .np-val { color: #b8ffd1; }
   .numpad-grid {
     display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;
   }
@@ -1040,13 +1121,18 @@
     .sound-pill { padding: 5px 8px; font-size: 9.5px; white-space: nowrap; }
     .hover-bed { display: none; }
     .numpad-panel {
-      left: 8px; right: 8px; transform: none;
-      bottom: 70px; width: auto; padding: 6px 8px; gap: 5px;
+      left: 50%; right: auto; transform: translateX(-50%);
+      bottom: 46px; width: min(296px, calc(100vw - 16px)); padding: 5px 8px 5px; gap: 3px;
     }
-    .numpad-display { min-height: 30px; padding: 3px 9px; font-size: 18px; }
-    .numpad-display.placeholder { font-size: 12px; line-height: 22px; }
-    .numpad-grid { grid-template-columns: repeat(6, 1fr); gap: 5px; }
-    .np-key { padding: 8px 0; font-size: 14px; }
+    .numpad-meta { font-size: 8.5px; }
+    .chalk-assist { padding: 3px 5px; gap: 2px; }
+    .chalk-assist-btn { padding: 3px 6px; font-size: 9.5px; }
+    .chalk-assist-readout { display: none !important; }
+    .numpad-display { min-height: 26px; padding: 2px 8px; font-size: 16px; }
+    .numpad-display .np-eq { font-size: 10.5px; }
+    .numpad-display.placeholder .np-val { font-size: 11px; }
+    .numpad-grid { grid-template-columns: repeat(3, 1fr); gap: 4px; }
+    .np-key { padding: 4px 0; font-size: 13.5px; line-height: 1.15; }
     .np-key.enter { font-size: 11px; letter-spacing: 0.4px; }
     .aim-gauge-panel { bottom: 56px; width: calc(100vw - 16px); padding: 6px 9px 7px; gap: 4px; }
     .aim-track { height: 13px; }
@@ -1105,6 +1191,7 @@
         </span>
         <span id="bridge-tag" class="bridge-tag">Rule of 30</span>
         <span id="rival-tag" class="rival-tag" style="display:none">Rival on D16</span>
+        <button id="intro-skip-btn" class="intro-skip-btn" type="button" title="Skip this 1-shot interactive warm-up">Skip Intro &rarr;</button>
       </div>
       <div class="prompt-main">
         <div id="score-big" class="score-big">148</div>
@@ -1286,13 +1373,17 @@
   </div>
 </div>
 
-<!-- Compact Slate Numpad (Numeric modes + @yourdarts Croupier Snap & Chunk Hop!) -->
+<!-- Compact Slate Numpad (Classic 3x4 + Smart Auto-Call + Croupier Snap & Chunk Hop!) -->
 <div id="numpad-panel" class="plate numpad-panel">
+  <div class="numpad-meta">
+    <span>PUB TILL</span>
+    <button id="np-autocall-btn" class="np-autocall-btn on" type="button" title="Smart Auto-Call: instantly accepts exact right answers without pressing CALL!">Auto-Call ✓</button>
+  </div>
   <div id="chalk-assist" class="chalk-assist">
     <button id="chalk-assist-btn" class="chalk-assist-btn" type="button">Snap Pair [Tab]</button>
     <span id="chalk-assist-readout" class="chalk-assist-readout"></span>
   </div>
-  <div id="numpad-display" class="numpad-display placeholder">Type score…</div>
+  <div id="numpad-display" class="numpad-display placeholder"><span id="np-eq" class="np-eq"></span><span id="np-val" class="np-val">Type score…</span></div>
   <div class="numpad-grid">
     <button class="np-key" data-k="7">7</button><button class="np-key" data-k="8">8</button><button class="np-key" data-k="9">9</button>
     <button class="np-key" data-k="4">4</button><button class="np-key" data-k="5">5</button><button class="np-key" data-k="6">6</button>
@@ -1317,7 +1408,10 @@
     <div id="briefing-body" class="briefing-box"></div>
     <div class="briefing-foot">
       <span class="briefing-note">Countdown paused — tap Rules [R] anytime to review</span>
-      <button id="briefing-start" class="briefing-start">Step Up to the Oche &rarr;</button>
+      <div style="display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end">
+        <button id="briefing-demo" class="chip-btn" type="button" style="display:none">Try 10s Chalk-Talk &rarr;</button>
+        <button id="briefing-start" class="briefing-start">Step Up to the Oche &rarr;</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1354,8 +1448,9 @@ import {
   resolve501Dart, clamp301Dart, audit501Decision,
   FAV_DOUBLES, preferredDoubleSetup, evaluateBedLie, getWireBiasInfo,
   buildOchePrepPrompt, BOARD_AUDIT_101_109, GAUNTLET_170_SCORES, build170GauntletStep,
-} from './src/engine.mjs?v=6b';
-import { BOT_PROFILES, BOT_IDS, simulateBot501Visit } from './src/bots.mjs?v=6b';
+  getLevelIntroDemo, getPipBandForStage, computeComplexityParMs, DEFAULT_ADAPTIVE_STAGE, updateAdaptiveStage, computeAdaptiveMultiplier,
+} from './src/engine.mjs?v=7';
+import { BOT_PROFILES, BOT_IDS, simulateBot501Visit } from './src/bots.mjs?v=7';
 
 /* ============================================================================
    1. 7-LEVEL PUB CAREER & CURRICULUM STAGES (Geometry & Data live in src/engine.mjs)
@@ -1398,6 +1493,11 @@ const LEVEL_TRIAL_TARGETS = {
 const STORAGE_KEY = 'oche_light_mastery_v1';
 
 const DIFFICULTY_PROFILES = {
+  adaptive: {
+    id: 'adaptive', label: 'Adaptive (Auto)', short: 'Auto',
+    timerMult: 1.35, hintPauseMs: 3600, masteryMult: 1.08, ghostStepSec: 1.55,
+    desc: 'Fair auto-scaling clock — tightens ~6% after 3 fast clean calls, eases +15% after 2 misses',
+  },
   relaxed: {
     id: 'relaxed', label: 'Relaxed', short: 'Relaxed',
     timerMult: 2.1, hintPauseMs: 5200, masteryMult: 1.45, ghostStepSec: 2.25,
@@ -1414,7 +1514,33 @@ const DIFFICULTY_PROFILES = {
     desc: 'Fast brass-bell match countdown — trains instant sub-2s recall',
   },
 };
-const DIFFICULTY_ORDER = ['relaxed', 'league', 'pro'];
+const DIFFICULTY_ORDER = ['adaptive', 'relaxed', 'league', 'pro'];
+
+const DART_SETS = [
+  {
+    id: 'pub_brass', name: 'Pub Brass Classics', starsNeeded: 0,
+    desc: 'Oxblood flights, steel tungsten & knurled brass rings',
+    barrelHex: 0x868c94, stemHex: 0x181412, flightHex: 0xa4261e, trimHex: 0xebca7e, pattern: null,
+  },
+  {
+    id: 'oxblood_gold', name: 'East End Gold', starsNeeded: 2,
+    desc: 'Gilded championship barrels with deep burgundy-gold vanes',
+    barrelHex: 0xd4aa52, stemHex: 0x2a1412, flightHex: 0x6b141a, trimHex: 0xffe494, pattern: 'stripe',
+  },
+  {
+    id: 'black_tungsten', name: 'Alley-Cat Black Tungsten', starsNeeded: 5,
+    desc: 'Stealth matte-obsidian tungsten with emerald pub-felt flights',
+    barrelHex: 0x26292e, stemHex: 0x101315, flightHex: 0x196b3d, trimHex: 0xa8f0c0, pattern: 'chevron',
+  },
+  {
+    id: 'bev_leopard', name: "Bev's Leopard-Print", starsNeeded: 8,
+    desc: "Nicked off Bev's best cardigan — rose-brass collar & leopard flights!",
+    barrelHex: 0xb88664, stemHex: 0x281814, flightHex: 0xd8a24a, trimHex: 0x3b2212, pattern: 'leopard',
+  },
+];
+function getDartSetSpec(id = (typeof state !== 'undefined' ? state.dartSet : 'pub_brass')) {
+  return DART_SETS.find(s => s.id === id) || DART_SETS[0];
+}
 
 const PUB_RANKS = [
   { xp: 0,    title: 'Oche Rookie' },
@@ -1533,15 +1659,21 @@ class MasteryEngine {
   load() {
     const base = {
       items: {}, streak: 0, bestStreak: 0, totalCorrect: 0, totalAttempts: 0,
-      xp: 0, difficulty: 'league', welcomed: false, promotedStages: {},
-      levelPips: {}, levelStars: {},
+      xp: 0, difficulty: 'adaptive', welcomed: false, promotedStages: {},
+      levelPips: {}, levelStars: {}, seenIntros: {}, adaptive: {},
+      autoCall: true, dartSet: 'pub_brass', matchFinishThrow: false,
       records: { bestVisit: 0, count180: 0, tonPlusVisits: 0, fastestMs: 99999, legsWon501: 0, bestLegDarts: 999 },
     };
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw);
-        return { ...base, ...parsed, records: { ...base.records, ...(parsed.records || {}) } };
+        return {
+          ...base, ...parsed,
+          seenIntros: { ...base.seenIntros, ...(parsed.seenIntros || {}) },
+          adaptive: { ...base.adaptive, ...(parsed.adaptive || {}) },
+          records: { ...base.records, ...(parsed.records || {}) },
+        };
       }
     } catch (_) {}
     return base;
@@ -1550,15 +1682,31 @@ class MasteryEngine {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(this.data)); } catch (_) {}
   }
   reset() {
-    const diff = this.data.difficulty || 'league';
+    const diff = this.data.difficulty || 'adaptive';
     this.data = {
       items: {}, streak: 0, bestStreak: 0, totalCorrect: 0, totalAttempts: 0,
       xp: 0, difficulty: diff, welcomed: true, promotedStages: {},
-      levelPips: {}, levelStars: {},
+      levelPips: {}, levelStars: {}, seenIntros: {}, adaptive: {},
+      autoCall: this.data.autoCall !== false, dartSet: 'pub_brass', matchFinishThrow: !!this.data.matchFinishThrow,
       records: { bestVisit: 0, count180: 0, tonPlusVisits: 0, fastestMs: 99999, legsWon501: 0, bestLegDarts: 999 },
     };
     this.recentRt = [];
     this.save();
+  }
+  totalStars() {
+    return LEVEL_FLOW_ORDER.reduce((sum, id) => sum + this.getStars(id), 0);
+  }
+  getAdaptive(stageId) {
+    this.data.adaptive = this.data.adaptive || {};
+    return { ...DEFAULT_ADAPTIVE_STAGE, ...(this.data.adaptive[stageId] || {}) };
+  }
+  updateAdaptive(stageId, payload) {
+    if (!stageId) return null;
+    this.data.adaptive = this.data.adaptive || {};
+    const next = updateAdaptiveStage(this.data.adaptive[stageId], payload);
+    this.data.adaptive[stageId] = next;
+    this.save();
+    return next;
   }
   flowMultiplier() {
     const s = this.data.streak || 0;
@@ -2161,19 +2309,55 @@ class PubAudio {
       o.start(t + off); o.stop(t + off + 0.18);
     });
   }
-  playBeatLock(zone = 'green') {
+  playBeatLock(zone = 'green', beatStep = 1) {
     if (!this.enabled || !this.ctx) return;
     const ctx = this.ctx, t = ctx.currentTime;
+    const stepMult = beatStep === 3 ? 1.38 : beatStep === 2 ? 1.18 : 1.0;
     const o = ctx.createOscillator();
     const g = ctx.createGain();
     o.type = zone === 'green' ? 'triangle' : zone === 'amber' ? 'sine' : 'sawtooth';
-    const f = zone === 'green' ? 680 : zone === 'amber' ? 420 : 210;
+    const baseF = zone === 'green' ? 560 : zone === 'amber' ? 400 : 210;
+    const f = baseF * stepMult;
     o.frequency.setValueAtTime(f, t);
-    o.frequency.exponentialRampToValueAtTime(zone === 'green' ? f * 1.18 : f * 0.82, t + 0.065);
+    o.frequency.exponentialRampToValueAtTime(zone === 'green' ? f * 1.16 : f * 0.84, t + 0.07);
     g.gain.setValueAtTime(zone === 'red' ? 0.08 : 0.095, t);
-    g.gain.exponentialRampToValueAtTime(0.001, t + 0.075);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.082);
     o.connect(g).connect(ctx.destination);
-    o.start(t); o.stop(t + 0.08);
+    o.start(t); o.stop(t + 0.088);
+  }
+  playFlightClack() {
+    if (!this.enabled || !this.ctx) return;
+    const ctx = this.ctx, t = ctx.currentTime;
+    // Crisp high-frequency polycarbonate flight & tungsten barrel clack on tight dart grouping!
+    const nLen = Math.floor(ctx.sampleRate * 0.045);
+    const buf = ctx.createBuffer(1, nLen, ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < nLen; i++) d[i] = (Math.random() * 2 - 1) * Math.exp(-i / (nLen * 0.16));
+    const s = ctx.createBufferSource(); s.buffer = buf;
+    const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 3400; bp.Q.value = 3.2;
+    const g = ctx.createGain(); g.gain.value = 0.24;
+    s.connect(bp).connect(g).connect(ctx.destination);
+    s.start(t);
+    const o = ctx.createOscillator();
+    const og = ctx.createGain();
+    o.type = 'triangle';
+    o.frequency.setValueAtTime(2450, t);
+    o.frequency.exponentialRampToValueAtTime(1420, t + 0.032);
+    og.gain.setValueAtTime(0.09, t);
+    og.gain.exponentialRampToValueAtTime(0.0008, t + 0.038);
+    o.connect(og).connect(ctx.destination);
+    o.start(t); o.stop(t + 0.042);
+  }
+  setTensionHush(active) {
+    if (this.tensionHushed === active) return;
+    this.tensionHushed = active;
+    if (!this.ambientMaster || !this.ctx) return;
+    const t = this.ctx.currentTime;
+    const target = this.ducked ? 0.22 : (active ? 0.34 : 1.0);
+    try {
+      this.ambientMaster.gain.cancelScheduledValues(t);
+      this.ambientMaster.gain.setTargetAtTime(target, t, 0.28);
+    } catch (_) {}
   }
   ensureVoiceBus() {
     if (!this.ctx) return null;
@@ -2933,13 +3117,24 @@ function renderProgressSlate() {
         ctx.stroke();
       }
     }
-    ctx.font = `700 16px ${SLATE_MONO}`;
-    const pipLbl = stars > 0
-      ? `${formatStars(stars)}  ·  ${pips}/${totalPips} PIPS`
-      : pips >= totalPips
-        ? '8/8 READY — TAKE PUB TRIAL!'
-        : `${pips} / ${totalPips} PIPS TO PUB TRIAL`;
-    drawChalkText(ctx, pipLbl, 256, 178, pips >= totalPips || stars > 0 ? '#a5f0be' : '#f3d28b', 0.18);
+    ctx.font = `700 15px ${SLATE_MONO}`;
+    const isWeak = hasData && state.weakSpotMode;
+    const isIntro = hasData && state.inIntroDemo;
+    const band = (hasData && !isWeak && !isIntro) ? getPipBandForStage(state.stage, pips) : null;
+    const pipLbl = isIntro
+      ? 'CHALK-TALK · UNTIMED DEMO'
+      : isWeak
+        ? 'WEAK-SPOT WARM-UP DRILL'
+        : stars > 0
+          ? `${formatStars(stars)}  ·  ${pips}/${totalPips} PIPS`
+          : pips >= totalPips
+            ? '8/8 READY — TAKE PUB TRIAL!'
+            : `${band ? band.tag : `${pips}/${totalPips} PIPS`}`;
+    drawChalkText(ctx, pipLbl, 256, 174, isIntro || isWeak || pips >= totalPips || stars > 0 ? '#a5f0be' : '#f3d28b', 0.18);
+    if (band && pips < totalPips && !isIntro && !isWeak) {
+      ctx.font = `600 12.5px ${SLATE_MONO}`;
+      drawChalkText(ctx, band.short.toUpperCase().slice(0, 34), 256, 195, 'rgba(236, 224, 196, 0.72)', 0.14);
+    }
   }
 
   ctx.strokeStyle = 'rgba(236, 226, 204, 0.24)';
@@ -2995,6 +3190,71 @@ function renderProgressSlate() {
   ctx.font = `600 24px ${CHALK_FONT}`;
   drawChalkText(ctx, `Fav Double: ${hasData ? state.favDouble : 'D20'}  ·  Flow ${streak}`, 256, 732, 'rgba(236, 226, 204, 0.78)', 0.16);
 
+  ctx.restore();
+  chalkTex.needsUpdate = true;
+}
+
+// Right Cabinet Door (Post-Trial Debrief): Fastest mastered beds vs. beds needing more reps!
+function renderTrialDebriefSlate({ stageShort = 'LEVEL', stars = 2, fastest = [], needsWork = [] }) {
+  lastChalkDraw = { fn: 'debrief', args: { stageShort, stars, fastest, needsWork } };
+  const ctx = chalkCtx;
+  ctx.save();
+  ctx.setTransform(2, 0, 0, 2, 0, 0);
+  drawSlateBackdrop(ctx);
+
+  ctx.strokeStyle = 'rgba(236, 224, 196, 0.36)';
+  ctx.lineWidth = 2.6;
+  ctx.strokeRect(18, 18, 476, 732);
+  ctx.strokeStyle = 'rgba(218, 178, 102, 0.22)';
+  ctx.lineWidth = 1.2;
+  ctx.strokeRect(25, 25, 462, 718);
+
+  ctx.font = `700 22px ${SLATE_SERIF}`;
+  ctx.textAlign = 'center';
+  drawChalkText(ctx, 'TRIAL DEBRIEF', 256, 66, '#f3d28b', 0.2);
+
+  ctx.strokeStyle = 'rgba(236, 226, 204, 0.28)';
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(40, 84); ctx.lineTo(472, 84); ctx.stroke();
+
+  ctx.font = `700 54px ${CHALK_FONT}`;
+  drawChalkText(ctx, `${formatStars(stars)} PASSED!`, 256, 152, '#a5f0be', 0.26);
+  ctx.font = `600 16px ${SLATE_MONO}`;
+  drawChalkText(ctx, stageShort.toUpperCase(), 256, 188, '#ebd093', 0.16);
+
+  ctx.strokeStyle = 'rgba(236, 226, 204, 0.24)';
+  ctx.beginPath(); ctx.moveTo(40, 214); ctx.lineTo(472, 214); ctx.stroke();
+
+  ctx.textAlign = 'left';
+  ctx.font = `700 15px ${SLATE_MONO}`;
+  drawChalkText(ctx, '⚡ SHARPEST BEDS', 44, 254, '#a5f0be', 0.16);
+  let y = 300;
+  const fastList = fastest.length ? fastest : [{ label: 'Clean across the board!', detail: '' }];
+  for (const f of fastList.slice(0, 3)) {
+    ctx.font = `700 32px ${CHALK_FONT}`;
+    drawChalkText(ctx, `✓ ${f.label}${f.detail ? ` (${f.detail})` : ''}`.slice(0, 28), 48, y, '#d4fae0', 0.2);
+    y += 48;
+  }
+
+  y = Math.max(y + 18, 458);
+  ctx.strokeStyle = 'rgba(236, 226, 204, 0.24)';
+  ctx.beginPath(); ctx.moveTo(40, y - 28); ctx.lineTo(472, y - 28); ctx.stroke();
+
+  ctx.font = `700 15px ${SLATE_MONO}`;
+  drawChalkText(ctx, '🎯 DRILL NEXT (WEAK SPOTS)', 44, y + 4, '#ffd37d', 0.16);
+  y += 50;
+  const weakList = needsWork.length ? needsWork : [{ label: 'Zero weak spots spotted!', detail: '' }];
+  for (const w of weakList.slice(0, 3)) {
+    ctx.font = `700 30px ${CHALK_FONT}`;
+    drawChalkText(ctx, `• ${w.label}${w.detail ? ` (${w.detail})` : ''}`.slice(0, 28), 48, y, '#fce2a8', 0.2);
+    y += 46;
+  }
+
+  ctx.strokeStyle = 'rgba(236, 226, 204, 0.24)';
+  ctx.beginPath(); ctx.moveTo(40, 668); ctx.lineTo(472, 668); ctx.stroke();
+  ctx.textAlign = 'center';
+  ctx.font = `600 15px ${SLATE_MONO}`;
+  drawChalkText(ctx, 'TRY WEAK-SPOT WARM-UP IN ARCADE!', 256, 712, '#ebd093', 0.16);
   ctx.restore();
   chalkTex.needsUpdate = true;
 }
@@ -3385,6 +3645,97 @@ const rackBarrelMat = new THREE.MeshStandardMaterial({ color: 0x868c94, roughnes
 const rackStemMat = new THREE.MeshStandardMaterial({ color: 0x181412, roughness: 0.6 });
 const rackFlightMat = new THREE.MeshStandardMaterial({ color: 0xa4261e, roughness: 0.65, side: THREE.DoubleSide });
 const rackTrimMat = new THREE.MeshStandardMaterial({ color: 0xebca7e, roughness: 0.42, metalness: 0.45, side: THREE.DoubleSide });
+
+const flightTexCache = new Map();
+function getFlightPatternTexture(pattern, flightHex, trimHex) {
+  if (!pattern) return null;
+  const key = `${pattern}_${flightHex}_${trimHex}`;
+  if (flightTexCache.has(key)) return flightTexCache.get(key);
+  const c = document.createElement('canvas');
+  c.width = c.height = 256;
+  const ctx = c.getContext('2d');
+  const hexStr = (h) => '#' + Number(h).toString(16).padStart(6, '0');
+  ctx.fillStyle = hexStr(flightHex);
+  ctx.fillRect(0, 0, 256, 256);
+
+  if (pattern === 'leopard') {
+    // Bev's Iconic Leopard-Print Cardigan Flights! Warm ochre base + rich sienna & dark espresso rosettes!
+    const grad = ctx.createLinearGradient(0, 0, 256, 256);
+    grad.addColorStop(0, '#e3ad4e');
+    grad.addColorStop(0.55, '#cf8f34');
+    grad.addColorStop(1, '#b67322');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 256, 256);
+    const spots = [
+      [42, 46, 24], [122, 34, 22], [204, 52, 25],
+      [78, 108, 26], [166, 102, 23], [234, 128, 20],
+      [34, 168, 23], [116, 174, 27], [198, 184, 24],
+      [68, 228, 22], [158, 232, 23], [228, 234, 18],
+    ];
+    spots.forEach(([sx, sy, sr], idx) => {
+      ctx.save();
+      ctx.translate(sx, sy);
+      ctx.rotate((idx * 1.1) % Math.PI);
+      // Warm amber inner core
+      ctx.fillStyle = '#99571c';
+      ctx.beginPath();
+      ctx.ellipse(0, 0, sr * 0.56, sr * 0.44, 0, 0, Math.PI * 2);
+      ctx.fill();
+      // Broken dark espresso C-rings around the rosette
+      ctx.strokeStyle = '#2b160a';
+      ctx.lineWidth = Math.max(4, sr * 0.25);
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.arc(0, 0, sr * 0.72, 0.25, 2.35);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(0, 0, sr * 0.72, 3.15, 5.45);
+      ctx.stroke();
+      ctx.restore();
+    });
+    ctx.strokeStyle = 'rgba(248, 214, 132, 0.75)';
+    ctx.lineWidth = 8;
+    ctx.strokeRect(4, 4, 248, 248);
+  } else if (pattern === 'stripe') {
+    // East End Oxblood Gold double gilded metallic pinstripes
+    ctx.fillStyle = hexStr(trimHex);
+    ctx.fillRect(0, 34, 256, 16);
+    ctx.fillRect(0, 62, 256, 8);
+    ctx.fillRect(0, 198, 256, 12);
+    ctx.strokeStyle = 'rgba(255, 232, 162, 0.5)';
+    ctx.lineWidth = 6;
+    ctx.strokeRect(8, 8, 240, 240);
+  } else if (pattern === 'chevron') {
+    // Alley-Cat Black Tungsten emerald pub-felt chevron
+    ctx.strokeStyle = hexStr(trimHex);
+    ctx.lineWidth = 14;
+    for (let y = 32; y <= 232; y += 54) {
+      ctx.beginPath();
+      ctx.moveTo(0, y + 26);
+      ctx.lineTo(128, y - 10);
+      ctx.lineTo(256, y + 26);
+      ctx.stroke();
+    }
+  }
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  tex.needsUpdate = true;
+  flightTexCache.set(key, tex);
+  return tex;
+}
+
+function applyDartSetToRack(setId) {
+  const spec = getDartSetSpec(setId);
+  rackBarrelMat.color.setHex(spec.barrelHex);
+  rackBarrelMat.roughness = spec.id === 'black_tungsten' ? 0.44 : spec.id === 'oxblood_gold' ? 0.26 : 0.34;
+  rackStemMat.color.setHex(spec.stemHex);
+  const pTex = getFlightPatternTexture(spec.pattern, spec.flightHex, spec.trimHex);
+  rackFlightMat.map = pTex;
+  rackFlightMat.color.setHex(pTex ? 0xffffff : spec.flightHex);
+  rackFlightMat.needsUpdate = true;
+  rackTrimMat.color.setHex(spec.trimHex);
+}
 
 [-0.22, 0, 0.22].forEach((dx, idx) => {
   const dg = new THREE.Group();
@@ -4020,11 +4371,25 @@ scene.add(dartPoolGroup);
 
 function buildDartMesh(accentHex = 0x8f231e) {
   const g = new THREE.Group();
+  const isPlayerDart = accentHex === null || accentHex === undefined || accentHex === 0x8f231e;
+  const spec = isPlayerDart ? getDartSetSpec(typeof state !== 'undefined' ? state.dartSet : 'pub_brass') : null;
+  const barrelHex = spec ? spec.barrelHex : 0x7b8088;
+  const shaftHex = spec ? spec.stemHex : 0x1a1d22;
+  const pTex = spec ? getFlightPatternTexture(spec.pattern, spec.flightHex, spec.trimHex) : null;
+  const flightColor = pTex ? 0xffffff : (spec ? spec.flightHex : accentHex);
+  const trimColor = spec ? spec.trimHex : 0xe6c47a;
+
   // Local +Z points back toward flight, tip is at z = 0 (so embedding at z=0 puts tip right into sisal!)
   const tipMat = new THREE.MeshStandardMaterial({ color: 0xbec5cc, roughness: 0.28, metalness: 0.88 });
-  const barrelMat = new THREE.MeshStandardMaterial({ color: 0x7b8088, roughness: 0.36, metalness: 0.86 });
-  const shaftMat = new THREE.MeshStandardMaterial({ color: 0x1a1d22, roughness: 0.65, metalness: 0.15 });
-  const flightMat = new THREE.MeshStandardMaterial({ color: accentHex, roughness: 0.72, metalness: 0.05, side: THREE.DoubleSide });
+  const barrelMat = new THREE.MeshStandardMaterial({
+    color: barrelHex,
+    roughness: spec && spec.id === 'black_tungsten' ? 0.44 : spec && spec.id === 'oxblood_gold' ? 0.26 : 0.36,
+    metalness: 0.86,
+  });
+  const shaftMat = new THREE.MeshStandardMaterial({ color: shaftHex, roughness: 0.65, metalness: 0.15 });
+  const flightMat = new THREE.MeshStandardMaterial({
+    color: flightColor, map: pTex || null, roughness: 0.68, metalness: 0.06, side: THREE.DoubleSide,
+  });
 
   // Steel point (-0.08 into sisal to +0.22) — zero cast shadows onto dartboard
   const tip = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.002, 0.30, 8), tipMat);
@@ -4062,9 +4427,16 @@ function buildDartMesh(accentHex = 0x8f231e) {
   fShape.lineTo(0.004, 0.43);
   fShape.closePath();
   const fGeo = new THREE.ShapeGeometry(fShape);
+  // Normalize UVs cleanly onto [0..1] so procedural leopard/stripe/chevron textures look crisp on every vane!
+  const fPos = fGeo.attributes.position;
+  const fUv = fGeo.attributes.uv;
+  for (let i = 0; i < fPos.count; i++) {
+    fUv.setXY(i, Math.min(1, Math.max(0, fPos.getX(i) / 0.145)), Math.min(1, Math.max(0, fPos.getY(i) / 0.43)));
+  }
+  fUv.needsUpdate = true;
   fGeo.rotateX(Math.PI / 2); // maps local Y -> +Z along dart shaft, local X -> radial fin width!
 
-  const flightTrimMat = new THREE.MeshStandardMaterial({ color: 0xe6c47a, roughness: 0.48, metalness: 0.35, side: THREE.DoubleSide });
+  const flightTrimMat = new THREE.MeshStandardMaterial({ color: trimColor, roughness: 0.46, metalness: 0.35, side: THREE.DoubleSide });
   const trimShape = new THREE.Shape();
   trimShape.moveTo(0.006, 0.34);
   trimShape.lineTo(0.130, 0.34);
@@ -4179,13 +4551,23 @@ function updateDarts(dt) {
           cameraKick = 0.042;
         } else {
           audio.playThud(d.kind);
+          // Flight/barrel grouping clack + sympathetic wobble when landing close to an existing dart!
+          let clacked = false;
+          for (const other of activeDarts) {
+            if (other === d || !other.landed || other.wireTink) continue;
+            const dist = Math.hypot(d.end.x - other.end.x, d.end.y - other.end.y);
+            if (dist < 0.23) {
+              other.wobbleT = 0.04; // sympathetic tungsten-flight nudge!
+              if (!clacked) { audio.playFlightClack(); clacked = true; }
+            }
+          }
           spawnBurst(d.end.x, d.end.y, 'chalk');
           if (d.ringHex) {
             spawnShockwave(d.end.x, d.end.y, d.ringHex, d.ringScale || 2.6);
           } else if (d.kind === 'T' || d.kind === 'D' || d.kind === 'BULL') {
             spawnShockwave(d.end.x, d.end.y, d.kind === 'BULL' ? 0xffe494 : 0xf3cc7d, d.kind === 'BULL' ? 3.2 : 2.3);
           }
-          cameraKick = 0.032;
+          cameraKick = (curTension > 0.35) ? 0.068 : (d.kind === 'T' || d.kind === 'BULL') ? 0.042 : 0.032;
         }
         if (d.onLand) d.onLand();
       }
@@ -4205,11 +4587,11 @@ function updateDarts(dt) {
         activeDarts.splice(i, 1);
       }
     } else {
-      if (d.wobbleT < 0.45) {
+      if (d.wobbleT < 0.56) {
         d.wobbleT += dt;
-        const damp = Math.exp(-d.wobbleT * 11) * Math.sin(d.wobbleT * 52) * 0.055;
+        const damp = Math.exp(-d.wobbleT * 9.5) * Math.sin(d.wobbleT * 54) * 0.072;
         d.mesh.rotation.x = d.entryPitch + damp;
-        d.mesh.rotation.y = d.entryYaw + damp * 0.6;
+        d.mesh.rotation.y = d.entryYaw + damp * 0.65;
       }
       if (d.ephemeral) {
         d.pullAge += dt;
@@ -4246,6 +4628,7 @@ const TREV_STAGE_CLIPS = {
 const TREV_PINT_LINE = "Blimey, mate, you are so accurate I'd let you have a go at knocking this off — except I don't want to part with a perfectly good pint!";
 const TREV_PINT_ALT  = "Five on the spin! I'd balance my pint on my head for ya — if it weren't six quid a pop in London! Tidy throwing, mate!";
 const TREV_SUB_TRICK_LINE = "Quick chalker's trick, mate: don't wrestle with big numbers in your head! Knock a clean hundred off first, then chuck the spare back on — hit Tab if you want me to hop the slate for ya.";
+const TREV_BEV_DARTS_LINE = "Wahey! You've unlocked Bev's leopard-print flights, mate — love her to bits, don't tell her I nicked the pattern off her favorite cardigan!";
 
 // No-repeat Cockney banter decks (each entry maps 1-to-1 to a Chatterbox MP3 in assets/trev_voice/)
 const TREV_DECKS = {
@@ -4264,6 +4647,9 @@ const TREV_DECKS = {
     { cid: 'praise_12', txt: "Tell you what, mate, you've definitely had your Weetabix today!" },
     { cid: 'praise_13', txt: "Smooth as a fresh pint of bitter, pal!" },
     { cid: 'praise_14', txt: "Dead center, mate — the spider wire didn't even flinch!" },
+    { cid: 'bev_praise_1', txt: "Lovely arrow, mate! Even my missus Bev would put the tea towel down to clap that one — love her to bits, she never claps mine!" },
+    { cid: 'bev_praise_2', txt: "Proper class, pal! If I threw like that, Bev might actually let me keep the dartboard in the kitchen — bless her, not a chance!" },
+    { cid: 'bev_praise_3', txt: "Bang on the money, mate! Wait till I tell Bev about that one — love her dearly, she'll still ask if I remembered the milk!" },
   ],
   miss: [
     { cid: 'miss_01', txt: "Clang! Kissed the spider wire, mate — shake it off and stick the next one in." },
@@ -4276,6 +4662,8 @@ const TREV_DECKS = {
     { cid: 'miss_08', txt: "Bit rusty on that one, pal — good job we're practising before Friday league night!" },
     { cid: 'miss_09', txt: "Not quite, mate — keep your head up, the rhythm's coming together nicely." },
     { cid: 'miss_10', txt: "Ooh, harsh bounce! Have a quick breather and pop the next one straight in." },
+    { cid: 'bev_miss_1', txt: "Nearly took the crisp rack out, pal! Reminds me of when I put a hole in Bev's kitchen wallpaper — love her dearly, didn't speak to me till Tuesday!" },
+    { cid: 'bev_miss_2', txt: "Unlucky off the wire, mate — still less grief than I got from Bev for turning up ten minutes late for Sunday roast! Shake it off." },
   ],
   streak3: [
     { cid: 'streak_3a', txt: "Three on the spin — hang on, who are you and what have you done with my student? Keep 'em flying!" },
@@ -4285,11 +4673,13 @@ const TREV_DECKS = {
     { cid: 'pint_classic', txt: TREV_PINT_LINE },
     { cid: 'pint_london', txt: TREV_PINT_ALT },
     { cid: 'pint_tab', txt: "Five clean shots in a row! Keep this up and I'm putting you on the pub team — first round's on the house, pal!" },
+    { cid: 'bev_pint', txt: "Five on the spin! I'd buy you a pint, mate, except Bev's got me on a strict tenner a night — bless her, she knows me too well!" },
   ],
   streak8: [
     { cid: 'streak_8a', txt: "Leave it out, pal! You're making treble twenty look like a dinner plate — Ally Pally's gonna be ringing your mobile in a minute!" },
     { cid: 'streak_8b', txt: "Proper Bobby Dazzler, mate! Even the blokes by the fruit machine have stopped playing to watch you throw!" },
     { cid: 'streak_8c', txt: "Are you having a laugh?! Eight straight — someone check his arrows, they've got magnets in 'em!" },
+    { cid: 'bev_streak8', txt: "Eight straight?! Leave it out, mate — Bev's gonna think I've been sneaking Luke Littler into the boozer behind her back!" },
   ],
   tonplus: [
     { cid: 'tonplus_1', txt: "Boom! Ton-plus checkout, clean as a whistle — I'm getting the next round in, mate!" },
@@ -4305,6 +4695,7 @@ const TREV_DECKS = {
     { cid: 'breakfast_2', txt: "Full English twenty-six, pal — sausage, egg, and beans! Every pub player's favourite score. Shake it off!" },
     { cid: 'breakfast_3', txt: "Twenty-six! Classic five, twenty, one — at least you're hitting the top of the board, mate! Go again." },
     { cid: 'breakfast_4', txt: "Bed and breakfast served piping hot, pal! Leave it behind ya and bang a ton in next visit." },
+    { cid: 'bev_breakfast', txt: "Twenty-six — bed and breakfast, mate! Still better than the burnt toast Bev makes me when I'm late back from the pub — love her to bits, though!" },
   ],
   wire_miss: [
     { cid: 'wire_miss_1', txt: "Bit wide there, pal — nearly took the landlord's crisp rack out! Deep breath, next arrow's right on it." },
@@ -4317,20 +4708,24 @@ const TREV_DECKS = {
     { cid: 'wire_pull_2', txt: "Bit of a pull across the wire, pal — good news is you're still on the board. Adapt and carry on!" },
     { cid: 'wire_pull_3', txt: "Dragged that one into the neighbor's garden, mate! Loosen the grip and straighten it up." },
     { cid: 'wire_pull_4', txt: "Classic pub drift into the neighbor, pal — keep your elbow still and watch it fly straight!" },
+    { cid: 'bev_wire_pull', txt: "Snuck into the wrong bedroom there, mate! Don't tell Bev I said that — bless her, she'd have my arrows in the wheelie bin!" },
   ],
   bust: [
     { cid: 'bust_1', txt: "Ooh, bust! Got a bit greedy there, didn't ya? Score goes right back — shake it off, leg's still wide open." },
     { cid: 'bust_2', txt: "Bust! Bit too much mustard on that dart, mate — no drama, you'll get another crack at it." },
     { cid: 'bust_3', txt: "Overcooked it, pal — bust! Take a sip, clear the head, and nail it next visit." },
+    { cid: 'bev_bust', txt: "Ooh, bust! Got greedy, mate — like me telling Bev I'm only popping out for one swift half. Bless her, she never buys it either!" },
   ],
   madhouse: [
     { cid: 'madhouse_1', txt: "Welcome to the Madhouse, mate — nobody wants to live on double one! Deep breath, stick it in the basement." },
     { cid: 'madhouse_2', txt: "Oh no, down in the Madhouse on double one! Don't panic, pal — nice soft throw, get yourself out of there!" },
+    { cid: 'bev_madhouse', txt: "Welcome to the Madhouse, mate! Still less scary than walking through the front door with muddy boots on Bev's new carpet — bless her!" },
   ],
   bell: [
     { cid: 'bell_1', txt: "Bell beat ya, pal — even Big Dave's pint went flat waiting! No sweat, keep the next one smooth." },
     { cid: 'bell_2', txt: "Ding-ding, clock got ya, mate! Don't overthink it — trust your first instinct next go." },
     { cid: 'bell_3', txt: "Out of time, pal — the barman nearly called last orders! Shake it off, you'll get quicker every round." },
+    { cid: 'bev_bell', txt: "Bell beat ya, pal! Faster than Bev ringing my mobile at ten past nine — love her dearly, she's got a sixth sense for last orders!" },
   ],
   flow_hot: [
     { cid: 'flow_hot_1', txt: "Lightning chalking, mate! You're right in the flow now — watch your aim bars slow down and open wide!" },
@@ -4355,6 +4750,7 @@ const TREV_DECKS = {
   rival_miss_dbl: [
     { cid: 'rival_miss_dbl_1', txt: "Ooh, knees are knocking at double — step up right now and nick their pint money!" },
     { cid: 'rival_miss_dbl_2', txt: "They've left the double begging, pal! Stay cool and put this leg to bed!" },
+    { cid: 'bev_rival_miss', txt: "Knees are knocking at double! Even Bev throws straighter than that when she's lobbing my slippers at me — love her to bits! Go nick the leg!" },
   ],
 };
 
@@ -5141,6 +5537,8 @@ class CoachTrev {
     const last4 = this.recent.slice(-4);
     if (last4.length < 3) return false;
 
+    // Skip manual pace nudges when Adaptive (Auto) is already scaling the clock seamlessly!
+    if (state.difficulty === 'adaptive') return false;
     const misses = last4.filter(x => !x.ok).length;
     const bells = last4.filter(x => x.bell).length;
     const fastHits = last4.filter(x => x.ok && x.fast).length;
@@ -5193,9 +5591,16 @@ const state = {
   stage: 'LEVEL_1',
   ghostMode: true,
   hintMode: 'auto', // 'auto' | 'always' | 'blind'
-  difficulty: mastery.data.difficulty || 'league',
+  difficulty: mastery.data.difficulty || 'adaptive',
   fdiPairsOnly: false,
   fdiBridgesOnly: false,
+  weakSpotMode: false,
+  auditOnly: false,
+  inIntroDemo: false,
+  introDemo: null,
+  drawerSubTab: 'career', // 'career' | 'arcade' | 'match'
+  matchFinishThrow: !!mastery.data.matchFinishThrow,
+  dartSet: mastery.data.dartSet || 'pub_brass',
   liveSlipChecks: true,
   markRival: true,
   favDouble: mastery.data.favDouble || 'D20', // 'D20' | 'D16' | 'D18'
@@ -5226,6 +5631,10 @@ const state = {
   busy: false,
   advanceTimerId: null,
   numInput: '',
+  autoCall: mastery.data.autoCall !== false,
+  autoCallTimer: null,
+  numDeltaText: '',
+  numDeltaTimer: null,
   lastItemId: null,
   calibQueue: [],
   calibIndex: 0,
@@ -5279,13 +5688,34 @@ function currentRival() {
 }
 
 function currentProfile() {
-  return DIFFICULTY_PROFILES[state.difficulty] || DIFFICULTY_PROFILES.league;
+  return DIFFICULTY_PROFILES[state.difficulty] || DIFFICULTY_PROFILES.adaptive;
+}
+function effectiveTimerMult(stageId = state.stage) {
+  if (state.difficulty === 'adaptive') {
+    return computeAdaptiveMultiplier(mastery.getAdaptive(stageId));
+  }
+  return currentProfile().timerMult;
+}
+function isLearningRep(ch = state.challenge) {
+  if (!ch) return false;
+  if (ch.isIntroDemo) return true;
+  if (state.ghostMode || state.inTrial || state.stage === 'LEVEL_7' || state.stage === 'CALIBRATION' || state.weakSpotMode) return false;
+  const st = mastery.get(challengeItemId(ch));
+  if (st.ok === 0 && state.hintMode !== 'blind') return true;
+  if (mastery.getPips(state.stage) < 2 && state.hintMode !== 'blind') return true;
+  return false;
 }
 function actionVerb() {
   return state.isTouch ? 'Tap' : 'Click';
 }
 function starsForDifficulty(diff = state.difficulty) {
-  return diff === 'pro' ? 3 : diff === 'league' ? 2 : 1;
+  if (diff === 'pro') return 3;
+  if (diff === 'league') return 2;
+  if (diff === 'adaptive') {
+    const m = effectiveTimerMult(state.stage);
+    return m <= 0.82 ? 3 : m <= 1.20 ? 2 : 1;
+  }
+  return 1;
 }
 function formatStars(n) {
   return '★'.repeat(Math.max(0, Math.min(3, n))) + '☆'.repeat(Math.max(0, 3 - Math.min(3, n)));
@@ -5330,6 +5760,7 @@ const elPromptTask  = document.getElementById('prompt-task');
 const elDartIcons   = document.getElementById('dart-icons');
 const elBridgeTag   = document.getElementById('bridge-tag');
 const elRivalTag    = document.getElementById('rival-tag');
+const elIntroSkipBtn = document.getElementById('intro-skip-btn');
 const elTimerFill   = document.getElementById('timer-fill');
 const elTimerSec    = document.getElementById('timer-sec');
 const elFeedback    = document.getElementById('feedback-strip');
@@ -5344,6 +5775,9 @@ const elPromptPlate = document.querySelector('.prompt-plate');
 const elRelockPill  = document.getElementById('relock-pill');
 const elNumpad        = document.getElementById('numpad-panel');
 const elNumDisp       = document.getElementById('numpad-display');
+const elNumEq         = document.getElementById('np-eq');
+const elNumVal        = document.getElementById('np-val');
+const elAutoCallBtn   = document.getElementById('np-autocall-btn');
 const elChalkAssist   = document.getElementById('chalk-assist');
 const elChalkAssistBtn = document.getElementById('chalk-assist-btn');
 const elChalkAssistOut = document.getElementById('chalk-assist-readout');
@@ -5361,6 +5795,7 @@ const elBriefTag     = document.getElementById('briefing-tag');
 const elBriefTitle   = document.getElementById('briefing-title');
 const elBriefGoal    = document.getElementById('briefing-goal');
 const elBriefBody    = document.getElementById('briefing-body');
+const elBriefDemoBtn = document.getElementById('briefing-demo');
 const elAimPanel     = document.getElementById('aim-gauge-panel');
 const elAimTarget    = document.getElementById('aim-target-lbl');
 const elAimFlowPill  = document.getElementById('aim-flow-pill');
@@ -5461,22 +5896,23 @@ function aimConfigForDifficulty(diff = state.difficulty) { return engineAimConfi
 function recordMathFlowStep(ch, { isFinal = true, silent = false } = {}) {
   if (!ch || state.ghostMode) return state.mathFlow;
   const isMathPhase = ch.missPrompt || ((ch.kind === 'countdown301' || ch.kind === 'match501') && ch.phase !== 'throw');
-  const baseMs = isMathPhase ? (ch.chalkSpeedMs || (ch.missPrompt ? 9500 : 14000)) : (ch.speedMs || 5200);
+  const baseMs = computeComplexityParMs(ch, isMathPhase);
   const bonusMs = (ch.phase === 'chalk_rem' && ch.chalkChainBonusMs) ? ch.chalkChainBonusMs : 0;
-  const targetMs = Math.max(1000, baseMs * currentProfile().timerMult + bonusMs);
-  const stepRatio = Math.max(0, (performance.now() - state.challengeStartMs) / targetMs);
+  const targetMs = Math.max(1200, baseMs * effectiveTimerMult(state.stage) + bonusMs);
+  const learning = isLearningRep(ch);
+  const stepRatio = learning ? Math.min(0.55, (performance.now() - state.challengeStartMs) / targetMs) : Math.max(0, (performance.now() - state.challengeStartMs) / targetMs);
   ch.mathRatios = ch.mathRatios || [];
   ch.mathRatios.push(stepRatio);
-  if (state.bellChimed || stepRatio > 1.0) ch.mathTimedOut = true;
+  if (!learning && (state.bellChimed || stepRatio > 1.0)) ch.mathTimedOut = true;
   if (!isFinal) return { ...state.mathFlow, lastStepRatio: stepRatio };
 
   const avgRatio = ch.mathRatios.reduce((a, b) => a + b, 0) / ch.mathRatios.length;
   // Using Croupier Snap / Chunk Hop teaches the method with zero failure penalty, gently capping max flow at SHARP while pure unassisted calls unlock peak IN FLOW!
   const effectiveAvg = ch.usedMethodAssist ? Math.max(avgRatio, 0.34) : avgRatio;
   const mf = computeMathFlowModifier(effectiveAvg, {
-    wrongCount: ch.mathWrongCount || 0,
-    usedHint: state.usedHint,
-    timedOut: !!ch.mathTimedOut,
+    wrongCount: learning ? 0 : (ch.mathWrongCount || 0),
+    usedHint: learning ? false : state.usedHint,
+    timedOut: learning ? false : !!ch.mathTimedOut,
   });
   state.mathFlow = mf;
   if (!silent && mf.callout) {
@@ -5592,7 +6028,7 @@ function relockLastAim() {
   return true;
 }
 
-function startAimGauge(mode, bed, rawXY) {
+function startAimGauge(mode, bed, rawXY, finishCtx = null) {
   const pt = rawXY ? { x: rawXY.x, y: rawXY.y } : bedToXY(bed.code);
   const mf = state.mathFlow || DEFAULT_MATH_FLOW;
   const cfg = { ...applyMathFlowToConfig(multiAxisConfigForDifficulty(state.difficulty), mf) };
@@ -5622,6 +6058,7 @@ function startAimGauge(mode, bed, rawXY) {
   elRelockPill.classList.remove('visible');
   aimGauge.active = true;
   aimGauge.mode = mode;
+  aimGauge.finishCtx = finishCtx;
   aimGauge.aimedBed = bed;
   aimGauge.baseAimXY = { x: pt.x, y: pt.y };
   aimGauge.aimXY = { x: pt.x, y: pt.y };
@@ -5642,15 +6079,15 @@ function startAimGauge(mode, bed, rawXY) {
   aimGauge.phase = (Math.random() < 0.5 ? -1 : 1) * (0.92 + Math.random() * 0.35);
 
   const dartNum = (ch && ch.darts ? ch.darts.length : 0) + 1;
-  // Dramatic tension heartbeat on Dart 3 for a 180!! OR aiming at a winning Double-Out in 501!
+  // Dramatic tension heartbeat on Dart 3 for a 180!! OR aiming at a winning Double-Out in 501 / Match-Finish Throw!
   const on180Dart = dartNum === 3 && ch && ch.darts && ch.darts[0] === 'T20' && ch.darts[1] === 'T20' && bed.code === 'T20';
-  const onMatchDart = mode === '501' && ch && (ch.liveRem === bed.value) && (bed.ring === 'D' || bed.ring === 'BULL');
+  const onMatchDart = mode === 'finish' || (mode === '501' && ch && (ch.liveRem === bed.value) && (bed.ring === 'D' || bed.ring === 'BULL'));
   if (on180Dart || onMatchDart) {
     audio.playHeartbeat();
     spawnCallout(on180Dart ? '180 DART!' : 'MATCH DART!', { x: pt.x, y: pt.y + 0.25, style: 'gold' });
   }
 
-  elAimTarget.textContent = `AIMING ${bed.code} · DART ${dartNum}/3`;
+  elAimTarget.textContent = mode === 'finish' ? `MATCH FINISH · ${bed.code}` : `AIMING ${bed.code} · DART ${dartNum}/3`;
   if (mf.pill && mf.cls !== 'neutral') {
     elAimFlowPill.textContent = mf.pill;
     elAimFlowPill.className = 'aim-flow-pill visible ' + mf.cls;
@@ -5696,6 +6133,7 @@ function cancelAimGauge() {
   if (!aimGauge.active) return;
   aimGauge.active = false;
   aimGauge.mode = null;
+  aimGauge.finishCtx = null;
   aimGauge.aimedBed = null;
   aimGauge.aimXY = null;
   aimGauge.baseAimXY = null;
@@ -5786,7 +6224,7 @@ function releaseAimGauge() {
   if (aimGauge.step === 'focus') {
     const fRes = evaluateFocusBeat(aimGauge.focusU, cfg);
     aimGauge.focusRes = fRes;
-    audio.playBeatLock(fRes.zone);
+    audio.playBeatLock(fRes.zone, 1);
     elAimFStat.textContent = fRes.zone === 'green' ? 'OK' : fRes.zone === 'amber' ? 'LOSE' : 'SNCH';
     applyAimCorridorBars();
     aimGauge.step = 'horiz';
@@ -5801,7 +6239,7 @@ function releaseAimGauge() {
   if (aimGauge.step === 'horiz') {
     const effU = Math.max(-1, Math.min(1, aimGauge.horizU + biasU));
     const dropH = computeMultiAxisDrop(aimGauge.aimedBed, aimGauge.aimXY, aimGauge.focusRes, effU, biasV, cfg, allowMiss);
-    audio.playBeatLock(dropH.horizZone);
+    audio.playBeatLock(dropH.horizZone, 2);
     setAimLineGuide3D(dropH);
     aimGauge.step = 'vert';
     aimGauge.phase = (Math.random() < 0.5 ? -1 : 1) * (0.90 + Math.random() * 0.35);
@@ -5814,6 +6252,7 @@ function releaseAimGauge() {
 
   // Beat 3: Final Vertical Height Release + Focus Grip & Maths-Flow Dispersion Jitter!
   const mode = aimGauge.mode;
+  const finishCtx = aimGauge.finishCtx;
   const aimedBed = aimGauge.aimedBed;
   const biasUsed = Boolean(aimGauge.biasActive && aimGauge.wireBias);
   const biasTag = aimGauge.wireBias ? aimGauge.wireBias.tag : null;
@@ -5825,7 +6264,8 @@ function releaseAimGauge() {
   const jitterXY = { x: Math.cos(ja) * jr, y: Math.sin(ja) * jr };
   const effU = Math.max(-1, Math.min(1, aimGauge.horizU + biasU));
   const effV = Math.max(-1, Math.min(1, aimGauge.vertV + biasV));
-  const drop = computeMultiAxisDrop(aimedBed, aimGauge.aimXY, f, effU, effV, cfg, allowMiss, jitterXY);
+  const drop = computeMultiAxisDrop(aimedBed, aimGauge.aimXY, f, effU, effV, cfg, allowMiss || mode === 'finish', jitterXY);
+  audio.playBeatLock(drop.zone, 3);
   cancelAimGauge();
   state.lastPlayerInputAt = now;
 
@@ -5833,6 +6273,23 @@ function releaseAimGauge() {
     commit301Dart(aimedBed, drop.bed, { x: drop.x, y: drop.y }, drop.zone);
   } else if (mode === '501') {
     commit501Dart(aimedBed, drop.bed, { x: drop.x, y: drop.y }, drop.zone, { biasUsed, biasTag, cleanCover, lieSnap });
+  } else if (mode === 'finish' && finishCtx && typeof finishCtx.onDone === 'function') {
+    const nailed = drop.bed && drop.bed.code === aimedBed.code;
+    throwDartTo(drop.x, drop.y, {
+      kind: drop.bed ? drop.bed.ring : 'MISS',
+      ringHex: nailed ? 0x7ae09f : 0xf0a152,
+      ringScale: nailed ? 3.8 : 2.2,
+    });
+    if (nailed) {
+      mastery.data.xp = (mastery.data.xp || 0) + 15;
+      mastery.save();
+      audio.playCrowdRoar(1.1);
+      spawnBurst(drop.x, drop.y, 'gold');
+      spawnCallout(`🎯 PINNED ${aimedBed.code}! +15 XP`, { x: drop.x, y: drop.y + 0.22, style: 'gold' });
+    } else {
+      spawnCallout(`RIGHT ROUTE! (HIT ${drop.bed ? drop.bed.code : 'WIRE'})`, { x: drop.x, y: drop.y + 0.20, style: 'ok' });
+    }
+    finishCtx.onDone(nailed, drop.bed ? drop.bed.code : 'WIRE');
   }
 }
 
@@ -5846,8 +6303,83 @@ function openStageBriefing(stageId) {
   elBriefTitle.textContent = card.title;
   elBriefGoal.textContent = stageId === 'LEVEL_7' ? card.goal.replace('"Big Dave"', currentRival().name) : card.goal;
   elBriefBody.innerHTML = card.html;
+  if (elBriefDemoBtn) {
+    const hasDemo = Boolean(getLevelIntroDemo(stageId));
+    elBriefDemoBtn.style.display = hasDemo ? 'inline-block' : 'none';
+    elBriefDemoBtn.dataset.stageId = stageId;
+  }
   trev.onStageBriefing(stageId);
   elBriefBg.classList.add('open');
+}
+
+function startLevelIntro(stageId) {
+  const demo = getLevelIntroDemo(stageId);
+  if (!demo) {
+    state.inIntroDemo = false;
+    state.introDemo = null;
+    loadChallenge(nextChallengeForStage(stageId));
+    return;
+  }
+  state.inIntroDemo = true;
+  state.introDemo = demo;
+  state.stage = stageId;
+  state.inTrial = false;
+  state.weakSpotMode = false;
+  const chCopy = JSON.parse(JSON.stringify(demo.challenge));
+  loadChallenge(chCopy);
+  trev.onStageBriefing(stageId);
+  setFeedback(`Chalk-Talk Warm-Up (untimed): ${demo.hook}`, 'cue');
+}
+
+function skipLevelIntro() {
+  if (!state.inIntroDemo) return;
+  const stageId = state.stage;
+  state.inIntroDemo = false;
+  state.introDemo = null;
+  mastery.data.seenIntros = mastery.data.seenIntros || {};
+  mastery.data.seenIntros[stageId] = true;
+  mastery.save();
+  if (elIntroSkipBtn) elIntroSkipBtn.classList.remove('visible');
+  setFeedback('Intro skipped — jumping straight into Pip 1!', 'cue');
+  loadChallenge(nextChallengeForStage(stageId));
+}
+
+function buildLevelDebrief(lvlId) {
+  let pool = [];
+  if (lvlId === 'LEVEL_1') {
+    pool = [...SECTORS.map(s => ({ id: 'D' + s, label: 'D' + s })), { id: 'BULL', label: 'BULL' }];
+  } else if (lvlId === 'LEVEL_2') {
+    pool = SECTORS.map(s => ({ id: 'T' + s, label: 'T' + s }));
+  } else if (lvlId === 'LEVEL_3') {
+    pool = MARKING_ITEMS.map(m => ({ id: m.id, label: `${m.total} (${m.darts[0]})` }));
+  } else if (lvlId === 'LEVEL_5') {
+    pool = [
+      ...GOLDEN_44.map(g => ({ id: 'G44_' + g.score, label: `${g.score} (${g.route[0]})` })),
+      ...BELOW_60_ITEMS.map(b => ({ id: b.id, label: `${b.score}→${b.targetD}` })),
+      ...SODS_LAW_ITEMS.map(s => ({ id: s.id, label: `Sod ${s.score}` })),
+    ];
+  } else if (lvlId === 'LEVEL_6') {
+    pool = [
+      ...TON_PLUS_ITEMS.map(t => ({ id: t.id, label: `${t.score} (${t.open[0]})` })),
+      ...BOARD_AUDIT_101_109.map(a => ({ id: a.id, label: `Audit ${a.score}` })),
+      ...BOGEY_ITEMS.map(b => ({ id: b.id, label: `Bogey ${b.rem}` })),
+    ];
+  }
+  const seen = pool.map(p => ({ ...p, st: mastery.get(p.id) })).filter(x => x.st.ok > 0 || x.st.miss > 0);
+  const fastest = seen
+    .filter(x => x.st.ok > 0 && x.st.bestMs < 90000)
+    .sort((a, b) => a.st.bestMs - b.st.bestMs)
+    .slice(0, 3)
+    .map(x => ({ label: x.label, detail: `${(x.st.bestMs / 1000).toFixed(1)}s` }));
+  const needsWork = seen
+    .filter(x => x.st.miss > 0 || (x.st.bestMs >= 3200 && x.st.bestMs < 90000))
+    .sort((a, b) => (b.st.miss * 4000 + (b.st.lastMs || b.st.bestMs || 0)) - (a.st.miss * 4000 + (a.st.lastMs || a.st.bestMs || 0)))
+    .slice(0, 3)
+    .map(x => ({
+      label: x.label,
+      detail: x.st.miss > 0 ? `${x.st.miss} slip${x.st.miss > 1 ? 's' : ''}` : `${(x.st.bestMs / 1000).toFixed(1)}s`,
+    }));
+  return { fastest, needsWork };
 }
 
 function closeStageBriefing() {
@@ -6269,8 +6801,10 @@ function finishLevelTrial(passed) {
   const nextSt = nextId ? STAGES.find(s => s.id === nextId) : null;
 
   if (passed) {
+    const prevTotalStars = mastery.totalStars();
     const earned = starsForDifficulty();
     mastery.awardStars(lvlId, earned);
+    const newTotalStars = mastery.totalStars();
     mastery.data.promotedStages = mastery.data.promotedStages || {};
     mastery.data.promotedStages[lvlId] = true;
     mastery.data.xp = (mastery.data.xp || 0) + 60;
@@ -6278,17 +6812,27 @@ function finishLevelTrial(passed) {
     audio.playCrowdRoar(1.2);
     spawnBurst(0, 0.25, 'gold');
     spawnCallout(`TRIAL PASSED! ${formatStars(earned)}`, { center: true, style: 'big' });
-    trev.say(TREV_PINT_LINE, { mood: 'pint', holdMs: 9500, forceOpen: true, speak: true, clipId: 'pint_classic' });
+    const debrief = buildLevelDebrief(lvlId);
+    renderTrialDebriefSlate({ stageShort: curSt ? curSt.short : lvlId, stars: earned, ...debrief });
+    const unlockedBevDarts = prevTotalStars < 8 && newTotalStars >= 8;
+    if (unlockedBevDarts) {
+      trev.say(TREV_BEV_DARTS_LINE, { mood: 'pint', holdMs: 9500, forceOpen: true, speak: true, clipId: 'bev_darts_unlock' });
+    } else {
+      trev.sayDeck('pint', { mood: 'pint', holdMs: 9500, forceOpen: true, speak: true });
+    }
     const acts = [];
     if (nextSt) acts.push({ label: `Advance to ${nextSt.short} →`, onClick: () => selectStage(nextId, true) });
     if (earned < 3) {
-      const faster = state.difficulty === 'relaxed' ? 'league' : 'pro';
+      const faster = (state.difficulty === 'relaxed' || state.difficulty === 'adaptive') ? 'league' : 'pro';
       acts.push({ label: `Try ${DIFFICULTY_PROFILES[faster].label} for ${starsForDifficulty(faster)}★`, onClick: () => { setDifficulty(faster, false); startLevelTrial(lvlId); } });
     }
     acts.push({ label: 'Keep Practicing Here', ghost: true, onClick: () => loadChallenge(nextChallengeForStage(lvlId)) });
+    const fastSummary = debrief.fastest.length ? ` · Sharpest: ${debrief.fastest.slice(0, 2).map(x => `${x.label} (${x.detail})`).join(', ')}` : '';
+    const weakSummary = debrief.needsWork.length ? ` · Drill next: ${debrief.needsWork.slice(0, 2).map(x => x.label).join(', ')}` : '';
+    const dartUnlockNote = unlockedBevDarts ? " · 🐆 UNLOCKED: Bev's Leopard-Print Flights (Armory)!" : '';
     showLevelUpBanner(
       `${curSt.short} Trial Passed! ${formatStars(earned)}`,
-      `Smashing darts! You earned ${formatStars(earned)} on ${currentProfile().label} (+60 XP).${nextSt ? ` Ready to step up to ${nextSt.short}?` : ''}`,
+      `Smashing darts! You earned ${formatStars(earned)} on ${currentProfile().label} (+60 XP)${fastSummary}${weakSummary}${dartUnlockNote}`,
       acts
     );
   } else {
@@ -6310,16 +6854,31 @@ function selectStage(stageId, startAsPlayer = true, forceBriefing = false) {
   elLevelUp.classList.remove('show');
   state.inTrial = false;
   state.trialQueue = [];
+  state.inIntroDemo = false;
+  state.introDemo = null;
+  state.weakSpotMode = false;
+  state.auditOnly = false;
   state.stage = stageId;
   if (stageId === 'CALIBRATION') { state.calibQueue = []; state.calibIndex = 0; }
   if (stageId === 'LEVEL_4') resetLeg301(301);
   if (stageId === 'LEVEL_7') resetMatch501(false);
+
+  const seenIntro = Boolean(mastery.data.seenIntros && mastery.data.seenIntros[stageId]);
+  const hasIntroDemo = Boolean(getLevelIntroDemo(stageId));
+  const useInteractiveIntro = startAsPlayer && !forceBriefing && hasIntroDemo && !seenIntro
+    && !state.fdiPairsOnly && !state.fdiBridgesOnly && !state.gauntlet170Mode;
+
+  if (useInteractiveIntro) {
+    startLevelIntro(stageId);
+    return;
+  }
+
   loadChallenge(nextChallengeForStage(stageId));
   if (STAGE_BRIEFS[stageId]) {
     const briefTxt = stageId === 'LEVEL_7' ? STAGE_BRIEFS[stageId].replace('Big Dave', currentRival().name) : STAGE_BRIEFS[stageId];
     setFeedback(briefTxt, 'cue');
   }
-  if (startAsPlayer && (forceBriefing || !state.seenBriefings.has(stageId))) {
+  if (startAsPlayer && (forceBriefing || (!hasIntroDemo && !state.seenBriefings.has(stageId)))) {
     openStageBriefing(stageId);
   }
 }
@@ -6341,12 +6900,21 @@ function updateHudStats() {
   const rk = mastery.getRank();
   elRankPill.textContent = rk.cur.title;
   const prof = currentProfile();
-  elPaceBtn.textContent = `Pace: ${prof.short}`;
+  if (state.difficulty === 'adaptive') {
+    const am = effectiveTimerMult(state.stage);
+    elPaceBtn.textContent = `Pace: Auto ${am.toFixed(1)}×`;
+  } else {
+    elPaceBtn.textContent = `Pace: ${prof.short}`;
+  }
   const st = STAGES.find(s => s.id === state.stage);
   const stars = mastery.getStars(state.stage);
   const starTxt = stars > 0 ? ` ${formatStars(stars)}` : '';
-  elStageLabel.textContent = st ? `${st.short}${starTxt}` : state.stage;
-  elGhostPill.textContent = state.spectator.active ? 'Bot vs Bot' : state.ghostMode ? 'Ghost Demo' : (state.inTrial ? 'Pub Trial' : 'Your Throw');
+  elStageLabel.textContent = state.weakSpotMode
+    ? '🎯 Weak-Spot Warm-Up'
+    : state.auditOnly
+      ? '🛡️ 5-Treble Trap Audit'
+      : st ? `${st.short}${starTxt}` : state.stage;
+  elGhostPill.textContent = state.spectator.active ? 'Bot vs Bot' : state.ghostMode ? 'Ghost Demo' : state.inIntroDemo ? 'Chalk-Talk' : state.weakSpotMode ? 'Warm-Up' : (state.inTrial ? 'Pub Trial' : 'Your Throw');
   elGhostPill.classList.toggle('active-player', !state.ghostMode);
   const dartPips = elDartIcons.querySelectorAll('.dart-pip');
   dartPips.forEach((p, idx) => p.classList.toggle('spent', idx >= state.dartsLeft));
@@ -6525,6 +7093,7 @@ function triggerChalkAssist() {
       draw501Slate({ pendingLeft: { scored: '?', rem: '…' }, footer: snap.snapPrompt, footer2: `${snap.shapeTag} — add the 3rd dart!` });
     }
     syncChalkAssistUI();
+    renderNumpadDisplay();
     return;
   }
 
@@ -6537,6 +7106,7 @@ function triggerChalkAssist() {
     setFeedback(`Oche Prep (${p.formulaName}): add +${p.addConst} onto ${last2} to reveal your 2-dart finish!`, 'cue');
     draw501Slate({ footer: `OCHE PREP: ${p.score} -> ${p.openBed}`, footer2: `${p.formulaName}: ${last2} + ${p.addConst} = ?` });
     syncChalkAssistUI();
+    renderNumpadDisplay();
     return;
   }
 
@@ -6559,23 +7129,180 @@ function triggerChalkAssist() {
     renderChalkboard({ header: 'MISS RULE · HOPPED', big: `${c.hopMid} ${c.adjustText}`, sub: `Hopped -${c.hopChunk} from ${ch.item.score}`, lines: [c.hopPrompt] });
   }
   syncChalkAssistUI();
+  renderNumpadDisplay();
+}
+
+function getExpectedNumericAnswer(ch = state.challenge) {
+  if (!ch) return null;
+  if (ch.kind === 'double_val' || ch.kind === 'treble_val') return ch.val;
+  if (ch.missPrompt) return ch.missAns;
+  if (ch.kind === 'gauntlet170' && ch.phase === 'miss_check' && ch.afterOpen) return ch.afterOpen.miss2Rem;
+  if (ch.kind === 'marking' && ch.item) return ch.item.total;
+  if (ch.kind === 'countdown301') {
+    if (ch.phase === 'chalk_visit') return ch.visitTotal;
+    if (ch.phase === 'chalk_rem') return ch.expectedRem;
+  }
+  if (ch.kind === 'match501') {
+    if (ch.phase === 'mark_rival') return ch.rivalExpected;
+    if (ch.phase === 'oche_prep' && ch.ochePrep) return ch.ochePrep.answer;
+    if (ch.phase === 'miss_check') return ch.missExpected;
+    if (ch.phase === 'chalk_visit') return ch.visitTotal;
+    if (ch.phase === 'chalk_rem') return ch.expectedRem;
+  }
+  return null;
+}
+
+function getNumpadEquationPrefix(ch = state.challenge) {
+  if (!ch) return '';
+  if (ch.kind === 'double_val' || ch.kind === 'treble_val') return `${ch.target} =`;
+  if (ch.missPrompt && ch.item) {
+    const sv = bedValue('S' + ch.item.route[0].slice(1));
+    if (ch.hopped) {
+      const c = buildSubtractionChunk(ch.item.score, sv);
+      if (c.canHop) return `${c.hopMid} ${c.adjustText} =`;
+    }
+    return `${ch.item.score} − ${sv} =`;
+  }
+  if (ch.kind === 'gauntlet170' && ch.phase === 'miss_check' && ch.afterOpen) {
+    const a = ch.afterOpen;
+    if (ch.hopped) {
+      const c = buildSubtractionChunk(a.rem1, a.miss2Val);
+      if (c.canHop) return `${c.hopMid} ${c.adjustText} =`;
+    }
+    return `${a.rem1} − ${a.miss2Val} =`;
+  }
+  if (ch.kind === 'marking' && ch.snappedPair && ch.item) {
+    const snap = buildCroupierSnap(ch.item.darts);
+    if (snap && snap.snapPrompt) return `${snap.snapPrompt} =`;
+  }
+  if (ch.kind === 'countdown301' || ch.kind === 'match501') {
+    if (ch.phase === 'chalk_visit' && ch.snappedPair && ch.darts) {
+      const snap = buildCroupierSnap(ch.darts);
+      if (snap && snap.snapPrompt) return `${snap.snapPrompt} =`;
+    }
+    if (ch.phase === 'mark_rival' && ch.snappedPair && ch.rivalVisitDarts) {
+      const snap = buildCroupierSnap(ch.rivalVisitDarts);
+      if (snap && snap.snapPrompt) return `${snap.snapPrompt} =`;
+    }
+    if (ch.phase === 'oche_prep' && ch.ochePrep) {
+      const last2 = String(ch.ochePrep.score % 100).padStart(2, '0');
+      return ch.hopped ? `${last2} + ${ch.ochePrep.addConst} =` : `${ch.ochePrep.score} − ${ch.ochePrep.openBed} =`;
+    }
+    if (ch.phase === 'chalk_rem') {
+      if (ch.hopped) {
+        const c = buildSubtractionChunk(ch.startScore, ch.visitTotal);
+        if (c.canHop) return `${c.hopMid} ${c.adjustText} =`;
+      }
+      return `${ch.startScore} − ${ch.visitTotal} =`;
+    }
+    if (ch.phase === 'miss_check' && ch.missSingle) {
+      const sv = bedValue(ch.missSingle);
+      if (ch.hopped) {
+        const c = buildSubtractionChunk(ch.missPromptFrom, sv);
+        if (c.canHop) return `${c.hopMid} ${c.adjustText} =`;
+      }
+      return `${ch.missPromptFrom} − ${sv} =`;
+    }
+  }
+  return '';
+}
+
+function clearNumpadTimers() {
+  if (state.autoCallTimer) { clearTimeout(state.autoCallTimer); state.autoCallTimer = null; }
+  if (state.numDeltaTimer) { clearTimeout(state.numDeltaTimer); state.numDeltaTimer = null; }
+  state.numDeltaText = '';
+  if (elNumDisp) elNumDisp.classList.remove('delta', 'snap-ok');
+}
+
+function syncAutoCallUI() {
+  if (!elAutoCallBtn) return;
+  elAutoCallBtn.classList.toggle('on', !!state.autoCall);
+  elAutoCallBtn.textContent = state.autoCall ? 'Auto-Call ✓' : 'Manual Call';
+}
+
+function toggleAutoCall(forceVal = null) {
+  state.autoCall = forceVal === null ? !state.autoCall : !!forceVal;
+  mastery.data.autoCall = state.autoCall;
+  mastery.save();
+  syncAutoCallUI();
+  setFeedback(state.autoCall
+    ? 'Smart Auto-Call ON — right scores snap in automatically (typos still wait for CALL or ⌫)!'
+    : 'Manual Call ON — press CALL or Enter to submit every score.', 'cue');
+}
+
+function flashNumpadDelta(entered, expected) {
+  clearNumpadTimers();
+  state.numInput = '';
+  if (typeof expected === 'number' && !Number.isNaN(entered)) {
+    const absDiff = Math.abs(entered - expected);
+    const dir = entered > expected ? 'high' : 'low';
+    state.numDeltaText = `${entered}? Off by ${absDiff} (${dir})!`;
+    renderNumpadDisplay();
+    state.numDeltaTimer = setTimeout(() => {
+      state.numDeltaTimer = null;
+      state.numDeltaText = '';
+      renderNumpadDisplay();
+    }, 1150);
+  } else {
+    renderNumpadDisplay();
+  }
+}
+
+function appendNumpadDigit(digit) {
+  if (!elNumpad.classList.contains('visible') || state.busy) return;
+  if (state.numDeltaTimer) { clearTimeout(state.numDeltaTimer); state.numDeltaTimer = null; state.numDeltaText = ''; }
+  if (state.autoCallTimer) { clearTimeout(state.autoCallTimer); state.autoCallTimer = null; }
+  if (state.numInput.length >= 3) return;
+  state.numInput += String(digit);
+  renderNumpadDisplay();
+  // Smart Auto-Call: snap-accept exact right numeric answer in 135ms (wrong digits NEVER auto-fail!)
+  if (state.autoCall && !state.ghostMode) {
+    const exp = getExpectedNumericAnswer(state.challenge);
+    if (exp !== null && state.numInput === String(exp)) {
+      elNumDisp.classList.add('snap-ok');
+      const snapStr = state.numInput;
+      state.autoCallTimer = setTimeout(() => {
+        state.autoCallTimer = null;
+        if (elNumpad.classList.contains('visible') && !state.busy && state.numInput === snapStr) {
+          submitNumericAnswer(snapStr);
+        }
+      }, 135);
+    }
+  }
+}
+
+function backspaceNumpad() {
+  if (state.autoCallTimer) { clearTimeout(state.autoCallTimer); state.autoCallTimer = null; }
+  if (state.numDeltaTimer) { clearTimeout(state.numDeltaTimer); state.numDeltaTimer = null; state.numDeltaText = ''; }
+  elNumDisp.classList.remove('delta', 'snap-ok');
+  state.numInput = state.numInput.slice(0, -1);
+  renderNumpadDisplay();
 }
 
 function showNumpad(show) {
+  clearNumpadTimers();
   elNumpad.classList.toggle('visible', show);
   document.body.classList.toggle('numpad-open', show);
   state.numInput = '';
+  syncAutoCallUI();
   renderNumpadDisplay();
   syncChalkAssistUI();
 }
 
 function renderNumpadDisplay() {
+  const eq = getNumpadEquationPrefix(state.challenge);
+  if (elNumEq) elNumEq.textContent = eq;
+  elNumDisp.classList.remove('delta', 'snap-ok', 'placeholder');
+  if (state.numDeltaText) {
+    elNumDisp.classList.add('delta');
+    if (elNumVal) elNumVal.textContent = state.numDeltaText;
+    return;
+  }
   if (!state.numInput) {
-    elNumDisp.textContent = 'Type score…';
     elNumDisp.classList.add('placeholder');
+    if (elNumVal) elNumVal.textContent = eq ? '?' : 'Type score…';
   } else {
-    elNumDisp.textContent = state.numInput;
-    elNumDisp.classList.remove('placeholder');
+    if (elNumVal) elNumVal.textContent = state.numInput;
   }
 }
 
@@ -6602,7 +7329,53 @@ function buildCalibrationQueue() {
   ];
 }
 
+function pickWeakSpotChallenge() {
+  // Gather missed or slow items across Levels 1, 2, 3, 5, 6 and build an immediate targeted warm-up rep!
+  const candidates = [];
+  const scoreItem = (id, chBuilder) => {
+    const st = mastery.get(id);
+    if (st.miss > 0 || (st.ok > 0 && st.bestMs >= 2900)) {
+      const weight = st.miss * 5 + (st.bestMs < 90000 ? st.bestMs / 1200 : 2) + (st.streak === 0 ? 3 : 0);
+      candidates.push({ id, weight, chBuilder });
+    }
+  };
+  SECTORS.forEach(s => {
+    scoreItem('D' + s, () => ({ kind: Math.random() < 0.5 ? 'double_find' : 'double_val', id: 'D' + s, target: 'D' + s, val: s * 2, speedMs: 3000, cue: `D${s} = 2 × ${s} = ${s * 2}` }));
+    scoreItem('T' + s, () => ({ kind: Math.random() < 0.5 ? 'treble_find' : 'treble_val', id: 'T' + s, target: 'T' + s, val: s * 3, speedMs: 3000, cue: `T${s} = 3 × ${s} = ${s * 3}` }));
+  });
+  scoreItem('BULL', () => ({ kind: 'double_find', id: 'BULL', target: 'BULL', val: 50, speedMs: 2800, cue: 'Inner Bull = 50' }));
+  MARKING_ITEMS.forEach(m => scoreItem(m.id, () => ({ kind: 'marking', item: m, speedMs: 8500 })));
+  GOLDEN_44.forEach(g => scoreItem('G44_' + g.score, () => ({ kind: 'g44', item: g, speedMs: 4000 })));
+  BELOW_60_ITEMS.forEach(b => scoreItem(b.id, () => ({ kind: 'below60', item: b, speedMs: 3800 })));
+  SODS_LAW_ITEMS.forEach(s => scoreItem(s.id, () => ({ kind: 'sods', item: s, speedMs: 3800 })));
+  TON_PLUS_ITEMS.forEach(t => scoreItem(t.id, () => ({ kind: 'tonplus', item: t, speedMs: 4600 })));
+  BOARD_AUDIT_101_109.forEach(a => scoreItem(a.id, () => ({ kind: 'board_audit', item: a, speedMs: 5400 })));
+  BOGEY_ITEMS.forEach(b => scoreItem(b.id, () => ({ kind: 'bogey', item: b, speedMs: 3800 })));
+
+  const filtered = candidates.filter(c => c.id !== state.lastItemId);
+  const pool = filtered.length ? filtered : candidates;
+  if (pool.length) {
+    pool.sort((a, b) => b.weight - a.weight);
+    const top = pool.slice(0, Math.min(8, pool.length));
+    const chosen = top[Math.floor(Math.random() * top.length)];
+    return { ...chosen.chBuilder(), isWeakSpot: true };
+  }
+  // If brand-new player has zero misses yet, serve classic notorious pub tricky beds (T14, D14, T17, 75 FDI, 104 trap!)
+  const starterTricky = [
+    () => ({ kind: 'treble_val', id: 'T14', target: 'T14', val: 42, speedMs: 5200, cue: 'T14 = 3 × 14 = 42 (classic pub stumper!)' }),
+    () => ({ kind: 'double_find', id: 'D14', target: 'D14', val: 28, speedMs: 2800, cue: 'D14 = 2 × 14 = 28' }),
+    () => ({ kind: 'treble_find', id: 'T17', target: 'T17', val: 51, speedMs: 2800, cue: 'T17 = 3 × 17 = 51' }),
+    () => ({ kind: 'g44', item: G44_BY_SCORE[75] || GOLDEN_44[0], speedMs: 4200 }),
+    () => ({ kind: 'board_audit', item: BOARD_AUDIT_101_109.find(x => x.score === 104) || BOARD_AUDIT_101_109[0], speedMs: 5400 }),
+  ];
+  return { ...starterTricky[Math.floor(Math.random() * starterTricky.length)](), isWeakSpot: true };
+}
+
 function nextChallengeForStage(stageId) {
+  if (state.weakSpotMode && !state.inTrial && !state.ghostMode) {
+    return pickWeakSpotChallenge();
+  }
+
   if (stageId === 'CALIBRATION') {
     if (!state.calibQueue.length || state.calibIndex >= state.calibQueue.length) {
       state.calibQueue = buildCalibrationQueue();
@@ -6617,16 +7390,27 @@ function nextChallengeForStage(stageId) {
     return state.trialQueue[state.trialStep];
   }
 
-  // LEVEL 1: Doubles Mastery (D1-D20 + Bull, 1.4x weighted on 20-15 & clockwise neighbors + Halving Escapes)
+  // 3-Act 8-Pip Curriculum Staircase (Pips 0-2 Foundation -> Pips 3-5 Pub Twist -> Pips 6-7+ Cold Match-Prep!)
+  const pips = mastery.getPips(stageId);
+  const act = (state.ghostMode || state.inTrial) ? 3 : getPipBandForStage(stageId, pips).act;
+
+  // LEVEL 1: Doubles Mastery (Act 1: D20-D15+Bull -> Act 2: Halving Escapes + Wire Neighbors -> Act 3: Full Clock Cold Mix)
   if (stageId === 'LEVEL_1') {
     const roll = Math.random();
-    if (roll < 0.20) {
+    if ((act === 2 && roll < 0.35) || (act === 3 && roll < 0.22)) {
       const h = mastery.pickNext(HALVING_CHAINS, x => x.id, state.lastItemId);
       return { kind: 'halving', id: h.id, start: h.start, target: h.next, speedMs: 2600, cue: h.cue };
     }
-    const pool = [...SECTORS.map(s => ({ code: 'D' + s, val: s * 2, sec: s })), { code: 'BULL', val: 50, sec: 20 }];
+    const allDoubles = [...SECTORS.map(s => ({ code: 'D' + s, val: s * 2, sec: s })), { code: 'BULL', val: 50, sec: 20 }];
+    const act1Sectors = new Set([20, 19, 18, 17, 16, 15]);
+    const act2Sectors = new Set([20, 19, 18, 17, 16, 15, 14, 12, 10, 8, 7, 5, 4, 3, 2, 1]);
+    const pool = act === 1
+      ? allDoubles.filter(x => x.code === 'BULL' || act1Sectors.has(x.sec))
+      : act === 2
+        ? allDoubles.filter(x => act2Sectors.has(x.sec))
+        : allDoubles;
     const picked = mastery.pickNext(pool, x => x.code, state.lastItemId, x => sectorWeight(x.sec));
-    const askVal = roll > 0.60;
+    const askVal = act === 1 ? roll > 0.55 : roll > 0.58;
     return {
       kind: askVal ? 'double_val' : 'double_find',
       id: picked.code, target: picked.code, val: picked.val, speedMs: askVal ? 5200 : 2500,
@@ -6634,9 +7418,16 @@ function nextChallengeForStage(stageId) {
     };
   }
 
-  // LEVEL 2: Trebles Mastery (ALL T1-T20, 1.4x weighted on 20-15 & clockwise neighbors!)
+  // LEVEL 2: Trebles Mastery (Act 1: Power T20-T15 -> Act 2: Wire Neighbors & T14/T13 -> Act 3: Full Clock Cold Mix)
   if (stageId === 'LEVEL_2') {
-    const pool = SECTORS.map(n => ({ code: 'T' + n, val: n * 3, sec: n }));
+    const allTrebles = SECTORS.map(n => ({ code: 'T' + n, val: n * 3, sec: n }));
+    const act1Sec = new Set([20, 19, 18, 17, 16, 15]);
+    const act2Sec = new Set([20, 19, 18, 17, 16, 15, 14, 13, 12, 10, 8, 7, 5, 4, 3, 1]);
+    const pool = act === 1
+      ? allTrebles.filter(x => act1Sec.has(x.sec))
+      : act === 2
+        ? allTrebles.filter(x => act2Sec.has(x.sec))
+        : allTrebles;
     const picked = mastery.pickNext(pool, x => x.code, state.lastItemId, x => sectorWeight(x.sec));
     const askVal = Math.random() < 0.50;
     return {
@@ -6646,25 +7437,34 @@ function nextChallengeForStage(stageId) {
     };
   }
 
-  // LEVEL 3: 3-Dart Adding, 20-15 Misses & Bull/25 (mix of curated 62 shapes + fresh 20-15/Bull visits!)
+  // LEVEL 3: 3-Dart Adding (Act 1: Matched Core Pairs -> Act 2: Stray Wire Misses & Bull/25 -> Act 3: Cold Pub Mix)
   if (stageId === 'LEVEL_3') {
-    if (Math.random() < 0.28) {
+    if (act === 3 && Math.random() < 0.36) {
       const dyn = generatePub3DartVisit({ maxTotal: 180, biasBull: Math.random() < 0.35 });
       return { kind: 'marking', item: dyn, speedMs: 8800 };
     }
-    const item = mastery.pickNext(MARKING_ITEMS, x => x.id, state.lastItemId, m =>
+    const corePool = MARKING_ITEMS.filter(m => m.cat === 'core' || m.cat === 'big');
+    const twistPool = MARKING_ITEMS.filter(m => m.cat === 'miss' || m.cat === 'bull');
+    const pool = act === 1 && corePool.length
+      ? corePool
+      : act === 2 && twistPool.length
+        ? twistPool
+        : MARKING_ITEMS;
+    const item = mastery.pickNext(pool, x => x.id, state.lastItemId, m =>
       (m.cat === 'miss' || m.cat === 'bull') ? 1.55 : 1.0
     );
     return { kind: 'marking', item, speedMs: 8500 };
   }
 
-  // LEVEL 4: 301 / Under-260 Chalk & Countdown (Mix of Your Throw w/ 3-Beat Oche Rhythm & Pub Chalker!)
+  // LEVEL 4: 301 / Under-260 Chalk & Countdown (Act 1: Clean Chalker Hops -> Act 2: Your Throw + Bogey Watch -> Act 3: Full Mix)
   if (stageId === 'LEVEL_4') {
     if (state.leg301.score <= 120) resetLeg301();
-    const visitMode = state.ghostMode ? 'chalker' : state.leg301.nextMode;
-    state.leg301.nextMode = visitMode === 'throw' ? 'chalker' : 'throw';
+    const visitMode = state.ghostMode ? 'chalker'
+      : act === 1 ? 'chalker'
+      : state.leg301.nextMode;
+    if (act >= 2) state.leg301.nextMode = visitMode === 'throw' ? 'chalker' : 'throw';
     const maxV = Math.max(40, Math.min(140, state.leg301.score - 32));
-    const visit = visitMode === 'chalker' ? generatePub3DartVisit({ maxTotal: maxV, biasBull: Math.random() < 0.22 }) : null;
+    const visit = visitMode === 'chalker' ? generatePub3DartVisit({ maxTotal: maxV, biasBull: act >= 2 && Math.random() < 0.25 }) : null;
     return {
       kind: 'countdown301',
       id: 'L4_' + state.leg301.score + '_' + state.leg301.visitsDone,
@@ -6676,19 +7476,24 @@ function nextChallengeForStage(stageId) {
     };
   }
 
-  // LEVEL 5: Unified 2-Dart Finishes (FDI Pair Hunter + Below-60 + Golden 44 25/30/35 No-Peek + Sod's Law)
+  // LEVEL 5: Unified 2-Dart Finishes (Act 1: Fav Double + 60s Rule of 25 -> Act 2: 70s/80s No-Peek + Sod's Law -> Act 3: Full Blend)
   if (stageId === 'LEVEL_5') {
     const roll = Math.random();
-    if (state.fdiPairsOnly || roll < 0.30) {
+    const sideFor = (d) => d === 'D16' ? ['D16', 'D8', 'D4'] : d === 'D18' ? ['D18', 'D9'] : ['D20', 'D10'];
+    const preferredSet = new Set(sideFor(state.favDouble));
+
+    if (state.fdiPairsOnly) {
       const score = mastery.pickNext(FDI_SCORES, s => 'FDIP_' + s, state.lastItemId);
       const st = mastery.get('FDIP_' + score);
-      // First exposure -> "partner" (anchor T circled, find D partner); once seen -> mix with "both" (spot both numbers!)
       const variant = (st.ok < 1 && Math.random() < 0.72) ? 'partner' : (Math.random() < 0.45 ? 'partner' : 'both');
       return { kind: 'fdi_pair', id: 'FDIP_' + score, score, variant, speedMs: variant === 'both' ? 8500 : 6500 };
     }
-    if (roll < 0.48) {
-      const sideFor = (d) => d === 'D16' ? ['D16', 'D8', 'D4'] : d === 'D18' ? ['D18', 'D9'] : ['D20', 'D10'];
-      const preferredSet = new Set(sideFor(state.favDouble));
+    if (act === 1) {
+      if (roll < 0.52) {
+        const fdi60 = FDI_SCORES.filter(s => s < 70);
+        const score = mastery.pickNext(fdi60.length ? fdi60 : FDI_SCORES, s => 'FDIP_' + s, state.lastItemId);
+        return { kind: 'fdi_pair', id: 'FDIP_' + score, score, variant: 'partner', speedMs: 6800 };
+      }
       const item = mastery.pickNext(BELOW_60_ITEMS, x => x.id, state.lastItemId, x => {
         if (x.targetD === 'ANY') return 1.0;
         const onMySide = preferredSet.has(x.targetD);
@@ -6696,16 +7501,42 @@ function nextChallengeForStage(stageId) {
       });
       return { kind: 'below60', item, speedMs: 3600 };
     }
-    if (roll < 0.85) {
-      // Motivating order: Green quick wins -> Yellow 25/30/35 FDIs -> drip-feed Red Outlaws
+    if (act === 2) {
+      if (roll < 0.28) {
+        const fdi7080 = FDI_SCORES.filter(s => s >= 70);
+        const score = mastery.pickNext(fdi7080.length ? fdi7080 : FDI_SCORES, s => 'FDIP_' + s, state.lastItemId);
+        return { kind: 'fdi_pair', id: 'FDIP_' + score, score, variant: Math.random() < 0.5 ? 'partner' : 'both', speedMs: 7600 };
+      }
+      if (roll < 0.72) {
+        const yellows = GOLDEN_44.filter(x => x.group.startsWith('yellow'));
+        const item = mastery.pickNext(yellows.length ? yellows : GOLDEN_44, x => 'G44_' + x.score, state.lastItemId);
+        return { kind: 'g44', item, speedMs: 3800 };
+      }
+      const item = mastery.pickNext(SODS_LAW_ITEMS, x => x.id, state.lastItemId);
+      return { kind: 'sods', item, speedMs: 3800 };
+    }
+    // Act 3: Full 2-dart cold blend!
+    if (roll < 0.25) {
+      const score = mastery.pickNext(FDI_SCORES, s => 'FDIP_' + s, state.lastItemId);
+      return { kind: 'fdi_pair', id: 'FDIP_' + score, score, variant: 'both', speedMs: 8000 };
+    }
+    if (roll < 0.44) {
+      const item = mastery.pickNext(BELOW_60_ITEMS, x => x.id, state.lastItemId, x => {
+        if (x.targetD === 'ANY') return 1.0;
+        const onMySide = preferredSet.has(x.targetD);
+        return state.weakSideMode ? (onMySide ? 0.45 : 2.6) : (onMySide ? 2.4 : 0.75);
+      });
+      return { kind: 'below60', item, speedMs: 3600 };
+    }
+    if (roll < 0.84) {
       const greens = GOLDEN_44.filter(x => x.group === 'green');
       const yellows = GOLDEN_44.filter(x => x.group.startsWith('yellow'));
       const reds = GOLDEN_44.filter(x => x.group === 'red');
       const greenOk = greens.filter(x => mastery.get('G44_' + x.score).ok >= 1).length;
       const yellowOk = yellows.filter(x => mastery.get('G44_' + x.score).ok >= 1).length;
       let pool = greens;
-      if (greenOk >= 4 || state.ghostMode) pool = [...greens, ...yellows];
-      if (yellowOk >= 3 || state.ghostMode) {
+      if (greenOk >= 3 || state.ghostMode) pool = [...greens, ...yellows];
+      if (yellowOk >= 2 || state.ghostMode) {
         const unlockedReds = reds.slice(0, state.ghostMode ? 5 : Math.min(5, 1 + Math.floor(yellowOk / 2)));
         pool = [...greens, ...yellows, ...unlockedReds];
       }
@@ -6716,8 +7547,12 @@ function nextChallengeForStage(stageId) {
     return { kind: 'sods', item, speedMs: 3800 };
   }
 
-  // LEVEL 6: Unified 3-Dart Finishes (170 Down Gauntlet + 5-Treble Danger Audits + Ton-Plus FDI Bridges + Bogey Dodger)
+  // LEVEL 6: Unified 3-Dart Finishes (Act 1: +40/+43 Bridges -> Act 2: 5-Treble Audits & Bogeys -> Act 3: Full 101-170 Mix)
   if (stageId === 'LEVEL_6') {
+    if (state.auditOnly && !state.inTrial) {
+      const item = mastery.pickNext(BOARD_AUDIT_101_109, x => x.id, state.lastItemId);
+      return { kind: 'board_audit', item, speedMs: 5200 };
+    }
     if (state.gauntlet170Mode && !state.inTrial) {
       const idx = state.gauntlet170Idx % GAUNTLET_170_SCORES.length;
       const score = GAUNTLET_170_SCORES[idx];
@@ -6731,19 +7566,35 @@ function nextChallengeForStage(stageId) {
         chalkSpeedMs: 10000,
       };
     }
-    if (!state.fdiBridgesOnly) {
+    if (state.fdiBridgesOnly || act === 1) {
+      const pool = TON_PLUS_ITEMS.filter(x => x.fdiBridge);
+      const item = mastery.pickNext(pool.length ? pool : TON_PLUS_ITEMS, x => x.id, state.lastItemId);
+      return { kind: 'tonplus', item, speedMs: 4400 };
+    }
+    if (act === 2) {
       const r6 = Math.random();
-      if (r6 < 0.22) {
+      if (r6 < 0.48) {
         const item = mastery.pickNext(BOARD_AUDIT_101_109, x => x.id, state.lastItemId);
         return { kind: 'board_audit', item, speedMs: 5200 };
       }
-      if (r6 < 0.42) {
+      if (r6 < 0.85) {
         const item = mastery.pickNext(BOGEY_ITEMS, x => x.id, state.lastItemId);
         return { kind: 'bogey', item, speedMs: 3600 };
       }
+      const trapPool = TON_PLUS_ITEMS.filter(x => x.traps && Object.keys(x.traps).length > 0);
+      const item = mastery.pickNext(trapPool.length ? trapPool : TON_PLUS_ITEMS, x => x.id, state.lastItemId);
+      return { kind: 'tonplus', item, speedMs: 4400 };
     }
-    const pool = state.fdiBridgesOnly ? TON_PLUS_ITEMS.filter(x => x.fdiBridge) : TON_PLUS_ITEMS;
-    const item = mastery.pickNext(pool, x => x.id, state.lastItemId);
+    const r6 = Math.random();
+    if (r6 < 0.22) {
+      const item = mastery.pickNext(BOARD_AUDIT_101_109, x => x.id, state.lastItemId);
+      return { kind: 'board_audit', item, speedMs: 5200 };
+    }
+    if (r6 < 0.42) {
+      const item = mastery.pickNext(BOGEY_ITEMS, x => x.id, state.lastItemId);
+      return { kind: 'bogey', item, speedMs: 3600 };
+    }
+    const item = mastery.pickNext(TON_PLUS_ITEMS, x => x.id, state.lastItemId);
     return { kind: 'tonplus', item, speedMs: 4400 };
   }
 
@@ -7116,6 +7967,24 @@ function loadChallenge(ch) {
       footer: m.lastDaveNote || 'Double Out · Board IQ Live!',
       footer2: state.aimMode === '3beat' ? '1·Focus → 2·Line → 3·Height' : state.aimMode === '2beat' ? '1·Line → 2·Height' : 'Instant throw · Auditor active!',
     });
+  }
+
+  // Interactive 10s Chalk-Talk Intro override: show untimed warm-up badge, Skip Intro button, guided overlays & Left Slate!
+  if (elIntroSkipBtn) elIntroSkipBtn.classList.toggle('visible', Boolean(ch.isIntroDemo));
+  if (ch.isIntroDemo && state.introDemo) {
+    const demo = state.introDemo;
+    elPromptSub.textContent = `${demo.title} · Untimed Intro`;
+    if (ch.kind !== 'countdown301') {
+      renderLeftSlate({
+        header: demo.title.toUpperCase(),
+        big: ch.val || (ch.item && (ch.item.score || ch.item.total)) || ch.score || 'DEMO',
+        sub: 'Untimed 1-shot warm-up',
+        lines: demo.coachLines,
+        footer: 'Complete this shot or click Skip Intro →',
+      });
+    }
+    if (!state.hintShown) applyChallengeHint(true);
+    state.usedHint = false; // intro warm-up never penalizes hint usage
   }
 
   audio.playChalk();
@@ -7780,8 +8649,10 @@ function finish501Leg(playerWon) {
   }
 
   if (playerWon) {
+    const prevStars = mastery.totalStars();
     const stars = starsForDifficulty();
     mastery.awardStars('LEVEL_7', stars);
+    const unlockedBevDarts = prevStars < 8 && mastery.totalStars() >= 8;
     mastery.record501Win(m.dartsThrown);
     const bo3Bonus = state.matchFormat === 'bo3' ? 60 : 0;
     mastery.data.xp = (mastery.data.xp || 0) + 100 + bo3Bonus;
@@ -7790,7 +8661,11 @@ function finish501Leg(playerWon) {
     spawnBurst(0, 0.2, 'gold');
     const cupTxt = state.matchFormat === 'bo3' ? `PUB NIGHT CUP (${m.legsYou}-${m.legsRival})!!` : 'GAME SHOT & THE LEG!!';
     spawnCallout(cupTxt, { center: true, style: 'big' });
-    trev.say(TREV_PINT_LINE, { mood: 'pint', holdMs: 9500, forceOpen: true, speak: true, clipId: 'pint_classic' });
+    if (unlockedBevDarts) {
+      trev.say(TREV_BEV_DARTS_LINE, { mood: 'pint', holdMs: 9500, forceOpen: true, speak: true, clipId: 'bev_darts_unlock' });
+    } else {
+      trev.sayDeck('pint', { mood: 'pint', holdMs: 9500, forceOpen: true, speak: true });
+    }
     draw501Slate({
       footer: `GAME SHOT! ${m.dartsThrown}d · Avg ${avg3}`,
       footer2: `Board IQ ${iqGrade} (${iqPct}%) · Chalk ${chalkPct}%`,
@@ -7847,6 +8722,13 @@ function completeChallenge(correct, customMsg = null, customCueLines = null) {
   let rec = { xpGain: 0, flowMult: 1, lightning: false, rankedUp: null };
   if (!state.ghostMode) {
     rec = mastery.record(id, correct, ms, state.usedHint, ch.speedMs || 3000);
+    if (!ch.isIntroDemo && !isLearningRep(ch)) {
+      const isMathPhase = ch.missPrompt || ((ch.kind === 'countdown301' || ch.kind === 'match501') && ch.phase !== 'throw');
+      const parMs = computeComplexityParMs(ch, isMathPhase) * effectiveTimerMult(state.stage);
+      mastery.updateAdaptive(state.stage, {
+        correct, ratio: parMs > 0 ? (ms / parMs) : 0.7, ms, usedHint: state.usedHint, timedOut: state.bellChimed,
+      });
+    }
     state.sessionTotal = (state.sessionTotal || 0) + 1;
     if (correct) state.sessionOk = (state.sessionOk || 0) + 1;
     state.sessionLog.push({ ok: !!correct, label: formatShotLogEntry(ch) });
@@ -7895,9 +8777,27 @@ function completeChallenge(correct, customMsg = null, customCueLines = null) {
       return;
     }
 
+    if (!state.ghostMode && ch.isIntroDemo) {
+      const stageId = state.stage;
+      state.inIntroDemo = false;
+      state.introDemo = null;
+      mastery.data.seenIntros = mastery.data.seenIntros || {};
+      mastery.data.seenIntros[stageId] = true;
+      mastery.data.xp = (mastery.data.xp || 0) + 15;
+      mastery.save();
+      if (elIntroSkipBtn) elIntroSkipBtn.classList.remove('visible');
+      spawnCallout('CHALK-TALK ✓ · PIP 1!', { center: true, style: 'gold' });
+      setFeedback('Chalk-Talk nailed (+15 XP)! Now let\'s light your 8 Brass Pips!', 'ok');
+      trev.sayDeck('praise', { mood: 'cheer', holdMs: 2200, speak: true });
+      updateHudStats();
+      if (ch.kind !== 'countdown301' && ch.kind !== 'match501') renderProgressSlate();
+      advanceAfter(950);
+      return;
+    }
+
     let justUnlockedTrial = false;
     let justEarnedFirstPip = false;
-    if (!state.ghostMode && state.stage !== 'CALIBRATION' && state.stage !== 'LEVEL_7') {
+    if (!state.ghostMode && !state.weakSpotMode && state.stage !== 'CALIBRATION' && state.stage !== 'LEVEL_7') {
       const prevPips = mastery.getPips(state.stage);
       const nextPips = mastery.addPip(state.stage);
       if (prevPips === 0 && nextPips === 1 && !mastery.data.pipsExplained) {
@@ -8544,26 +9444,34 @@ function handleBoardClick(bed, rawXY) {
     } else if (state.stepIndex === 1) {
       const targetOut = state.remainingScore === 50 ? 'BULL' : 'D' + (state.remainingScore / 2);
       if (bed.code === targetOut) {
-        throwDartTo(x, y, { kind: targetOut === 'BULL' ? 'BULL' : 'D' });
-        state.dartsLeft = 0;
-        const verifyLine = ch.usedFdi && fdi ? `${fdi.treble} + ${fdi.dbl} = ${fdi.sum} ✓` : `${it.score}: ${ch.chosenFirst} + ${targetOut}`;
-        const firstIsTreble = ch.chosenFirst === it.route[0] && it.route[0][0] === 'T';
-        if (!state.ghostMode && !state.inTrial && firstIsTreble && state.stage === 'LEVEL_5' && Math.random() < 0.35) {
-          ch.missPrompt = true;
-          ch.missAns = it.miss;
-          ch.chalkSpeedMs = 9500;
-          state.challengeStartMs = performance.now();
-          state.bellChimed = false;
-          const singleName = 'S' + it.route[0].slice(1);
-          elPromptSub.textContent = 'Miss Rule Check';
-          elScoreBig.textContent = `${it.score} - ${singleName}`;
-          elPromptTask.textContent = `Quick! If ${it.route[0]} hits ${singleName}, what's left?`;
-          showNumpad(true);
-          renderChalkboard({ header: 'MISS RULE', big: '?', sub: verifyLine, lines: [`${it.score} hit ${singleName} -> what's left?`] });
-          setFeedback(`${verifyLine}! Quick Miss Rule: hit ${singleName} on ${it.score} -> what's left?`, 'cue');
+        const finishG44 = (nailed = null, landedCode = null) => {
+          state.dartsLeft = 0;
+          const verifyLine = ch.usedFdi && fdi ? `${fdi.treble} + ${fdi.dbl} = ${fdi.sum} ✓` : `${it.score}: ${ch.chosenFirst} + ${targetOut}`;
+          const throwNote = nailed === true ? ` · 🎯 Pinned ${targetOut}!` : nailed === false ? ` · Route ✓ (dart clipped ${landedCode})` : '';
+          const firstIsTreble = ch.chosenFirst === it.route[0] && it.route[0][0] === 'T';
+          if (!state.ghostMode && !state.inTrial && firstIsTreble && state.stage === 'LEVEL_5' && Math.random() < 0.35) {
+            ch.missPrompt = true;
+            ch.missAns = it.miss;
+            ch.chalkSpeedMs = 9500;
+            state.challengeStartMs = performance.now();
+            state.bellChimed = false;
+            const singleName = 'S' + it.route[0].slice(1);
+            elPromptSub.textContent = 'Miss Rule Check';
+            elScoreBig.textContent = `${it.score} - ${singleName}`;
+            elPromptTask.textContent = `Quick! If ${it.route[0]} hits ${singleName}, what's left?`;
+            showNumpad(true);
+            renderChalkboard({ header: 'MISS RULE', big: '?', sub: verifyLine, lines: [`${it.score} hit ${singleName} -> what's left?`] });
+            setFeedback(`${verifyLine}${throwNote}! Quick Miss Rule: hit ${singleName} on ${it.score} -> what's left?`, 'cue');
+          } else {
+            completeChallenge(true, `Game shot ${it.score}! ${verifyLine}${throwNote} · Miss -> ${it.miss}`,
+              [{ text: verifyLine, kind: 'ok' }, `Miss Rule -> ${it.miss}`, it.cue]);
+          }
+        };
+        if (state.matchFinishThrow && !state.ghostMode && !state.inTrial && !ch.isIntroDemo) {
+          startAimGauge('finish', bed, { x, y }, { onDone: finishG44 });
         } else {
-          completeChallenge(true, `Game shot ${it.score}! ${verifyLine} · Miss -> ${it.miss}`,
-            [{ text: verifyLine, kind: 'ok' }, `Miss Rule -> ${it.miss}`, it.cue]);
+          throwDartTo(x, y, { kind: targetOut === 'BULL' ? 'BULL' : 'D' });
+          finishG44(null, null);
         }
       } else {
         throwDartTo(x, y, { kind: bed.ring, wireTink: true });
@@ -8892,21 +9800,29 @@ function handleBoardClick(bed, rawXY) {
     } else {
       const outBed = state.remainingScore === 50 ? 'BULL' : 'D' + (state.remainingScore / 2);
       if (bed.code === outBed) {
-        throwDartTo(x, y, { kind: outBed === 'BULL' ? 'BULL' : 'D' });
-        state.dartsLeft = 0;
-        audio.playApplause();
-        const fdi = ch.activeFdi;
-        if (ch.usedFdiTreble && fdi) {
-          if (!state.ghostMode) { mastery.data.xp = (mastery.data.xp || 0) + 10; mastery.save(); }
-          const sumEq = `${fdi.treble} + ${fdi.dbl} = ${fdi.sum} ✓`;
-          const bridgeSummary = `${it.score} -> ${ch.openedWith} = ${ch.afterDart1Score} -> ${sumEq}`;
-          completeChallenge(true, `TON-PLUS ${it.score}! ${sumEq} (+10 FDI Bridge Bonus!)`,
-            [{ text: `${it.score} CHECKED OUT!`, kind: 'ok' }, { text: bridgeSummary, kind: 'ok' }, '+10 FDI Bridge Bonus XP!']);
-        } else if (fdi) {
-          completeChallenge(true, `TON-PLUS ${it.score}! (Tip: ${ch.afterDart1Score} also has Rule of ${fdi.sum}: ${fdi.treble} + ${fdi.dbl} = ${fdi.sum})`,
-            [{ text: `${it.score} OUT (${ch.openedWith} ${ch.dart2Code} ${outBed})`, kind: 'ok' }, `FDI Bridge alt: ${fdi.treble} + ${fdi.dbl} = ${fdi.sum}`]);
+        const finishTonPlus = (nailed = null, landedCode = null) => {
+          state.dartsLeft = 0;
+          audio.playApplause();
+          const fdi = ch.activeFdi;
+          const throwNote = nailed === true ? ` · 🎯 Pinned ${outBed}!` : nailed === false ? ` · Route ✓ (${landedCode})` : '';
+          if (ch.usedFdiTreble && fdi) {
+            if (!state.ghostMode) { mastery.data.xp = (mastery.data.xp || 0) + 10; mastery.save(); }
+            const sumEq = `${fdi.treble} + ${fdi.dbl} = ${fdi.sum} ✓`;
+            const bridgeSummary = `${it.score} -> ${ch.openedWith} = ${ch.afterDart1Score} -> ${sumEq}`;
+            completeChallenge(true, `TON-PLUS ${it.score}! ${sumEq}${throwNote} (+10 FDI Bridge Bonus!)`,
+              [{ text: `${it.score} CHECKED OUT!`, kind: 'ok' }, { text: bridgeSummary, kind: 'ok' }, '+10 FDI Bridge Bonus XP!']);
+          } else if (fdi) {
+            completeChallenge(true, `TON-PLUS ${it.score}!${throwNote} (Tip: ${ch.afterDart1Score} also has Rule of ${fdi.sum}: ${fdi.treble} + ${fdi.dbl} = ${fdi.sum})`,
+              [{ text: `${it.score} OUT (${ch.openedWith} ${ch.dart2Code} ${outBed})`, kind: 'ok' }, `FDI Bridge alt: ${fdi.treble} + ${fdi.dbl} = ${fdi.sum}`]);
+          } else {
+            completeChallenge(true, `TON-PLUS ${it.score} CHECKOUT!${throwNote} ${it.cue}`, [{ text: `${it.score} OUT!`, kind: 'ok' }, it.cue]);
+          }
+        };
+        if (state.matchFinishThrow && !state.ghostMode && !state.inTrial && !ch.isIntroDemo) {
+          startAimGauge('finish', bed, { x, y }, { onDone: finishTonPlus });
         } else {
-          completeChallenge(true, `TON-PLUS ${it.score} CHECKOUT! ${it.cue}`, [{ text: `${it.score} OUT!`, kind: 'ok' }, it.cue]);
+          throwDartTo(x, y, { kind: outBed === 'BULL' ? 'BULL' : 'D' });
+          finishTonPlus(null, null);
         }
       } else {
         throwDartTo(x, y, { kind: bed.ring, wireTink: true });
@@ -8958,6 +9874,7 @@ function handleBoardClick(bed, rawXY) {
 }
 
 function submitNumericAnswer(rawStr) {
+  clearNumpadTimers();
   const ch = state.challenge;
   if (!ch || state.busy) return;
   const val = parseInt(rawStr, 10);
@@ -8971,8 +9888,8 @@ function submitNumericAnswer(rawStr) {
     } else {
       ch.mathWrongCount = (ch.mathWrongCount || 0) + 1;
       if (!state.inTrial) applyChallengeHint(false);
-      state.numInput = ''; renderNumpadDisplay();
-      completeChallenge(false, `${val} isn't right — ${ch.cue}`);
+      flashNumpadDelta(val, ch.val);
+      completeChallenge(false, `${val} isn't right (off by ${Math.abs(val - ch.val)}) — ${ch.cue}`);
     }
     return;
   }
@@ -8986,8 +9903,8 @@ function submitNumericAnswer(rawStr) {
         [{ text: `${ch.item.score} + Miss ${ch.missAns}`, kind: 'ok' }, ch.item.cue]);
     } else {
       ch.mathWrongCount = (ch.mathWrongCount || 0) + 1;
-      state.numInput = ''; renderNumpadDisplay();
-      completeChallenge(false, `Check subtraction: ${ch.item.score} - ${bedValue('S' + ch.item.route[0].slice(1))} = ${ch.missAns}`);
+      flashNumpadDelta(val, ch.missAns);
+      completeChallenge(false, `Off by ${Math.abs(val - ch.missAns)}! Check: ${ch.item.score} - ${bedValue('S' + ch.item.route[0].slice(1))} = ${ch.missAns}`);
     }
     return;
   }
@@ -9017,8 +9934,8 @@ function submitNumericAnswer(rawStr) {
     } else {
       ch.mathWrongCount = (ch.mathWrongCount || 0) + 1;
       state.gauntlet170Streak = 0;
-      state.numInput = ''; renderNumpadDisplay();
-      completeChallenge(false, `Miss Rule check: ${a.rem1} - ${a.miss2Val} (${a.miss2Label}) = ${a.miss2Rem}!`);
+      flashNumpadDelta(val, a.miss2Rem);
+      completeChallenge(false, `Off by ${Math.abs(val - a.miss2Rem)}! Miss Rule: ${a.rem1} - ${a.miss2Val} (${a.miss2Label}) = ${a.miss2Rem}!`);
     }
     return;
   }
@@ -9034,8 +9951,8 @@ function submitNumericAnswer(rawStr) {
     } else {
       ch.mathWrongCount = (ch.mathWrongCount || 0) + 1;
       if (!state.inTrial) applyChallengeHint(false);
-      state.numInput = ''; renderNumpadDisplay();
-      completeChallenge(false, `Not ${val}! Group the amber darts first: ${it.cue}`);
+      flashNumpadDelta(val, it.total);
+      completeChallenge(false, `Not ${val} (off by ${Math.abs(val - it.total)})! Group the amber darts first: ${it.cue}`);
     }
     return;
   }
@@ -9081,10 +9998,10 @@ function submitNumericAnswer(rawStr) {
       } else {
         ch.mathWrongCount = (ch.mathWrongCount || 0) + 1;
         if (!state.inTrial) applyChallengeHint(false);
-        state.numInput = ''; renderNumpadDisplay();
+        flashNumpadDelta(val, ch.visitTotal);
         const breakdown = ch.darts.map(d => `${d}(${bedValue(d)})`).join(' + ');
         elPromptTask.textContent = `Try again: ${breakdown} — enter total & CALL!`;
-        completeChallenge(false, `Visit isn't ${val}! Add: ${breakdown}`);
+        completeChallenge(false, `Visit isn't ${val} (off by ${Math.abs(val - ch.visitTotal)})! Add: ${breakdown}`);
       }
       return;
     }
@@ -9128,8 +10045,8 @@ function submitNumericAnswer(rawStr) {
         completeChallenge(true, legNote, null);
       } else {
         ch.mathWrongCount = (ch.mathWrongCount || 0) + 1;
-        state.numInput = ''; renderNumpadDisplay();
-        completeChallenge(false, `Not ${val}! ${subtractionShortcut(ch.startScore, ch.visitTotal)}`);
+        flashNumpadDelta(val, ch.expectedRem);
+        completeChallenge(false, `Not ${val} (off by ${Math.abs(val - ch.expectedRem)})! ${subtractionShortcut(ch.startScore, ch.visitTotal)}`);
       }
       return;
     }
@@ -9177,9 +10094,9 @@ function submitNumericAnswer(rawStr) {
       } else {
         ch.mathWrongCount = (ch.mathWrongCount || 0) + 1;
         audio.playWireTink(false);
-        state.numInput = ''; renderNumpadDisplay();
+        flashNumpadDelta(val, ch.rivalExpected);
         const breakdown = (ch.rivalVisitDarts || []).map(d => `${d}(${bedValue(d)})`).join(' + ');
-        setFeedback(`Not ${val}! Check ${rv.short}'s darts: ${breakdown} (press Snap Pair [Tab] or Cue [H]!)`, 'warn');
+        setFeedback(`Not ${val} (off by ${Math.abs(val - ch.rivalExpected)})! Check ${rv.short}'s darts: ${breakdown} (press Snap Pair [Tab] or Cue [H]!)`, 'warn');
       }
       return;
     }
@@ -9210,9 +10127,9 @@ function submitNumericAnswer(rawStr) {
       } else {
         ch.mathWrongCount = (ch.mathWrongCount || 0) + 1;
         audio.playWireTink(false);
-        state.numInput = ''; renderNumpadDisplay();
+        flashNumpadDelta(val, p.answer);
         const last2 = String(p.score % 100).padStart(2, '0');
-        setFeedback(`Not ${val}! ${p.formulaName}: add +${p.addConst} onto ${last2} (press [Tab] or Cue [H]!)`, 'warn');
+        setFeedback(`Not ${val} (off by ${Math.abs(val - p.answer)})! ${p.formulaName}: add +${p.addConst} onto ${last2} (press [Tab] or Cue [H]!)`, 'warn');
       }
       return;
     }
@@ -9255,9 +10172,9 @@ function submitNumericAnswer(rawStr) {
       } else {
         ch.mathWrongCount = (ch.mathWrongCount || 0) + 1;
         audio.playWireTink(false);
-        state.numInput = ''; renderNumpadDisplay();
+        flashNumpadDelta(val, ch.missExpected);
         const tip = ch.slipInfo ? ch.slipInfo.badge : `Check ${ch.missPromptFrom} - ${bedValue(ch.missSingle)}`;
-        setFeedback(`Not ${val}! ${tip} (tap Hop or Cue [H] for help!)`, 'warn');
+        setFeedback(`Not ${val} (off by ${Math.abs(val - ch.missExpected)})! ${tip} (tap Hop or Cue [H] for help!)`, 'warn');
       }
       return;
     }
@@ -9302,10 +10219,10 @@ function submitNumericAnswer(rawStr) {
         ch.mathWrongCount = (ch.mathWrongCount || 0) + 1;
         audio.playWireTink(false);
         applyChallengeHint(false);
-        state.numInput = ''; renderNumpadDisplay();
+        flashNumpadDelta(val, ch.visitTotal);
         const breakdown = ch.darts.map(d => `${d}(${bedValue(d)})`).join(' + ');
         elPromptTask.textContent = `Try again: ${breakdown} — enter total & CALL!`;
-        setFeedback(`Check your addition — ${breakdown} (press Snap Pair [Tab] or Cue [H]!)`, 'warn');
+        setFeedback(`Off by ${Math.abs(val - ch.visitTotal)} — ${breakdown} (press Snap Pair [Tab] or Cue [H]!)`, 'warn');
       }
       return;
     }
@@ -9344,8 +10261,8 @@ function submitNumericAnswer(rawStr) {
       } else {
         ch.mathWrongCount = (ch.mathWrongCount || 0) + 1;
         audio.playWireTink(false);
-        state.numInput = ''; renderNumpadDisplay();
-        setFeedback(`Check subtraction: ${subtractionShortcut(ch.startScore, ch.visitTotal)}`, 'warn');
+        flashNumpadDelta(val, ch.expectedRem);
+        setFeedback(`Not ${val} (off by ${Math.abs(val - ch.expectedRem)})! ${subtractionShortcut(ch.startScore, ch.visitTotal)}`, 'warn');
       }
     }
   }
@@ -9594,18 +10511,18 @@ window.addEventListener('keydown', (e) => {
     if (elNumpad.classList.contains('visible')) {
       e.preventDefault();
       claimPlayerControl();
-      if (state.numInput.length < 3) { state.numInput += e.key; renderNumpadDisplay(); }
+      appendNumpadDigit(e.key);
     }
   } else if (e.key === 'Backspace' && elNumpad.classList.contains('visible')) {
     e.preventDefault();
     claimPlayerControl();
-    state.numInput = state.numInput.slice(0, -1); renderNumpadDisplay();
+    backspaceNumpad();
   } else if (e.key === 'Tab' && elNumpad.classList.contains('visible')) {
     if (getChalkAssistSpec()) {
       e.preventDefault();
       triggerChalkAssist();
     }
-  } else if (e.key === 'Enter' && elNumpad.classList.contains('visible')) {
+  } else if ((e.key === 'Enter' || e.code === 'NumpadEnter') && elNumpad.classList.contains('visible')) {
     e.preventDefault();
     claimPlayerControl();
     submitNumericAnswer(state.numInput);
@@ -9624,17 +10541,18 @@ window.addEventListener('keydown', (e) => {
   }
 });
 
-// Slate Numpad clicks + Croupier Snap / Chunk Hop tactile button (blur on click so keyboard Enter never re-triggers a focused button!)
+// Slate Numpad clicks + Smart Auto-Call toggle + Croupier Snap / Chunk Hop tactile button
 if (elChalkAssistBtn) elChalkAssistBtn.addEventListener('click', () => { elChalkAssistBtn.blur(); triggerChalkAssist(); });
+if (elAutoCallBtn) elAutoCallBtn.addEventListener('click', () => { elAutoCallBtn.blur(); claimPlayerControl(); toggleAutoCall(); });
 document.querySelectorAll('.np-key').forEach(btn => {
   btn.addEventListener('click', () => {
     btn.blur();
     claimPlayerControl();
     if (!audio.ctx) { audio.unlock(); elSoundPill.textContent = 'Sound: On'; elSoundPill.classList.add('on'); }
     const k = btn.dataset.k;
-    if (k === 'BACK') { state.numInput = state.numInput.slice(0, -1); renderNumpadDisplay(); }
+    if (k === 'BACK') backspaceNumpad();
     else if (k === 'ENTER') submitNumericAnswer(state.numInput);
-    else if (state.numInput.length < 3) { state.numInput += k; renderNumpadDisplay(); }
+    else appendNumpadDigit(k);
   });
 });
 
@@ -9644,6 +10562,12 @@ document.getElementById('pace-btn').addEventListener('click', () => {
   setDifficulty(next, true);
 });
 document.getElementById('rules-btn').addEventListener('click', () => { claimPlayerControl(); openStageBriefing(state.stage); });
+if (elIntroSkipBtn) elIntroSkipBtn.addEventListener('click', () => { elIntroSkipBtn.blur(); claimPlayerControl(); skipLevelIntro(); });
+if (elBriefDemoBtn) elBriefDemoBtn.addEventListener('click', () => {
+  const sid = elBriefDemoBtn.dataset.stageId || state.stage;
+  closeStageBriefing();
+  startLevelIntro(sid);
+});
 document.getElementById('briefing-start').addEventListener('click', closeStageBriefing);
 document.getElementById('briefing-x').addEventListener('click', closeStageBriefing);
 elBriefBg.addEventListener('click', (e) => { if (e.target === elBriefBg) closeStageBriefing(); });
@@ -9744,184 +10668,360 @@ function stageProgressPct(stageId) {
   return Math.round((ok / ids.length) * 100);
 }
 
+function countWeakSpotItems() {
+  const all = Object.values(mastery.data.items || {});
+  return all.filter(st => st && (st.miss > 0 || (st.ok > 0 && st.bestMs >= 2900))).length;
+}
+
+function startWeakSpotWarmUp() {
+  stopSpectatorMode();
+  cancelAimGauge();
+  claimPlayerControl();
+  dismissWelcome();
+  elLevelUp.classList.remove('show');
+  state.inTrial = false;
+  state.inIntroDemo = false;
+  state.introDemo = null;
+  state.auditOnly = false;
+  state.fdiPairsOnly = false;
+  state.fdiBridgesOnly = false;
+  state.gauntlet170Mode = false;
+  state.weakSpotMode = true;
+  closeDrawer();
+  const n = countWeakSpotItems();
+  setFeedback(n > 0
+    ? `🎯 Weak-Spot Warm-Up: drilling your ${n} slowest & missed beds across the board!`
+    : '🎯 Weak-Spot Warm-Up: drilling classic notorious pub beds (T14, D14, T17, 75 FDI, 104 trap)!', 'cue');
+  loadChallenge(nextChallengeForStage(state.stage));
+  renderProgressSlate();
+}
+
+function equipDartSet(setId) {
+  const spec = getDartSetSpec(setId);
+  const stars = mastery.totalStars();
+  if (stars < spec.starsNeeded) {
+    setFeedback(`${spec.name} unlocks at ${spec.starsNeeded} Brass Stars (you have ${stars}★ — pass Pub Trials to earn more!).`, 'warn');
+    return;
+  }
+  state.dartSet = spec.id;
+  mastery.data.dartSet = spec.id;
+  mastery.save();
+  if (typeof applyDartSetToRack === 'function') applyDartSetToRack(spec.id);
+  if (spec.id === 'bev_leopard') {
+    trev.say(TREV_BEV_DARTS_LINE, { mood: 'toast', holdMs: 4200, forceOpen: true, speak: true, clipId: 'bev_darts_unlock' });
+  } else {
+    setFeedback(`Equipped ${spec.name} on your Left-Door Rack & throw darts!`, 'ok');
+  }
+  renderDrawer();
+}
+
 function renderDrawer() {
   if (drawerTab === 'stages') {
     const prof = currentProfile();
+    const sub = state.drawerSubTab || 'career';
+    const totalStars = mastery.totalStars();
+    const adaptMult = effectiveTimerMult(state.stage);
+    const weakCount = countWeakSpotItems();
     const FAV_DOUBLE_META = {
       D20: { label: 'Tops (D20)', rule: 'Read straight off 40 (41–59) & off 20 (21–39)' },
       D16: { label: 'Double 16 (D16)', rule: 'Last digit −2 for D16 (33–52), cap 53+ → D20' },
       D18: { label: 'Double 18 (D18)', rule: 'Last digit +4 for D18 (37–56), 42 → S6!' },
     };
     const favMeta = FAV_DOUBLE_META[state.favDouble] || FAV_DOUBLE_META.D20;
-    elDrawerBody.innerHTML = `
-      <div class="setting-row">
-        <div>
-          <div><strong>Countdown Difficulty</strong></div>
-          <div style="font-size:11px;color:var(--chalk-dim);margin-top:2px">${prof.desc}</div>
-        </div>
-        <div class="seg-group">
-          <button class="seg-btn ${state.difficulty === 'relaxed' ? 'active' : ''}" data-diff="relaxed">Relaxed (1★)</button>
-          <button class="seg-btn ${state.difficulty === 'league' ? 'active' : ''}" data-diff="league">League (2★)</button>
-          <button class="seg-btn ${state.difficulty === 'pro' ? 'active' : ''}" data-diff="pro">Pro (3★)</button>
-        </div>
-      </div>
-      <div class="setting-row">
-        <span>Chalk Scaffolding</span>
-        <div class="seg-group">
-          <button class="seg-btn ${state.hintMode === 'auto' ? 'active' : ''}" data-hint="auto">Auto-Fade</button>
-          <button class="seg-btn ${state.hintMode === 'always' ? 'active' : ''}" data-hint="always">Guided</button>
-          <button class="seg-btn ${state.hintMode === 'blind' ? 'active' : ''}" data-hint="blind">Match Blind</button>
-        </div>
-      </div>
-      <div class="setting-row" style="flex-wrap:wrap">
-        <div>
-          <div><span>Favorite Double Archetype</span></div>
-          <div style="font-size:11px;color:var(--chalk-dim);margin-top:2px">${
-            state.weakSideMode
-              ? `Weak-Side Challenge ON (drilling off-${state.favDouble} doubles!)`
-              : `${favMeta.label} — ${favMeta.rule}`
-          }</div>
-        </div>
-        <div class="seg-group" style="flex-wrap:wrap">
-          <button class="seg-btn ${state.favDouble === 'D20' ? 'active' : ''}" data-favd="D20">D20 (Off 40)</button>
-          <button class="seg-btn ${state.favDouble === 'D16' ? 'active' : ''}" data-favd="D16">D16 (-2)</button>
-          <button class="seg-btn ${state.favDouble === 'D18' ? 'active' : ''}" data-favd="D18">D18 (+4)</button>
-          <button class="seg-btn ${state.weakSideMode ? 'active' : ''}" data-weakside="1">Weak-Side</button>
-        </div>
-      </div>
-      <div class="setting-row">
-        <span>Level 5 · FDI Training Mode</span>
-        <div class="seg-group">
-          <button class="seg-btn ${!state.fdiPairsOnly ? 'active' : ''}" data-fdipair="0">All 2-Dart</button>
-          <button class="seg-btn ${state.fdiPairsOnly ? 'active' : ''}" data-fdipair="1">FDI Pair Hunter (25/30/35)</button>
-        </div>
-      </div>
-      <div class="setting-row" style="flex-wrap:wrap">
-        <div>
-          <div><span>Level 6 · Big-Finish Mode</span></div>
-          <div style="font-size:11px;color:var(--chalk-dim);margin-top:2px">${
-            state.gauntlet170Mode
-              ? `170 Down Walk-Down (${state.gauntlet170Idx + 1}/34 · Best Streak: ${mastery.data.gauntlet170Best || 0})`
-              : state.fdiBridgesOnly ? 'Focused 25/30/35 FDI bridge finishes' : '101–170 finishes, Bogey Dodger & 5-Treble Danger Audits'
-          }</div>
-        </div>
-        <div class="seg-group" style="flex-wrap:wrap">
-          <button class="seg-btn ${!state.fdiBridgesOnly && !state.gauntlet170Mode ? 'active' : ''}" data-l6mode="all">All 101–170</button>
-          <button class="seg-btn ${state.fdiBridgesOnly && !state.gauntlet170Mode ? 'active' : ''}" data-l6mode="bridges">25/30/35 Bridges</button>
-          <button class="seg-btn ${state.gauntlet170Mode ? 'active' : ''}" data-l6mode="gauntlet170">170 Down (170→130)</button>
-        </div>
-      </div>
-      <div class="setting-row" style="flex-wrap:wrap">
-        <div>
-          <div><span>3-Dart Throw Aim (Levels 4 &amp; 7)</span></div>
-          <div style="font-size:11px;color:var(--chalk-dim);margin-top:2px">${
-            state.aimMode === '3beat' ? '1·Focus/Grip → 2·Horizontal Line → 3·Vertical Height'
-            : state.aimMode === '2beat' ? 'Quick 2-Beat: 1·Horizontal Line → 2·Vertical Height'
-            : 'Instant throw with automatic pub scatter'
-          }</div>
-        </div>
-        <div class="seg-group">
-          <button class="seg-btn ${state.aimMode === '3beat' ? 'active' : ''}" data-aimmode="3beat">3-Beat Rhythm</button>
-          <button class="seg-btn ${state.aimMode === '2beat' ? 'active' : ''}" data-aimmode="2beat">2-Beat Line+Ht</button>
-          <button class="seg-btn ${state.aimMode === 'scatter' ? 'active' : ''}" data-aimmode="scatter">Instant Scatter</button>
-        </div>
-      </div>
-      <div class="setting-row" style="flex-wrap:wrap">
-        <div>
-          <div><span>Level 7 · 501 Pub Rival (5 Physics Bots)</span></div>
-          <div style="font-size:11px;color:var(--chalk-dim);margin-top:2px">${currentRival().name} (${currentRival().avgLabel}) — ${currentRival().tagline}</div>
-        </div>
-        <div class="seg-group" style="flex-wrap:wrap">
-          <button class="seg-btn ${state.rivalId === 'big_dave' ? 'active' : ''}" data-rivalid="big_dave">Big Dave</button>
-          <button class="seg-btn ${state.rivalId === 'steady_eddie' ? 'active' : ''}" data-rivalid="steady_eddie">Eddie</button>
-          <button class="seg-btn ${state.rivalId === 'nervy_nigel' ? 'active' : ''}" data-rivalid="nervy_nigel">Nigel</button>
-          <button class="seg-btn ${state.rivalId === 'treble_hunter' ? 'active' : ''}" data-rivalid="treble_hunter">Guv'nor</button>
-          <button class="seg-btn ${state.rivalId === 'pub_shark' ? 'active' : ''}" data-rivalid="pub_shark">Rita</button>
-        </div>
-      </div>
-      <div class="setting-row" style="flex-wrap:wrap">
-        <div>
-          <div><span>Level 7 · Format &amp; Spectator</span></div>
-          <div style="font-size:11px;color:var(--chalk-dim);margin-top:2px">${state.spectator.active ? 'Live 3D Bot vs Bot exhibition running' : state.matchFormat === 'bo3' ? 'Pub Night Best-of-3 (first to 2 legs)' : 'Single 501 Double-Out leg'}</div>
-        </div>
-        <div class="seg-group" style="flex-wrap:wrap">
-          <button class="seg-btn ${state.matchFormat === 'single' ? 'active' : ''}" data-mformat="single">Single Leg</button>
-          <button class="seg-btn ${state.matchFormat === 'bo3' ? 'active' : ''}" data-mformat="bo3">Best of 3</button>
-          <button class="seg-btn ${state.spectator.active ? 'active' : ''}" data-spectate="1">${state.spectator.active ? 'Exit Watch' : 'Watch Bot vs Bot →'}</button>
-        </div>
-      </div>
-      <div class="setting-row">
-        <span>Level 7 · Live Slip-Recovery Checks (&le;170)</span>
-        <div class="seg-group">
-          <button class="seg-btn ${state.liveSlipChecks ? 'active' : ''}" data-slipchk="1">On (Miss/Stray)</button>
-          <button class="seg-btn ${!state.liveSlipChecks ? 'active' : ''}" data-slipchk="0">Off</button>
-        </div>
-      </div>
-      <div class="setting-row">
-        <span>Level 7 · Pub Marker &amp; Oche Prep</span>
-        <div class="seg-group">
-          <button class="seg-btn ${state.markRival ? 'active' : ''}" data-markrival="1">On (Mark &amp; Prep)</button>
-          <button class="seg-btn ${!state.markRival ? 'active' : ''}" data-markrival="0">Off</button>
-        </div>
-      </div>
-      <div class="setting-row" style="flex-wrap:wrap">
-        <div>
-          <div><span>Coach Trev Voice</span></div>
-          <div style="font-size:11px;color:var(--chalk-dim);margin-top:2px">${
-            trev.voiceMode === 'cockney'
-              ? 'East London Cockney Trev · Chatterbox Studio clips (0ms local!)'
-              : !trev.kokoroOn
-                ? 'Built-in browser voice (instant)'
-                : kokoro.status === 'loading'
-                  ? `Downloading Kokoro-82M neural voice (${kokoro.progressPct}%)…`
-                  : kokoro.status === 'ready'
-                    ? `Kokoro-82M UK · ${(KOKORO_VOICES[trev.kokoroVoice] || KOKORO_VOICES.bm_george).desc}`
-                    : kokoro.status === 'error'
-                      ? 'CDN unreachable — using browser voice'
-                      : 'Kokoro-82M ready to load (~86MB cached)'
-          }</div>
-        </div>
-        <div class="seg-group" style="flex-wrap:wrap">
-          <button class="seg-btn ${trev.voiceMode === 'cockney' ? 'active' : ''}" data-kvoice="cockney">Cockney Trev</button>
-          <button class="seg-btn ${trev.voiceMode === 'browser' ? 'active' : ''}" data-kvoice="browser">Browser</button>
-          <button class="seg-btn ${trev.voiceMode === 'kokoro' && trev.kokoroVoice === 'bm_george' ? 'active' : ''}" data-kvoice="bm_george">George</button>
-          <button class="seg-btn ${trev.voiceMode === 'kokoro' && trev.kokoroVoice === 'bm_lewis' ? 'active' : ''}" data-kvoice="bm_lewis">Lewis</button>
-          <button class="seg-btn ${trev.voiceMode === 'kokoro' && trev.kokoroVoice === 'bm_daniel' ? 'active' : ''}" data-kvoice="bm_daniel">Daniel</button>
-          <button class="seg-btn ${trev.voiceMode === 'kokoro' && trev.kokoroVoice === 'bm_fable' ? 'active' : ''}" data-kvoice="bm_fable">Fable</button>
-        </div>
-      </div>
-      <div class="setting-row">
-        <span>Match-Night Rival Pressure</span>
-        <div class="seg-group">
-          <button class="seg-btn ${state.rivalPressure ? 'active' : ''}" data-rival="1">Rival on D16</button>
-          <button class="seg-btn ${!state.rivalPressure ? 'active' : ''}" data-rival="0">Practice</button>
-        </div>
-      </div>
-      ${STAGES.map(st => {
-        const pct = stageProgressPct(st.id);
-        const stars = mastery.getStars(st.id);
-        const pips = mastery.getPips(st.id);
-        const starBadge = st.id !== 'CALIBRATION'
-          ? (stars > 0 ? `<span class="stars-tag">${formatStars(stars)}</span>` : st.id === 'LEVEL_7' ? '0/3 ★' : `${pips}/${PRACTICE_PIPS_NEEDED} pips`)
-          : st.tag;
-        const barW = st.id === 'LEVEL_7' ? (stars ? Math.round((stars / 3) * 100) : 0) : Math.max(pct, Math.round((pips / PRACTICE_PIPS_NEEDED) * 100));
-        return `
-          <div class="stage-card ${state.stage === st.id ? 'selected' : ''}" data-stage="${st.id}">
-            <div class="sc-top">
-              <div class="sc-title">${st.title}</div>
-              <span class="sc-tag">${starBadge}</span>
-            </div>
-            <div class="sc-desc">${st.desc}</div>
-            ${st.id !== 'CALIBRATION' ? `<div class="sc-bar"><div class="sc-fill" style="width:${barW}%"></div></div>` : ''}
+
+    let subBody = '';
+    if (sub === 'career') {
+      subBody = `
+        <div class="setting-row" style="flex-wrap:wrap">
+          <div>
+            <div><strong>Pace Clock</strong> ${state.difficulty === 'adaptive' ? `<span style="color:#a5f0be;font-size:10.5px">(${adaptMult.toFixed(2)}× live)</span>` : ''}</div>
+            <div style="font-size:11px;color:var(--chalk-dim);margin-top:2px">${prof.desc}</div>
           </div>
-        `;
-      }).join('')}
+          <div class="seg-group" style="flex-wrap:wrap">
+            <button class="seg-btn ${state.difficulty === 'adaptive' ? 'active' : ''}" data-diff="adaptive">Auto (Fair)</button>
+            <button class="seg-btn ${state.difficulty === 'relaxed' ? 'active' : ''}" data-diff="relaxed">Relaxed (1★)</button>
+            <button class="seg-btn ${state.difficulty === 'league' ? 'active' : ''}" data-diff="league">League (2★)</button>
+            <button class="seg-btn ${state.difficulty === 'pro' ? 'active' : ''}" data-diff="pro">Pro (3★)</button>
+          </div>
+        </div>
+        <div class="setting-row">
+          <span>Chalk Scaffolding</span>
+          <div class="seg-group">
+            <button class="seg-btn ${state.hintMode === 'auto' ? 'active' : ''}" data-hint="auto">Auto-Fade</button>
+            <button class="seg-btn ${state.hintMode === 'always' ? 'active' : ''}" data-hint="always">Guided</button>
+            <button class="seg-btn ${state.hintMode === 'blind' ? 'active' : ''}" data-hint="blind">Match Blind</button>
+          </div>
+        </div>
+        <div class="setting-row">
+          <span>Numpad Smart Auto-Call</span>
+          <div class="seg-group">
+            <button class="seg-btn ${state.autoCall ? 'active' : ''}" data-autocall="1">Auto-Snap ✓</button>
+            <button class="seg-btn ${!state.autoCall ? 'active' : ''}" data-autocall="0">Manual CALL</button>
+          </div>
+        </div>
+        <div class="setting-row" style="flex-wrap:wrap">
+          <div>
+            <div><span>Coach Trev Voice</span></div>
+            <div style="font-size:11px;color:var(--chalk-dim);margin-top:2px">${
+              trev.voiceMode === 'cockney'
+                ? 'East London Cockney Trev · 111 Studio clips incl. Bev banter!'
+                : !trev.kokoroOn
+                  ? 'Built-in browser voice (instant)'
+                  : kokoro.status === 'loading'
+                    ? `Downloading Kokoro-82M neural voice (${kokoro.progressPct}%)…`
+                    : kokoro.status === 'ready'
+                      ? `Kokoro-82M UK · ${(KOKORO_VOICES[trev.kokoroVoice] || KOKORO_VOICES.bm_george).desc}`
+                      : kokoro.status === 'error'
+                        ? 'CDN unreachable — using browser voice'
+                        : 'Kokoro-82M ready to load (~86MB cached)'
+            }</div>
+          </div>
+          <div class="seg-group" style="flex-wrap:wrap">
+            <button class="seg-btn ${trev.voiceMode === 'cockney' ? 'active' : ''}" data-kvoice="cockney">Cockney Trev</button>
+            <button class="seg-btn ${trev.voiceMode === 'browser' ? 'active' : ''}" data-kvoice="browser">Browser</button>
+            <button class="seg-btn ${trev.voiceMode === 'kokoro' && trev.kokoroVoice === 'bm_george' ? 'active' : ''}" data-kvoice="bm_george">George</button>
+            <button class="seg-btn ${trev.voiceMode === 'kokoro' && trev.kokoroVoice === 'bm_lewis' ? 'active' : ''}" data-kvoice="bm_lewis">Lewis</button>
+          </div>
+        </div>
+        ${STAGES.filter(s => s.id !== 'CALIBRATION').map(st => {
+          const pct = stageProgressPct(st.id);
+          const stars = mastery.getStars(st.id);
+          const pips = mastery.getPips(st.id);
+          const band = st.id !== 'LEVEL_7' ? getPipBandForStage(st.id, pips) : null;
+          const starBadge = stars > 0
+            ? `<span class="stars-tag">${formatStars(stars)}</span>`
+            : st.id === 'LEVEL_7' ? '0/3 ★' : `${pips}/${PRACTICE_PIPS_NEEDED} · Act ${band.act}/3`;
+          const barW = st.id === 'LEVEL_7' ? (stars ? Math.round((stars / 3) * 100) : 0) : Math.max(pct, Math.round((pips / PRACTICE_PIPS_NEEDED) * 100));
+          return `
+            <div class="stage-card ${!state.weakSpotMode && !state.auditOnly && !state.gauntlet170Mode && !state.fdiPairsOnly && state.stage === st.id ? 'selected' : ''}" data-stage="${st.id}">
+              <div class="sc-top">
+                <div class="sc-title">${st.title}</div>
+                <span class="sc-tag">${starBadge}</span>
+              </div>
+              <div class="sc-desc">${st.desc}</div>
+              <div class="sc-bar"><div class="sc-fill" style="width:${barW}%"></div></div>
+            </div>
+          `;
+        }).join('')}
+      `;
+    } else if (sub === 'arcade') {
+      subBody = `
+        <button class="arcade-card ${state.weakSpotMode ? 'active' : ''}" data-arcade="weakspot">
+          <div class="sc-top">
+            <div class="sc-title">🎯 Weak-Spot Warm-Up</div>
+            <span class="sc-tag">${weakCount > 0 ? `${weakCount} queued` : 'Pub Stumpers'}</span>
+          </div>
+          <div class="sc-desc">Pulls ONLY your slowest &amp; missed beds across every unlocked level (doubles, trebles, 3-dart sums, FDIs &amp; traps) so weak spots vanish fast!</div>
+        </button>
+        <button class="arcade-card ${state.gauntlet170Mode && state.stage === 'LEVEL_6' ? 'active' : ''}" data-arcade="gauntlet170">
+          <div class="sc-top">
+            <div class="sc-title">🔥 170 Down Blitz (170 → 130)</div>
+            <span class="sc-tag">Best ${mastery.data.gauntlet170Best || 0}/34</span>
+          </div>
+          <div class="sc-desc">Walk down all 34 finishable ton-plus checkouts from 170 to 130 in order, including live single-miss subtraction checks!</div>
+        </button>
+        <button class="arcade-card ${state.fdiPairsOnly && state.stage === 'LEVEL_5' ? 'active' : ''}" data-arcade="fdipairs">
+          <div class="sc-top">
+            <div class="sc-title">🟡 FDI Pair Hunter (25 / 30 / 35)</div>
+            <span class="sc-tag">Outer-Ring Pairs</span>
+          </div>
+          <div class="sc-desc">Spot and circle the two outer-ring numbers adding to 25 (60s), 30 (70s), or 35 (80s) directly on the 3D dartboard!</div>
+        </button>
+        <button class="arcade-card ${state.auditOnly && state.stage === 'LEVEL_6' ? 'active' : ''}" data-arcade="audit101">
+          <div class="sc-top">
+            <div class="sc-title">🛡️ 5-Treble Trap Audit (101–109)</div>
+            <span class="sc-tag">@yourdarts Matrix</span>
+          </div>
+          <div class="sc-desc">Audit all 5 top trebles on 101–109 (3 darts in hand) to dodge deadly stray-wire splash traps like S1→102 and S3→99!</div>
+        </button>
+        <button class="arcade-card ${state.stage === 'CALIBRATION' ? 'active' : ''}" data-arcade="calib">
+          <div class="sc-top">
+            <div class="sc-title">⚡ 60s Placement Check</div>
+            <span class="sc-tag">12-Shot Diagnostic</span>
+          </div>
+          <div class="sc-desc">Quick 12-shot diagnostic across Levels 1–6 to pinpoint your sharpest skills and recommend your starting level.</div>
+        </button>
+        <div class="setting-row" style="flex-wrap:wrap">
+          <div>
+            <div><span>Match-Finish Throw (Levels 5 &amp; 6)</span></div>
+            <div style="font-size:11px;color:var(--chalk-dim);margin-top:2px">Optionally throw the final finishing Double/Bull with the live 3-Beat Oche Rhythm!</div>
+          </div>
+          <div class="seg-group">
+            <button class="seg-btn ${state.matchFinishThrow ? 'active' : ''}" data-mfinish="1">Throw Finish ✓</button>
+            <button class="seg-btn ${!state.matchFinishThrow ? 'active' : ''}" data-mfinish="0">Tap Direct</button>
+          </div>
+        </div>
+        <div class="setting-row" style="flex-wrap:wrap">
+          <div>
+            <div><span>Favorite Double Archetype</span></div>
+            <div style="font-size:11px;color:var(--chalk-dim);margin-top:2px">${
+              state.weakSideMode
+                ? `Weak-Side Challenge ON (drilling off-${state.favDouble} doubles!)`
+                : `${favMeta.label} — ${favMeta.rule}`
+            }</div>
+          </div>
+          <div class="seg-group" style="flex-wrap:wrap">
+            <button class="seg-btn ${state.favDouble === 'D20' ? 'active' : ''}" data-favd="D20">D20</button>
+            <button class="seg-btn ${state.favDouble === 'D16' ? 'active' : ''}" data-favd="D16">D16 (-2)</button>
+            <button class="seg-btn ${state.favDouble === 'D18' ? 'active' : ''}" data-favd="D18">D18 (+4)</button>
+            <button class="seg-btn ${state.weakSideMode ? 'active' : ''}" data-weakside="1">Weak-Side</button>
+          </div>
+        </div>
+      `;
+    } else {
+      // Match Night (501) + 3D Dart Set Armory!
+      subBody = `
+        <button class="arcade-card ${state.stage === 'LEVEL_7' && !state.spectator.active ? 'active' : ''}" data-stage="LEVEL_7">
+          <div class="sc-top">
+            <div class="sc-title">🏆 Step Up to Championship 501</div>
+            <span class="sc-tag">${currentRival().short} · ${state.matchFormat === 'bo3' ? 'Bo3' : 'Single Leg'}</span>
+          </div>
+          <div class="sc-desc">Full Double-Out 501 match! Chalk your own throws, mark your rival on the Welsh slate, and earn a live Board IQ grade (S/A/B/C).</div>
+        </button>
+        <div class="setting-row" style="flex-wrap:wrap">
+          <div>
+            <div><span>501 Pub Rival (5 Physics Bots)</span></div>
+            <div style="font-size:11px;color:var(--chalk-dim);margin-top:2px">${currentRival().name} (${currentRival().avgLabel}) — ${currentRival().tagline}</div>
+          </div>
+          <div class="seg-group" style="flex-wrap:wrap">
+            <button class="seg-btn ${state.rivalId === 'big_dave' ? 'active' : ''}" data-rivalid="big_dave">Big Dave</button>
+            <button class="seg-btn ${state.rivalId === 'steady_eddie' ? 'active' : ''}" data-rivalid="steady_eddie">Eddie</button>
+            <button class="seg-btn ${state.rivalId === 'nervy_nigel' ? 'active' : ''}" data-rivalid="nervy_nigel">Nigel</button>
+            <button class="seg-btn ${state.rivalId === 'treble_hunter' ? 'active' : ''}" data-rivalid="treble_hunter">Guv'nor</button>
+            <button class="seg-btn ${state.rivalId === 'pub_shark' ? 'active' : ''}" data-rivalid="pub_shark">Rita</button>
+          </div>
+        </div>
+        <div class="setting-row" style="flex-wrap:wrap">
+          <div>
+            <div><span>Format &amp; Bot Exhibition</span></div>
+            <div style="font-size:11px;color:var(--chalk-dim);margin-top:2px">${state.spectator.active ? 'Live 3D Bot vs Bot exhibition running' : state.matchFormat === 'bo3' ? 'Pub Night Best-of-3 (first to 2 legs)' : 'Single 501 Double-Out leg'}</div>
+          </div>
+          <div class="seg-group" style="flex-wrap:wrap">
+            <button class="seg-btn ${state.matchFormat === 'single' ? 'active' : ''}" data-mformat="single">Single Leg</button>
+            <button class="seg-btn ${state.matchFormat === 'bo3' ? 'active' : ''}" data-mformat="bo3">Best of 3</button>
+            <button class="seg-btn ${state.spectator.active ? 'active' : ''}" data-spectate="1">${state.spectator.active ? 'Exit Watch' : 'Watch Bot vs Bot →'}</button>
+          </div>
+        </div>
+        <div class="setting-row" style="flex-wrap:wrap">
+          <div>
+            <div><span>Throw Aim Rhythm (Levels 4 &amp; 7)</span></div>
+            <div style="font-size:11px;color:var(--chalk-dim);margin-top:2px">${
+              state.aimMode === '3beat' ? '1·Focus/Grip → 2·Horizontal Line → 3·Vertical Height'
+              : state.aimMode === '2beat' ? 'Quick 2-Beat: 1·Horizontal Line → 2·Vertical Height'
+              : 'Instant throw with automatic pub scatter'
+            }</div>
+          </div>
+          <div class="seg-group">
+            <button class="seg-btn ${state.aimMode === '3beat' ? 'active' : ''}" data-aimmode="3beat">3-Beat</button>
+            <button class="seg-btn ${state.aimMode === '2beat' ? 'active' : ''}" data-aimmode="2beat">2-Beat</button>
+            <button class="seg-btn ${state.aimMode === 'scatter' ? 'active' : ''}" data-aimmode="scatter">Instant</button>
+          </div>
+        </div>
+        <div class="setting-row">
+          <span>Pub Marker &amp; Oche Prep</span>
+          <div class="seg-group">
+            <button class="seg-btn ${state.markRival ? 'active' : ''}" data-markrival="1">On</button>
+            <button class="seg-btn ${!state.markRival ? 'active' : ''}" data-markrival="0">Off</button>
+          </div>
+        </div>
+        <div class="setting-row">
+          <span>Live Slip-Recovery Checks (&le;170)</span>
+          <div class="seg-group">
+            <button class="seg-btn ${state.liveSlipChecks ? 'active' : ''}" data-slipchk="1">On</button>
+            <button class="seg-btn ${!state.liveSlipChecks ? 'active' : ''}" data-slipchk="0">Off</button>
+          </div>
+        </div>
+        <div class="setting-row">
+          <span>Match-Night Rival Pressure</span>
+          <div class="seg-group">
+            <button class="seg-btn ${state.rivalPressure ? 'active' : ''}" data-rival="1">Rival on D16</button>
+            <button class="seg-btn ${!state.rivalPressure ? 'active' : ''}" data-rival="0">Practice</button>
+          </div>
+        </div>
+        <div class="ledger-section-title" style="margin-top:4px">
+          <span>3D Dart Set Armory</span>
+          <span class="stars-tag">${totalStars} ★ earned</span>
+        </div>
+        <div class="armory-grid">
+          ${DART_SETS.map(ds => {
+            const unlocked = totalStars >= ds.starsNeeded;
+            const equipped = state.dartSet === ds.id;
+            return `
+              <button class="armory-card ${equipped ? 'equipped' : ''} ${unlocked ? '' : 'locked'}" data-dartset="${ds.id}">
+                <div class="armory-top">
+                  <span>${ds.name}</span>
+                  <span>${equipped ? '✓ ON' : unlocked ? 'EQUIP' : `🔒 ${ds.starsNeeded}★`}</span>
+                </div>
+                <div class="armory-sub">${ds.desc}</div>
+              </button>
+            `;
+          }).join('')}
+        </div>
+      `;
+    }
+
+    elDrawerBody.innerHTML = `
+      <div class="drawer-subtabs">
+        <button class="dsub-btn ${sub === 'career' ? 'active' : ''}" data-dsub="career">Career (1–7)</button>
+        <button class="dsub-btn ${sub === 'arcade' ? 'active' : ''}" data-dsub="arcade">Arcade Drills</button>
+        <button class="dsub-btn ${sub === 'match' ? 'active' : ''}" data-dsub="match">Match Night (501)</button>
+      </div>
+      ${subBody}
     `;
+
+    elDrawerBody.querySelectorAll('[data-dsub]').forEach(b => b.addEventListener('click', () => {
+      state.drawerSubTab = b.dataset.dsub;
+      renderDrawer();
+    }));
     elDrawerBody.querySelectorAll('[data-diff]').forEach(b => b.addEventListener('click', () => {
       setDifficulty(b.dataset.diff, true); renderDrawer();
     }));
     elDrawerBody.querySelectorAll('[data-hint]').forEach(b => b.addEventListener('click', () => {
       state.hintMode = b.dataset.hint; renderDrawer(); loadChallenge(nextChallengeForStage(state.stage));
+    }));
+    elDrawerBody.querySelectorAll('[data-autocall]').forEach(b => b.addEventListener('click', () => {
+      toggleAutoCall(b.dataset.autocall === '1'); renderDrawer();
+    }));
+    elDrawerBody.querySelectorAll('[data-mfinish]').forEach(b => b.addEventListener('click', () => {
+      state.matchFinishThrow = b.dataset.mfinish === '1';
+      mastery.data.matchFinishThrow = state.matchFinishThrow;
+      mastery.save();
+      renderDrawer();
+    }));
+    elDrawerBody.querySelectorAll('[data-arcade]').forEach(card => card.addEventListener('click', () => {
+      const mode = card.dataset.arcade;
+      state.weakSpotMode = false;
+      state.auditOnly = false;
+      state.fdiPairsOnly = false;
+      state.fdiBridgesOnly = false;
+      state.gauntlet170Mode = false;
+      if (mode === 'weakspot') { startWeakSpotWarmUp(); return; }
+      if (mode === 'gauntlet170') {
+        state.gauntlet170Mode = true;
+        state.gauntlet170Idx = 0;
+        state.gauntlet170Streak = 0;
+        closeDrawer();
+        selectStage('LEVEL_6', true, false);
+        return;
+      }
+      if (mode === 'fdipairs') {
+        state.fdiPairsOnly = true;
+        closeDrawer();
+        selectStage('LEVEL_5', true, false);
+        return;
+      }
+      if (mode === 'audit101') {
+        closeDrawer();
+        selectStage('LEVEL_6', true, false);
+        state.auditOnly = true;
+        state.inIntroDemo = false;
+        loadChallenge(nextChallengeForStage('LEVEL_6'));
+        return;
+      }
+      if (mode === 'calib') {
+        closeDrawer();
+        selectStage('CALIBRATION', true, false);
+      }
     }));
     elDrawerBody.querySelectorAll('[data-favd]').forEach(b => b.addEventListener('click', () => {
       state.favDouble = b.dataset.favd;
@@ -9934,30 +11034,6 @@ function renderDrawer() {
       state.weakSideMode = !state.weakSideMode;
       renderDrawer();
       if (state.stage === 'LEVEL_5') loadChallenge(nextChallengeForStage('LEVEL_5'));
-    }));
-    elDrawerBody.querySelectorAll('[data-fdipair]').forEach(b => b.addEventListener('click', () => {
-      state.fdiPairsOnly = b.dataset.fdipair === '1';
-      renderDrawer();
-      if (state.fdiPairsOnly) {
-        closeDrawer();
-        selectStage('LEVEL_5', true, false);
-      } else if (state.stage === 'LEVEL_5') {
-        loadChallenge(nextChallengeForStage('LEVEL_5'));
-      }
-    }));
-    elDrawerBody.querySelectorAll('[data-l6mode]').forEach(b => b.addEventListener('click', () => {
-      const mode = b.dataset.l6mode;
-      state.fdiBridgesOnly = mode === 'bridges';
-      state.gauntlet170Mode = mode === 'gauntlet170';
-      if (state.gauntlet170Mode) {
-        state.gauntlet170Idx = 0;
-        state.gauntlet170Streak = 0;
-        closeDrawer();
-        selectStage('LEVEL_6', true, false);
-      } else {
-        renderDrawer();
-        if (state.stage === 'LEVEL_6') loadChallenge(nextChallengeForStage('LEVEL_6'));
-      }
     }));
     elDrawerBody.querySelectorAll('[data-aimmode]').forEach(b => b.addEventListener('click', () => {
       state.aimMode = b.dataset.aimmode;
@@ -10013,7 +11089,15 @@ function renderDrawer() {
     elDrawerBody.querySelectorAll('[data-rival]').forEach(b => b.addEventListener('click', () => {
       state.rivalPressure = b.dataset.rival === '1'; renderDrawer();
     }));
+    elDrawerBody.querySelectorAll('[data-dartset]').forEach(card => card.addEventListener('click', () => {
+      equipDartSet(card.dataset.dartset);
+    }));
     elDrawerBody.querySelectorAll('[data-stage]').forEach(card => card.addEventListener('click', () => {
+      state.fdiPairsOnly = false;
+      state.fdiBridgesOnly = false;
+      state.gauntlet170Mode = false;
+      state.auditOnly = false;
+      state.weakSpotMode = false;
       closeDrawer();
       selectStage(card.dataset.stage, true);
     }));
@@ -10153,6 +11237,9 @@ onResize();
 // Show non-blocking Quick-Start welcome banner on first visit (never blocks frame-1 Ghost Demo!)
 if (!mastery.data.welcomed) elWelcome.classList.add('show');
 
+// Apply player's equipped 3D Dart Set onto the Left-Door Dart Rack right at startup!
+applyDartSetToRack(state.dartSet);
+
 // Start immediately with Oche Ghost demonstrating Level 1 (Doubles) and cycling through the career!
 const GHOST_ROTATION = ['LEVEL_1', 'LEVEL_2', 'LEVEL_3', 'LEVEL_4', 'LEVEL_5', 'LEVEL_6'];
 let ghostRotIdx = 0;
@@ -10188,45 +11275,62 @@ function animate(now) {
     }
   }
 
-  // Live Difficulty-Scaled Countdown Timer & Brass Bell Gate (pauses cleanly while aiming the Oche Rhythm Gauge or Spectating!)
+  // Live Complexity-Weighted & Adaptive Countdown Timer + Learning Rep Grace Mode!
   if (state.challenge && !state.busy && !pausedByOverlay && !aimGauge.active && !state.spectator.active) {
     const ch = state.challenge;
-    const isMathPhase = ch.missPrompt || ((ch.kind === 'countdown301' || ch.kind === 'match501') && ch.phase !== 'throw');
-    const baseMs = isMathPhase ? (ch.chalkSpeedMs || (ch.missPrompt ? 9500 : 14000)) : (ch.speedMs || 3200);
-    const chainBonus = (ch.phase === 'chalk_rem' && ch.chalkChainBonusMs) ? ch.chalkChainBonusMs : 0;
-    const targetMs = baseMs * prof.timerMult * (state.ghostMode ? 1.55 : 1.0) + chainBonus;
+    const learning = isLearningRep(ch);
     const elapsed = now - state.challengeStartMs;
-    const remMs = Math.max(0, targetMs - elapsed);
-    const pct = remMs / targetMs;
-    elTimerFill.style.transform = `scaleX(${pct})`;
-    elTimerFill.className = 'timer-fill' + (pct < 0.25 ? ' urgent' : pct < 0.5 ? ' warn' : '');
-    elTimerSec.textContent = (remMs / 1000).toFixed(1) + 's';
-    elTimerSec.className = 'timer-sec' + (pct < 0.25 ? ' urgent' : '');
-    if (!state.ghostMode && remMs <= 0 && !state.bellChimed) {
-      state.bellChimed = true;
-      audio.playBell('timeout');
-      if (!state.hintShown) {
-        setFeedback('Bell! Pace clock expired — finish the shot (press Cue [H] for help).', 'warn');
+    if (learning) {
+      // Untimed Learning Rep / Chalk-Talk Intro: soft brass-emerald bar, zero bell penalty!
+      const pulse = 0.86 + 0.14 * Math.sin(clockSec * 2.2);
+      elTimerFill.style.transform = `scaleX(${pulse.toFixed(3)})`;
+      elTimerFill.className = 'timer-fill learn';
+      elTimerSec.textContent = ch.isIntroDemo ? 'INTRO' : `LEARN ${(elapsed / 1000).toFixed(0)}s`;
+      elTimerSec.className = 'timer-sec learn';
+    } else {
+      const isMathPhase = ch.missPrompt || ((ch.kind === 'countdown301' || ch.kind === 'match501') && ch.phase !== 'throw');
+      const baseMs = computeComplexityParMs(ch, isMathPhase);
+      const chainBonus = (ch.phase === 'chalk_rem' && ch.chalkChainBonusMs) ? ch.chalkChainBonusMs : 0;
+      const timerMult = effectiveTimerMult(state.stage);
+      const targetMs = baseMs * timerMult * (state.ghostMode ? 1.55 : 1.0) + chainBonus;
+      const remMs = Math.max(0, targetMs - elapsed);
+      const pct = remMs / targetMs;
+      elTimerFill.style.transform = `scaleX(${pct})`;
+      elTimerFill.className = 'timer-fill' + (pct < 0.25 ? ' urgent' : pct < 0.5 ? ' warn' : '');
+      const adaptSt = state.difficulty === 'adaptive' ? mastery.getAdaptive(state.stage) : null;
+      const pbTxt = (adaptSt && adaptSt.pbMs < 90000 && remMs > 0 && window.innerWidth > 900)
+        ? ` · PB ${(adaptSt.pbMs / 1000).toFixed(1)}s`
+        : '';
+      elTimerSec.textContent = remMs <= 0 ? 'OT' : ((remMs / 1000).toFixed(1) + 's' + pbTxt);
+      elTimerSec.className = 'timer-sec' + (pct < 0.25 ? ' urgent' : '');
+      if (!state.ghostMode && remMs <= 0 && !state.bellChimed) {
+        state.bellChimed = true;
+        audio.playBell('timeout');
+        if (!state.hintShown) {
+          setFeedback('Bell! Soft overtime — finish the calc to lock it in (Flow bonus paused, press Cue [H] for help).', 'warn');
+        }
+        trev.onBellTimeout();
       }
-      trev.onBellTimeout();
     }
   } else if (pausedByOverlay || aimGauge.active) {
     state.challengeStartMs = now;
   }
 
-  // Reactive Cinema Lighting: Oche Flow warmth, Ally-Pally 180/Match-Dart spotlight tension & Rattled chill!
+  // Reactive Cinema Lighting + Big-Moment 3D Camera Zoom & Pub Hush (180-Dart / Match Dart / Match-Finish Throw)!
   const flowBoost = Math.min(1, (mastery.data.streak || 0) / 8);
   const chNow = state.challenge;
   const is180Dart = Boolean(
     chNow && Array.isArray(chNow.darts) && chNow.darts.length === 2 &&
-    chNow.darts[0].bed === 'T20' && chNow.darts[1].bed === 'T20'
+    chNow.darts[0] === 'T20' && chNow.darts[1] === 'T20'
   );
   const isMatchDart = Boolean(
-    chNow && (chNow.kind === 'match501' || chNow.kind === 'countdown301') &&
-    chNow.phase === 'throw' && !state.ghostMode &&
-    chNow.rem > 0 && (chNow.rem === 50 || (chNow.rem <= 40 && chNow.rem % 2 === 0))
+    (aimGauge.active && aimGauge.mode === 'finish') ||
+    (chNow && (chNow.kind === 'match501' || chNow.kind === 'countdown301') &&
+      chNow.phase === 'throw' && !state.ghostMode &&
+      chNow.liveRem > 0 && (chNow.liveRem === 50 || (chNow.liveRem <= 40 && chNow.liveRem % 2 === 0)))
   );
   const targetTension = (is180Dart || isMatchDart) ? 1.0 : 0.0;
+  audio.setTensionHush(targetTension > 0.5 && !state.ghostMode);
   const targetRattled = (state.mathFlow && state.mathFlow.tier === 'cold' && !state.ghostMode) ? 1.0 : 0.0;
   const moodAlpha = 1 - Math.exp(-dt * 3.4);
   curTension += (targetTension - curTension) * moodAlpha;
@@ -10254,12 +11358,33 @@ function animate(now) {
     }
   }
 
-  // Gentle oche camera breathing & subtle dart-impact kick
+  // Gentle oche camera breathing, Big-Moment 180/Match-Dart zoom & subtle dart-impact kick
   cameraKick *= Math.exp(-dt * 12);
   const targetCam = BASE_CAM.clone();
   const targetLook = BASE_LOOK.clone();
   targetCam.x += Math.sin(clockSec * 0.42) * 0.07;
   targetCam.y += Math.cos(clockSec * 0.55) * 0.045 - cameraKick;
+  // Big-Moment Camera Zoom: smoothly lean in toward T20 (on 180-Dart) or winning Double/Bull (on Match Dart)!
+  if (curTension > 0.02 && camera.aspect >= 0.95) {
+    const focusCode = is180Dart
+      ? 'T20'
+      : (aimGauge.active && aimGauge.aimedBed)
+        ? aimGauge.aimedBed.code
+        : (chNow && chNow.liveRem === 50) ? 'BULL'
+        : (chNow && chNow.liveRem > 0 && chNow.liveRem <= 40 && chNow.liveRem % 2 === 0) ? ('D' + (chNow.liveRem / 2))
+        : null;
+    const focusPt = focusCode ? bedToXY(focusCode) : { x: 0, y: 0.2 };
+    targetCam.z -= curTension * 1.45;
+    targetCam.x += focusPt.x * curTension * 0.26;
+    targetCam.y += focusPt.y * curTension * 0.22;
+    targetLook.x += focusPt.x * curTension * 0.34;
+    targetLook.y += focusPt.y * curTension * 0.30;
+  }
+  const desiredFov = 37 - curTension * 4.2;
+  if (Math.abs(camera.fov - desiredFov) > 0.02) {
+    camera.fov += (desiredFov - camera.fov) * (1 - Math.exp(-dt * 4.2));
+    camera.updateProjectionMatrix();
+  }
   // Slightly lean toward right slate chalkboard during Marking / Chalking phases on wide screens
   const isChalking = state.challenge && (
     state.challenge.kind === 'marking' ||
@@ -10272,9 +11397,9 @@ function animate(now) {
   // On stacked/portrait viewports when the compact Slate Numpad or Aim Gauge is visible, gently zoom & lift so the entire dartboard sits cleanly between top HUD and bottom keypad!
   if ((window.innerWidth <= 780 || camera.aspect < 0.95) && (elNumpad.classList.contains('visible') || aimGauge.active)) {
     const isNarrowPhone = camera.aspect < 0.72;
-    targetCam.y -= isNarrowPhone ? 0.30 : 0.08;
-    targetLook.y -= isNarrowPhone ? 0.42 : 0.14;
-    targetCam.z += isNarrowPhone ? 1.45 : 1.95;
+    targetCam.y -= isNarrowPhone ? 0.56 : 0.14;
+    targetLook.y -= isNarrowPhone ? 0.68 : 0.20;
+    targetCam.z += isNarrowPhone ? 2.15 : 2.15;
   }
   const camAlpha = 1 - Math.exp(-dt * 4.5);
   curCamPos.lerp(targetCam, camAlpha);

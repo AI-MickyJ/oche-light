@@ -490,6 +490,76 @@
       "file": "assets/trev_voice/slip_stray_treble.mp3",
       "text": "Blimey, stray neighbor treble! Stay sharp \u2014 call what's left to calm the throwing arm!",
       "bytes": 26012
+    },
+    "bev_praise_1": {
+      "file": "assets/trev_voice/bev_praise_1.mp3",
+      "text": "Lovely arrow, mate! Even my missus Bev would put the tea towel down to clap that one \u2014 love her to bits, she never claps mine!",
+      "bytes": 48476
+    },
+    "bev_praise_2": {
+      "file": "assets/trev_voice/bev_praise_2.mp3",
+      "text": "Proper class, pal! If I threw like that, Bev might actually let me keep the dartboard in the kitchen \u2014 bless her, not a chance!",
+      "bytes": 39548
+    },
+    "bev_praise_3": {
+      "file": "assets/trev_voice/bev_praise_3.mp3",
+      "text": "Bang on the money, mate! Wait till I tell Bev about that one \u2014 love her dearly, she'll still ask if I remembered the milk!",
+      "bytes": 40988
+    },
+    "bev_pint": {
+      "file": "assets/trev_voice/bev_pint.mp3",
+      "text": "Five on the spin! I'd buy you a pint, mate, except Bev's got me on a strict tenner a night \u2014 bless her, she knows me too well!",
+      "bytes": 37244
+    },
+    "bev_streak8": {
+      "file": "assets/trev_voice/bev_streak8.mp3",
+      "text": "Eight straight?! Leave it out, mate \u2014 Bev's gonna think I've been sneaking Luke Littler into the boozer behind her back!",
+      "bytes": 35228
+    },
+    "bev_miss_1": {
+      "file": "assets/trev_voice/bev_miss_1.mp3",
+      "text": "Nearly took the crisp rack out, pal! Reminds me of when I put a hole in Bev's kitchen wallpaper \u2014 love her dearly, didn't speak to me till Tuesday!",
+      "bytes": 45020
+    },
+    "bev_miss_2": {
+      "file": "assets/trev_voice/bev_miss_2.mp3",
+      "text": "Unlucky off the wire, mate \u2014 still less grief than I got from Bev for turning up ten minutes late for Sunday roast! Shake it off.",
+      "bytes": 39692
+    },
+    "bev_wire_pull": {
+      "file": "assets/trev_voice/bev_wire_pull.mp3",
+      "text": "Snuck into the wrong bedroom there, mate! Don't tell Bev I said that \u2014 bless her, she'd have my arrows in the wheelie bin!",
+      "bytes": 36812
+    },
+    "bev_breakfast": {
+      "file": "assets/trev_voice/bev_breakfast.mp3",
+      "text": "Twenty-six \u2014 bed and breakfast, mate! Still better than the burnt toast Bev makes me when I'm late back from the pub \u2014 love her to bits, though!",
+      "bytes": 42572
+    },
+    "bev_bust": {
+      "file": "assets/trev_voice/bev_bust.mp3",
+      "text": "Ooh, bust! Got greedy, mate \u2014 like me telling Bev I'm only popping out for one swift half. Bless her, she never buys it either!",
+      "bytes": 43436
+    },
+    "bev_bell": {
+      "file": "assets/trev_voice/bev_bell.mp3",
+      "text": "Bell beat ya, pal! Faster than Bev ringing my mobile at ten past nine \u2014 love her dearly, she's got a sixth sense for last orders!",
+      "bytes": 40844
+    },
+    "bev_madhouse": {
+      "file": "assets/trev_voice/bev_madhouse.mp3",
+      "text": "Welcome to the Madhouse, mate! Still less scary than walking through the front door with muddy boots on Bev's new carpet \u2014 bless her!",
+      "bytes": 38540
+    },
+    "bev_rival_miss": {
+      "file": "assets/trev_voice/bev_rival_miss.mp3",
+      "text": "Knees are knocking at double! Even Bev throws straighter than that when she's lobbing my slippers at me \u2014 love her to bits! Go nick the leg!",
+      "bytes": 39548
+    },
+    "bev_darts_unlock": {
+      "file": "assets/trev_voice/bev_darts_unlock.mp3",
+      "text": "Wahey! You've unlocked Bev's leopard-print flights, mate \u2014 love her to bits, don't tell her I nicked the pattern off her favorite cardigan!",
+      "bytes": 41996
     }
   }
 }
