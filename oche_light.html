@@ -365,8 +365,16 @@
     width: 218px; padding: 11px 11px 10px; display: none; flex-direction: column; gap: 7px;
   }
   @media (min-width: 1080px) and (min-height: 760px) {
-    /* Dock numpad cleanly on the open dark left cabinet door so both dartboard & right chalkboard stay 100% unobstructed! */
-    .numpad-panel { left: 18px; right: auto; top: 132px; bottom: auto; width: 224px; }
+    /* Centered sleek horizontal pub-till bar below the dartboard so BOTH left Instructions slate, right Score slate & Coach Trev stay 100% unobstructed! */
+    .numpad-panel {
+      left: 50%; right: auto; top: auto; bottom: 58px; transform: translateX(-50%);
+      width: 432px; padding: 8px 11px 9px; gap: 6px;
+    }
+    .numpad-panel .numpad-display { min-height: 34px; padding: 4px 10px; font-size: 20px; }
+    .numpad-panel .numpad-display.placeholder { font-size: 12.5px; line-height: 24px; }
+    .numpad-panel .numpad-grid { grid-template-columns: repeat(6, 1fr); gap: 5px; }
+    .numpad-panel .np-key { padding: 7px 0; font-size: 14px; }
+    .numpad-panel .np-key.enter { font-size: 11.5px; letter-spacing: 0.4px; }
   }
   .numpad-panel.visible { display: flex; }
   .chalk-assist {
@@ -540,6 +548,24 @@
     color: var(--chalk-dim); font-family: var(--font-mono); font-size: 10px;
   }
   .aim-cancel-btn:hover { color: var(--chalk); border-color: var(--brass-bright); }
+  .aim-tac-row {
+    display: none; align-items: center; justify-content: space-between; gap: 6px; flex-wrap: wrap;
+    margin-top: 1px;
+  }
+  .aim-tac-row.visible { display: flex; }
+  .aim-bias-btn {
+    display: none; padding: 3px 8px; border-radius: 4px; cursor: pointer;
+    background: linear-gradient(180deg, rgba(168, 122, 46, 0.34), rgba(96, 66, 20, 0.48));
+    border: 1px solid rgba(242, 210, 139, 0.72); color: #fff4d2;
+    font-family: var(--font-mono); font-size: 9.5px; font-weight: 700; letter-spacing: 0.35px;
+    text-transform: uppercase; white-space: nowrap;
+  }
+  .aim-bias-btn.visible { display: inline-block; }
+  .aim-bias-btn:hover { filter: brightness(1.15); }
+  .aim-bias-btn.active {
+    background: linear-gradient(180deg, rgba(36, 128, 72, 0.65), rgba(22, 82, 46, 0.78));
+    border-color: #8cf2b0; color: #e6ffef;
+  }
 
   /* Slide-Over Mahogany Pub Ledger Drawer (Stages & Mastery Ledger) */
   .drawer-backdrop {
@@ -839,7 +865,7 @@
     background: rgba(42, 26, 14, 0.08); border-color: rgba(96, 62, 30, 0.45); color: #3d2817;
   }
   .trev-stage {
-    pointer-events: auto; position: relative; width: 152px; height: 170px;
+    pointer-events: auto; position: relative; width: 134px; height: 150px;
     cursor: pointer;
     filter: drop-shadow(0 9px 18px rgba(0, 0, 0, 0.84)) drop-shadow(0 -2px 11px rgba(242, 186, 86, 0.26));
     transition: transform 0.2s ease;
@@ -861,10 +887,11 @@
   }
   .trev-img {
     width: 100%; height: 100%; object-fit: contain; display: block; pointer-events: none;
+    transform: scaleX(-1); /* Perched bottom-left facing inward toward the 3D dartboard! */
   }
-  /* Live animated cigarette smoke wisps rising off Trev's ciggie */
+  /* Live animated cigarette smoke wisps rising off Trev's flipped ciggie */
   .trev-smoke {
-    position: absolute; left: 14%; top: 4%; width: 34%; height: 42%;
+    position: absolute; right: 14%; top: 4%; width: 34%; height: 42%;
     pointer-events: none; overflow: visible;
   }
   .smoke-p1 { animation: smokeRise 3.2s ease-out infinite; transform-origin: 24px 66px; }
@@ -1063,7 +1090,7 @@
         <span id="stage-label">Level 1 · Doubles Mastery</span>
         <span class="caret">▼</span>
       </button>
-      <div id="pip-row" class="pip-row">
+      <div id="pip-row" class="pip-row" title="Progress Pips: each clean shot lights 1 of the 8 brass dots — fill all 8 to unlock this level's timed Pub Trial &amp; Brass Stars!">
         <div id="pip-dots" class="pip-dots"></div>
         <span id="pip-label">0/8 to Trial</span>
         <button id="trial-btn" class="trial-cta" style="display:none">Take Trial &rarr;</button>
@@ -1131,7 +1158,7 @@
         <button id="trev-hide-btn" class="trev-mini-btn" title="Tuck speech bubble (click Trev to bring back)">×</button>
       </div>
     </div>
-    <div id="trev-text">Alright me old china! I'm Trev — click or tap any bed on the board to grab the arrows, or hit Level 1 an' we'll get yer doubles sorted proper.</div>
+    <div id="trev-text">Alright me old china! I'm Trev — click any bed to grab the arrows. See them 8 little brass dots top-left? Them's yer progress pips: light all 8 with clean shots to unlock each level's Pub Trial an' win yer Brass Stars!</div>
     <div id="trev-acts" class="trev-bubble-acts"></div>
   </div>
   <div id="trev-stage" class="trev-stage" title="Click Trev for Cockney darts tips & banter!">
@@ -1249,6 +1276,10 @@
     </div>
     <span id="aim-high-lbl" class="aim-edge-lbl neutral">HI</span>
   </div>
+  <div id="aim-tac-row" class="aim-tac-row">
+    <span id="aim-lie-pill" class="aim-flow-pill"></span>
+    <button id="aim-bias-btn" class="aim-bias-btn" type="button">Bias Safe Wire [B]</button>
+  </div>
   <div class="aim-actions">
     <button id="aim-throw-btn" class="aim-throw-btn">1/3 Lock Focus [Click / Space]</button>
     <button id="aim-cancel-btn" class="aim-cancel-btn" title="Pick another target (Esc)">Re-aim</button>
@@ -1321,8 +1352,10 @@ import {
   multiAxisConfigForDifficulty, evaluateFocusBeat, computeMultiAxisDrop,
   DEFAULT_MATH_FLOW, computeMathFlowModifier, applyMathFlowToConfig,
   resolve501Dart, clamp301Dart, audit501Decision,
-} from './src/engine.mjs';
-import { BOT_PROFILES, BOT_IDS, simulateBot501Visit } from './src/bots.mjs';
+  FAV_DOUBLES, preferredDoubleSetup, evaluateBedLie, getWireBiasInfo,
+  buildOchePrepPrompt, BOARD_AUDIT_101_109, GAUNTLET_170_SCORES, build170GauntletStep,
+} from './src/engine.mjs?v=6b';
+import { BOT_PROFILES, BOT_IDS, simulateBot501Visit } from './src/bots.mjs?v=6b';
 
 /* ============================================================================
    1. 7-LEVEL PUB CAREER & CURRICULUM STAGES (Geometry & Data live in src/engine.mjs)
@@ -2480,18 +2513,89 @@ function makeSisalBoardTextures() {
   }
   ctx.putImageData(img, 0, 0);
 
-  // Subtle gilded East End pub brand stencils on top & bottom rim of surround
-  ctx.save();
-  ctx.fillStyle = 'rgba(224, 186, 114, 0.38)';
-  ctx.font = '700 26px Georgia, serif';
-  ctx.textAlign = 'center';
-  ctx.fillText('OCHE LIGHT · LONDON SISAL', half, half + 2.10 * scale);
-  ctx.font = '600 19px Georgia, serif';
-  ctx.fillStyle = 'rgba(224, 186, 114, 0.30)';
-  ctx.fillText('EST. 1894 · DOUBLE OUT', half, half - 2.02 * scale);
-  ctx.restore();
+  // Helper to draw true curved-arc dartboard surround lettering (Blade-6 / championship surround layout!)
+  function drawArcText(text, radiusPx, centerAng, letterStepRad, { font, fill, stroke = null, strokeW = 0, bottomArc = false } = {}) {
+    ctx.save();
+    ctx.font = font;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const chars = String(text).split('');
+    const total = (chars.length - 1) * letterStepRad;
+    for (let i = 0; i < chars.length; i++) {
+      const off = -total / 2 + i * letterStepRad;
+      // Top arc runs left->right clockwise (+off); bottom arc runs left->right counter-clockwise (-off) so text reads upright!
+      const ang = bottomArc ? (centerAng - off) : (centerAng + off);
+      const px = half + Math.sin(ang) * radiusPx;
+      const py = half - Math.cos(ang) * radiusPx;
+      ctx.save();
+      ctx.translate(px, py);
+      ctx.rotate(bottomArc ? (ang - Math.PI) : ang);
+      if (stroke && strokeW > 0) {
+        ctx.strokeStyle = stroke;
+        ctx.lineWidth = strokeW;
+        ctx.strokeText(chars[i], 0, 0);
+      }
+      ctx.fillStyle = fill;
+      ctx.fillText(chars[i], 0, 0);
+      ctx.restore();
+    }
+    ctx.restore();
+  }
 
-  // Crisp vintage numerals painted in gilded ivory-cream with deep cast drop shadow
+  // Top inner-band arched brand logo (between D20 and outer "20", matching real championship dartboards!)
+  drawArcText('OCHE LIGHT', 1.875 * scale, 0, 0.056, {
+    font: '800 54px Georgia, "Times New Roman", serif',
+    fill: '#f3e1b6',
+    stroke: 'rgba(10, 7, 5, 0.92)',
+    strokeW: 5,
+    bottomArc: false,
+  });
+
+  // Bottom inner-band arched model title & sub-line (between D3 and outer "3", upright along bottom curve!)
+  drawArcText('LONDON SISAL', 1.855 * scale, Math.PI, 0.044, {
+    font: '800 44px Georgia, "Times New Roman", serif',
+    fill: '#f3e1b6',
+    stroke: 'rgba(10, 7, 5, 0.92)',
+    strokeW: 4.5,
+    bottomArc: true,
+  });
+  drawArcText('EAST END PUB CHAMPIONSHIP', 1.945 * scale, Math.PI, 0.023, {
+    font: '700 18px ui-monospace, monospace',
+    fill: '#d9a452',
+    bottomArc: true,
+  });
+
+  // Four angled diagonal corner badges tucked cleanly inside the surround (matching Blade 6 10:30 / 1:30 / 4:30 / 7:30 crests!)
+  [
+    { ang: -Math.PI * 0.255, label: 'EST. 1894', sub: 'PUB CLUB', color: '#d4453a', pill: true },
+    { ang:  Math.PI * 0.255, label: 'EST. 1894', sub: 'PUB CLUB', color: '#d4453a', pill: true },
+    { ang:  Math.PI * 0.745, label: 'DOUBLE OUT', sub: '501 EDITION', color: '#d4453a', pill: false },
+    { ang: -Math.PI * 0.745, label: 'DOUBLE OUT', sub: '501 EDITION', color: '#d4453a', pill: false },
+  ].forEach(b => {
+    const r = 1.875 * scale;
+    const bx = half + Math.sin(b.ang) * r;
+    const by = half - Math.cos(b.ang) * r;
+    const isBottom = Math.abs(b.ang) > Math.PI * 0.5;
+    ctx.save();
+    ctx.translate(bx, by);
+    ctx.rotate(isBottom ? (b.ang - Math.PI) : b.ang);
+    ctx.strokeStyle = b.color;
+    ctx.lineWidth = 3.5;
+    ctx.beginPath();
+    ctx.roundRect(-78, -24, 156, 48, 22);
+    ctx.stroke();
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#f3e1b6';
+    ctx.font = '800 19px ui-monospace, monospace';
+    ctx.fillText(b.label, 0, -5);
+    ctx.fillStyle = '#cf9e52';
+    ctx.font = '700 12px ui-monospace, monospace';
+    ctx.fillText(b.sub, 0, 13);
+    ctx.restore();
+  });
+
+  // Outer-rim tangentially angled numbers (right-side-up on BOTH top & bottom halves, just like a real Blade 6!)
   ctx.save();
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
@@ -2499,11 +2603,19 @@ function makeSisalBoardTextures() {
     const theta = i * (Math.PI / 10);
     const nx = half + Math.sin(theta) * R_NUM_RING * scale;
     const ny = half - Math.cos(theta) * R_NUM_RING * scale;
-    ctx.font = '700 88px Georgia, "Times New Roman", serif';
-    ctx.fillStyle = 'rgba(0,0,0,0.95)';
-    ctx.fillText(String(SECTORS[i]), nx + 2.5, ny + 3.5);
-    ctx.fillStyle = '#f6ecd4';
-    ctx.fillText(String(SECTORS[i]), nx, ny);
+    // Sectors in lower half (15, 2, 17, 3, 19, 7, 16 -> indices 7..13) flip upright along bottom arc!
+    const isBottom = i >= 7 && i <= 13;
+    const rot = isBottom ? (theta - Math.PI) : theta;
+    ctx.save();
+    ctx.translate(nx, ny);
+    ctx.rotate(rot);
+    ctx.font = '800 84px "Trebuchet MS", "Arial Black", Georgia, sans-serif';
+    ctx.lineWidth = 7;
+    ctx.strokeStyle = 'rgba(0,0,0,0.92)';
+    ctx.strokeText(String(SECTORS[i]), 0, 0);
+    ctx.fillStyle = '#dcd9d0';
+    ctx.fillText(String(SECTORS[i]), 0, 0);
+    ctx.restore();
   }
   ctx.restore();
 
@@ -2580,7 +2692,8 @@ function makeBrickTexture() {
   return tex;
 }
 
-// Live 2x Retina Hand-Chalked Welsh Slate Canvas on Right Cabinet Door
+// Live 2x Retina Hand-Chalked Welsh Slate Canvases on BOTH Cabinet Doors:
+// Left Door = Instructions & Method Guide Slate · Right Door = Live Score & Progress Slate
 const chalkCanvas = document.createElement('canvas');
 chalkCanvas.width = 1024; chalkCanvas.height = 1536;
 const chalkCtx = chalkCanvas.getContext('2d');
@@ -2588,7 +2701,15 @@ const chalkTex = new THREE.CanvasTexture(chalkCanvas);
 chalkTex.colorSpace = THREE.SRGBColorSpace;
 chalkTex.anisotropy = renderer.capabilities.getMaxAnisotropy();
 
+const leftChalkCanvas = document.createElement('canvas');
+leftChalkCanvas.width = 1024; leftChalkCanvas.height = 1536;
+const leftChalkCtx = leftChalkCanvas.getContext('2d');
+const leftChalkTex = new THREE.CanvasTexture(leftChalkCanvas);
+leftChalkTex.colorSpace = THREE.SRGBColorSpace;
+leftChalkTex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+
 let lastChalkDraw = null;
+let lastLeftSlateDraw = null;
 const CHALK_FONT = '"Caveat", "Bradley Hand", Georgia, cursive';
 const SLATE_SERIF = '"Fraunces", Georgia, serif';
 const SLATE_MONO = '"JetBrains Mono", ui-monospace, monospace';
@@ -2658,14 +2779,15 @@ function wrapText(ctx, text, maxW) {
   return lines;
 }
 
-function renderChalkboard({ header = 'OCHE SLATE', big = '148', sub = '', lines = [], footer = '' }) {
-  lastChalkDraw = { fn: 'single', args: { header, big, sub, lines, footer } };
-  const ctx = chalkCtx;
+// Left Cabinet Door: Plain-English Instructions, Strategy & Method Slate (kept cleanly in upper 70% above Coach Trev!)
+function renderLeftSlate({ header = "COACH'S GUIDE", big = '', sub = '', lines = [], footer = '' }) {
+  lastLeftSlateDraw = { header, big, sub, lines, footer };
+  const ctx = leftChalkCtx;
   ctx.save();
-  ctx.setTransform(2, 0, 0, 2, 0, 0); // crisp 2x logical scaling over 512x768 layout
+  ctx.setTransform(2, 0, 0, 2, 0, 0);
   drawSlateBackdrop(ctx);
 
-  // Double-ruled brass/chalk pub slate frame
+  // Double-ruled brass/chalk frame
   ctx.strokeStyle = 'rgba(236, 224, 196, 0.34)';
   ctx.lineWidth = 2.6;
   ctx.strokeRect(18, 18, 476, 732);
@@ -2674,52 +2796,213 @@ function renderChalkboard({ header = 'OCHE SLATE', big = '148', sub = '', lines 
   ctx.strokeRect(25, 25, 462, 718);
 
   // Header
-  ctx.font = `700 24px ${SLATE_SERIF}`;
+  ctx.font = `700 23px ${SLATE_SERIF}`;
   ctx.textAlign = 'center';
-  drawChalkText(ctx, header.toUpperCase(), 256, 68, '#f3d28b', 0.2);
+  drawChalkText(ctx, String(header).toUpperCase(), 256, 66, '#f3d28b', 0.2);
 
   ctx.strokeStyle = 'rgba(236, 226, 204, 0.28)';
   ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.moveTo(46, 86); ctx.lineTo(466, 86); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(42, 84); ctx.lineTo(470, 84); ctx.stroke();
 
-  // Main hand-chalked score
-  ctx.font = `700 132px ${CHALK_FONT}`;
-  drawChalkText(ctx, String(big), 256, 206, '#faf3e2', 0.28);
+  let y = 136;
+  if (big) {
+    const bigStr = String(big);
+    ctx.font = bigStr.length > 7 ? `700 56px ${CHALK_FONT}` : `700 84px ${CHALK_FONT}`;
+    drawChalkText(ctx, bigStr, 256, y + 18, '#faf3e2', 0.26);
+    y += 52;
+  }
 
   if (sub) {
-    ctx.font = `700 32px ${CHALK_FONT}`;
+    ctx.font = `700 28px ${CHALK_FONT}`;
     const subLines = wrapText(ctx, sub, 434);
-    subLines.slice(0, 2).forEach((ln, idx) => drawChalkText(ctx, ln, 256, 252 + idx * 34, '#ebd093', 0.22));
+    subLines.slice(0, 2).forEach((ln) => {
+      drawChalkText(ctx, ln, 256, y + 8, '#ebd093', 0.22);
+      y += 32;
+    });
   }
 
   ctx.strokeStyle = 'rgba(236, 226, 204, 0.22)';
-  ctx.beginPath(); ctx.moveTo(46, 308); ctx.lineTo(466, 308); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(42, y + 4); ctx.lineTo(470, y + 4); ctx.stroke();
+  y += 40;
 
-  // Hand-chalked coaching notes / step trace
+  // Plain-English bullet steps & coaching tips (stop cleanly above y=525 so Coach Trev never overlaps a word!)
   ctx.textAlign = 'left';
-  let y = 354;
-  for (const entry of lines.slice(0, 7)) {
+  for (const entry of lines.slice(0, 6)) {
     const isWarn = typeof entry === 'object' && entry.kind === 'warn';
     const isGood = typeof entry === 'object' && entry.kind === 'ok';
     const txt = typeof entry === 'string' ? entry : entry.text;
     const col = isWarn ? '#f6bbb4' : isGood ? '#c5f4d4' : '#f4eee0';
-    ctx.font = `600 31px ${CHALK_FONT}`;
-    const wrapped = wrapText(ctx, txt, 424);
+    ctx.font = `600 28px ${CHALK_FONT}`;
+    const wrapped = wrapText(ctx, txt, 426);
     for (const wln of wrapped) {
-      if (y > 672) break;
-      drawChalkText(ctx, wln, 44, y, col, 0.2);
-      y += 36;
+      if (y > 516) break;
+      drawChalkText(ctx, wln, 42, y, col, 0.2);
+      y += 33;
     }
-    y += 9;
+    y += 8;
   }
 
-  if (footer) {
+  if (footer && y <= 538) {
     ctx.textAlign = 'center';
-    ctx.font = `600 19px ${SLATE_MONO}`;
-    drawChalkText(ctx, footer, 256, 720, 'rgba(196, 222, 242, 0.9)', 0.16);
+    ctx.font = `600 17px ${SLATE_MONO}`;
+    drawChalkText(ctx, footer.slice(0, 38), 256, 540, 'rgba(196, 222, 242, 0.88)', 0.16);
   }
   ctx.restore();
+  leftChalkTex.needsUpdate = true;
+}
+
+// Right Cabinet Door (Drill & Progress Mode): Live Scoreboard, 8 Hand-Chalked Brass Pips, Streak & Recent Shots!
+function renderProgressSlate() {
+  lastChalkDraw = { fn: 'progress', args: {} };
+  const ctx = chalkCtx;
+  ctx.save();
+  ctx.setTransform(2, 0, 0, 2, 0, 0);
+  drawSlateBackdrop(ctx);
+
+  // Double-ruled brass/chalk frame
+  ctx.strokeStyle = 'rgba(236, 224, 196, 0.36)';
+  ctx.lineWidth = 2.6;
+  ctx.strokeRect(18, 18, 476, 732);
+  ctx.strokeStyle = 'rgba(218, 178, 102, 0.22)';
+  ctx.lineWidth = 1.2;
+  ctx.strokeRect(25, 25, 462, 718);
+
+  const st = (typeof STAGES !== 'undefined' && typeof state !== 'undefined')
+    ? STAGES.find(s => s.id === state.stage)
+    : null;
+  const isTrial = typeof state !== 'undefined' && state.inTrial;
+  const isCal = typeof state !== 'undefined' && state.stage === 'CALIBRATION';
+  const isG170 = typeof state !== 'undefined' && state.stage === 'LEVEL_6' && state.gauntlet170Mode;
+  const hdr = isTrial ? 'PUB TRIAL SCORE'
+    : isCal ? 'PLACEMENT CHECK'
+    : isG170 ? '170 DOWN GAUNTLET'
+    : (st ? st.short.toUpperCase() : 'YOUR SCOREBOARD');
+
+  ctx.font = `700 22px ${SLATE_SERIF}`;
+  ctx.textAlign = 'center';
+  drawChalkText(ctx, hdr, 256, 64, '#f3d28b', 0.2);
+
+  ctx.strokeStyle = 'rgba(236, 226, 204, 0.28)';
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(40, 82); ctx.lineTo(472, 82); ctx.stroke();
+
+  const hasData = typeof mastery !== 'undefined' && typeof state !== 'undefined';
+  const pips = hasData ? mastery.getPips(state.stage) : 0;
+  const stars = hasData ? mastery.getStars(state.stage) : 0;
+  const streak = hasData ? (mastery.data.streak || 0) : 0;
+  const mult = hasData ? mastery.flowMultiplier() : 1;
+  const avgMs = hasData ? mastery.avgMs() : 0;
+  const rk = hasData ? mastery.getRank() : { cur: { title: 'Pub Regular' } };
+
+  // Hand-Chalked Progress Bar (8 Brass Pips OR Trial Shots OR 170-Down Progress)
+  if (isTrial) {
+    ctx.font = `700 58px ${CHALK_FONT}`;
+    drawChalkText(ctx, `${state.trialStep} / ${state.trialTotal}`, 256, 152, '#a5f0be', 0.26);
+    ctx.font = `600 15px ${SLATE_MONO}`;
+    drawChalkText(ctx, `HINTS OFF · ${Math.max(0, 2 - state.trialFails)} SLIP LEFT`, 256, 186, '#ebd093', 0.16);
+  } else if (isCal) {
+    ctx.font = `700 56px ${CHALK_FONT}`;
+    drawChalkText(ctx, `${Math.min(12, state.calibIndex)} / 12`, 256, 152, '#faf3e2', 0.26);
+    ctx.font = `600 15px ${SLATE_MONO}`;
+    drawChalkText(ctx, `CLEAN: ${state.calibStats.ok}/${state.calibStats.total}`, 256, 186, '#ebd093', 0.16);
+  } else if (isG170) {
+    const curScore = GAUNTLET_170_SCORES[state.gauntlet170Idx % GAUNTLET_170_SCORES.length];
+    ctx.font = `700 62px ${CHALK_FONT}`;
+    drawChalkText(ctx, `${curScore}  (#${state.gauntlet170Idx + 1}/34)`, 256, 152, '#ffe49e', 0.26);
+    ctx.font = `600 15px ${SLATE_MONO}`;
+    const best = mastery.data.gauntlet170Best || 0;
+    drawChalkText(ctx, `STREAK ${state.gauntlet170Streak} · BEST ${best}/34`, 256, 186, '#a5f0be', 0.16);
+  } else {
+    // Draw 8 tactile brass progress pips right on the Welsh slate!
+    const totalPips = typeof PRACTICE_PIPS_NEEDED !== 'undefined' ? PRACTICE_PIPS_NEEDED : 8;
+    const startX = 256 - ((totalPips - 1) * 44) / 2;
+    for (let i = 0; i < totalPips; i++) {
+      const cx = startX + i * 44;
+      const cy = 132;
+      ctx.beginPath();
+      ctx.arc(cx, cy, 13, 0, Math.PI * 2);
+      if (i < pips) {
+        ctx.fillStyle = '#f2cf7e';
+        ctx.fill();
+        ctx.strokeStyle = '#fff5d4';
+        ctx.lineWidth = 2.4;
+        ctx.stroke();
+      } else {
+        ctx.strokeStyle = 'rgba(236, 224, 196, 0.44)';
+        ctx.lineWidth = 2.2;
+        ctx.stroke();
+      }
+    }
+    ctx.font = `700 16px ${SLATE_MONO}`;
+    const pipLbl = stars > 0
+      ? `${formatStars(stars)}  ·  ${pips}/${totalPips} PIPS`
+      : pips >= totalPips
+        ? '8/8 READY — TAKE PUB TRIAL!'
+        : `${pips} / ${totalPips} PIPS TO PUB TRIAL`;
+    drawChalkText(ctx, pipLbl, 256, 178, pips >= totalPips || stars > 0 ? '#a5f0be' : '#f3d28b', 0.18);
+  }
+
+  ctx.strokeStyle = 'rgba(236, 226, 204, 0.24)';
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(40, 204); ctx.lineTo(472, 204); ctx.stroke();
+
+  // Live Score & Speed Stats Box
+  ctx.font = `600 13px ${SLATE_MONO}`;
+  ctx.fillStyle = 'rgba(236, 226, 204, 0.56)';
+  ctx.fillText('STREAK', 112, 232);
+  ctx.fillText('AVG SPEED', 256, 232);
+  ctx.fillText('SESSION', 400, 232);
+
+  ctx.font = `700 42px ${CHALK_FONT}`;
+  drawChalkText(ctx, mult >= 2 ? `${streak} (×${mult})` : String(streak), 112, 278, mult >= 2 ? '#ffe394' : '#faf3e2', 0.24);
+  drawChalkText(ctx, avgMs ? `${(avgMs / 1000).toFixed(1)}s` : '—', 256, 278, '#faf3e2', 0.24);
+  const sOk = hasData ? (state.sessionOk || 0) : 0;
+  const sTot = hasData ? (state.sessionTotal || 0) : 0;
+  drawChalkText(ctx, sTot ? `${sOk}/${sTot}` : '0/0', 400, 278, '#a5f0be', 0.24);
+
+  ctx.strokeStyle = 'rgba(236, 226, 204, 0.24)';
+  ctx.beginPath(); ctx.moveTo(40, 302); ctx.lineTo(472, 302); ctx.stroke();
+
+  // Recent Chalked Shots Tally Log
+  ctx.textAlign = 'center';
+  ctx.font = `700 14px ${SLATE_MONO}`;
+  drawChalkText(ctx, 'RECENT SHOTS', 256, 332, '#ebd093', 0.16);
+
+  const log = (hasData && Array.isArray(state.sessionLog)) ? state.sessionLog : [];
+  ctx.textAlign = 'left';
+  let y = 376;
+  if (!log.length) {
+    ctx.textAlign = 'center';
+    ctx.font = `600 28px ${CHALK_FONT}`;
+    drawChalkText(ctx, 'Step up & chalk yer first shot!', 256, 430, 'rgba(236, 226, 204, 0.52)', 0.16);
+  } else {
+    for (const item of log.slice(-6).reverse()) {
+      if (y > 642) break;
+      const col = item.ok ? '#b5f4ca' : '#f6aba4';
+      const mark = item.ok ? '✓' : '✗';
+      ctx.font = `700 30px ${CHALK_FONT}`;
+      drawChalkText(ctx, `${mark} ${item.label}`.slice(0, 30), 44, y, col, 0.2);
+      y += 46;
+    }
+  }
+
+  // Footer rank line
+  ctx.strokeStyle = 'rgba(236, 226, 204, 0.24)';
+  ctx.beginPath(); ctx.moveTo(40, 666); ctx.lineTo(472, 666); ctx.stroke();
+  ctx.textAlign = 'center';
+  ctx.font = `700 17px ${SLATE_MONO}`;
+  drawChalkText(ctx, rk.cur.title.toUpperCase(), 256, 700, '#f3d28b', 0.16);
+  ctx.font = `600 24px ${CHALK_FONT}`;
+  drawChalkText(ctx, `Fav Double: ${hasData ? state.favDouble : 'D20'}  ·  Flow ${streak}`, 256, 732, 'rgba(236, 226, 204, 0.78)', 0.16);
+
+  ctx.restore();
   chalkTex.needsUpdate = true;
+}
+
+// Smart router for non-x01 drill levels: Instructions & Method -> Left Door, Live Score & Pips -> Right Door!
+function renderChalkboard({ header = 'OCHE SLATE', big = '148', sub = '', lines = [], footer = '' }) {
+  renderLeftSlate({ header, big, sub, lines, footer });
+  renderProgressSlate();
 }
 
 // Authentic British Pub Match Chalkboard (Hand-Chalked Scored | To Go with curved chalk strike-throughs!)
@@ -2895,11 +3178,13 @@ function renderMatchChalkboard({
   chalkTex.needsUpdate = true;
 }
 
-// Re-render live 3D chalkboard once Caveat & Fraunces finish loading so hand-chalked glyphs snap in cleanly!
+// Re-render BOTH live 3D Welsh slates once Caveat & Fraunces finish loading so hand-chalked glyphs snap in cleanly!
 if (document.fonts && document.fonts.ready) {
   document.fonts.ready.then(() => {
+    if (lastLeftSlateDraw) renderLeftSlate(lastLeftSlateDraw);
     if (!lastChalkDraw) return;
     if (lastChalkDraw.fn === 'match') renderMatchChalkboard(lastChalkDraw.args);
+    else if (lastChalkDraw.fn === 'progress') renderProgressSlate();
     else renderChalkboard(lastChalkDraw.args);
   });
 }
@@ -2999,28 +3284,27 @@ const rightSide = new THREE.Mesh(new THREE.BoxGeometry(0.26, 5.4, 0.62), darkWoo
 rightSide.position.set(2.62, 0, -0.3); rightSide.castShadow = true; rightSide.receiveShadow = true;
 cabinetGroup.add(rightSide);
 
-// Open Left Door (Bottle-Green Baize Inset + Live 3D Brass Dart Rack + Pinned Vintage Beer Mats!)
+// Open Left Door (Symmetrical Welsh Coaching & Instructions Slate + Bottom-Right Beer Mats & Live 3D Brass Dart Rack!)
 const leftDoorPivot = new THREE.Group();
 leftDoorPivot.position.set(-2.72, 0, 0.02);
-leftDoorPivot.rotation.y = 0.26;
+leftDoorPivot.rotation.y = 0.36;
 cabinetGroup.add(leftDoorPivot);
-const leftDoor = new THREE.Mesh(new THREE.BoxGeometry(2.35, 5.15, 0.16), darkWoodMat);
-leftDoor.position.set(-1.18, 0, 0); leftDoor.castShadow = true; leftDoor.receiveShadow = true;
+const leftDoor = new THREE.Mesh(new THREE.BoxGeometry(2.65, 5.15, 0.16), darkWoodMat);
+leftDoor.position.set(-1.32, 0, 0); leftDoor.castShadow = true; leftDoor.receiveShadow = true;
 leftDoorPivot.add(leftDoor);
-const leftInset = new THREE.Mesh(
-  new THREE.BoxGeometry(1.92, 4.48, 0.06),
-  new THREE.MeshStandardMaterial({ color: 0x13271c, roughness: 0.96, metalness: 0.02 })
+const leftSlateMesh = new THREE.Mesh(
+  new THREE.PlaneGeometry(2.26, 4.32),
+  new THREE.MeshStandardMaterial({ map: leftChalkTex, roughness: 0.92, metalness: 0.02 })
 );
-leftInset.position.set(-1.18, 0, 0.08);
-leftDoorPivot.add(leftInset);
-// Thin brass inset border rails on left baize door
-[2.24, -2.24].forEach(by => {
-  const bar = new THREE.Mesh(new THREE.BoxGeometry(1.96, 0.032, 0.04), brassMat);
-  bar.position.set(-1.18, by, 0.11);
-  leftDoorPivot.add(bar);
-});
+leftSlateMesh.position.set(-1.32, 0.04, 0.095);
+leftSlateMesh.receiveShadow = true;
+leftDoorPivot.add(leftSlateMesh);
+// Symmetrical wooden ledge under left slate
+const leftLedge = new THREE.Mesh(new THREE.BoxGeometry(2.14, 0.12, 0.26), darkWoodMat);
+leftLedge.position.set(-1.32, -2.26, 0.16);
+leftDoorPivot.add(leftLedge);
 
-// Procedural Vintage East End Beer Mats pinned on Left Door Baize!
+// Procedural Vintage East End Beer Mats tucked cleanly on the lower-right corner of the Left Door (never covering upper instructions!)
 function makeBeerMatTexture(kind = 'round') {
   const c = document.createElement('canvas');
   c.width = c.height = 256;
@@ -3057,30 +3341,31 @@ function makeBeerMatTexture(kind = 'round') {
 }
 
 const matSquare = new THREE.Mesh(
-  new THREE.PlaneGeometry(0.60, 0.60),
+  new THREE.PlaneGeometry(0.48, 0.48),
   new THREE.MeshStandardMaterial({ map: makeBeerMatTexture('square'), roughness: 0.92 })
 );
-matSquare.position.set(-1.02, 1.62, 0.114);
+matSquare.position.set(-0.98, -1.56, 0.106);
 matSquare.rotation.z = 0.14;
 leftDoorPivot.add(matSquare);
-const pin2 = new THREE.Mesh(new THREE.SphereGeometry(0.024, 10, 10), brassMat);
-pin2.position.set(-1.06, 1.85, 0.128);
+const pin2 = new THREE.Mesh(new THREE.SphereGeometry(0.02, 10, 10), brassMat);
+pin2.position.set(-1.01, -1.36, 0.118);
 leftDoorPivot.add(pin2);
 
 const matRound = new THREE.Mesh(
-  new THREE.CircleGeometry(0.38, 32),
+  new THREE.CircleGeometry(0.31, 32),
   new THREE.MeshStandardMaterial({ map: makeBeerMatTexture('round'), roughness: 0.92, transparent: true })
 );
-matRound.position.set(-0.56, 1.78, 0.122);
+matRound.position.set(-0.56, -1.46, 0.114);
 matRound.rotation.z = -0.12;
 leftDoorPivot.add(matRound);
-const pin1 = new THREE.Mesh(new THREE.SphereGeometry(0.024, 10, 10), brassMat);
-pin1.position.set(-0.56, 2.07, 0.136);
+const pin1 = new THREE.Mesh(new THREE.SphereGeometry(0.02, 10, 10), brassMat);
+pin1.position.set(-0.56, -1.21, 0.126);
 leftDoorPivot.add(pin1);
 
-// Live 3D Brass & Mahogany 3-Dart Rack on Left Cabinet Door (darts vanish 3 -> 2 -> 1 -> 0 as you throw!)
+// Live 3D Brass & Mahogany 3-Dart Rack resting on Left Ledge (right beside Trev's shoulder, darts vanish 3 -> 2 -> 1 -> 0!)
 const dartRackGroup = new THREE.Group();
-dartRackGroup.position.set(-0.68, 0.16, 0.14);
+dartRackGroup.position.set(-0.68, -2.14, 0.21);
+dartRackGroup.scale.setScalar(0.84);
 leftDoorPivot.add(dartRackGroup);
 
 const rackBlock = new THREE.Mesh(new THREE.BoxGeometry(0.82, 0.14, 0.16), darkWoodMat);
@@ -3360,9 +3645,23 @@ const wireZ = 0.012;
   ring.castShadow = false;
   boardGroup.add(ring);
 });
-const numWire = new THREE.Mesh(new THREE.TorusGeometry(R_NUM_RING + 0.17, 0.013, 8, 96), wireMat);
+const numWire = new THREE.Mesh(new THREE.TorusGeometry(R_NUM_RING + 0.13, 0.013, 8, 96), wireMat);
 numWire.position.z = 0.02;
 boardGroup.add(numWire);
+// 4 Iconic Brushed-Metal Number-Ring Mounting Clips (10:30, 1:30, 4:30, 7:30 — Blade 6 silhouette!)
+const clipMat = new THREE.MeshStandardMaterial({ color: 0xb6b2a6, roughness: 0.34, metalness: 0.78 });
+[-Math.PI * 0.255, Math.PI * 0.255, Math.PI * 0.745, -Math.PI * 0.745].forEach(ang => {
+  const cg = new THREE.Group();
+  const rClip = R_NUM_RING + 0.095;
+  cg.position.set(Math.sin(ang) * rClip, Math.cos(ang) * rClip, 0.024);
+  cg.rotation.z = -ang;
+  const tab = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.085, 0.025), clipMat);
+  cg.add(tab);
+  const rivet = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.018, 0.032, 10), brassMat);
+  rivet.rotation.x = Math.PI / 2;
+  cg.add(rivet);
+  boardGroup.add(cg);
+});
 
 for (let i = 0; i < 20; i++) {
   const theta = (i + 0.5) * (Math.PI / 10);
@@ -3376,15 +3675,15 @@ for (let i = 0; i < 20; i++) {
 }
 
 /* ============================================================================
-   7. LIGHTING (2700K EAST END PUB TUNGSTEN + MAHOGANY/BOTTLE AMBIENT)
+   7. LIGHTING (2700K EAST END PUB TUNGSTEN + SYMMETRICAL DUAL-SLATE FILL)
    ============================================================================ */
-// Warm candlelit pub hemisphere so mahogany cabinet, baize door & London brick read richly
+// Warm candlelit pub hemisphere so mahogany cabinet, dual Welsh slates & London brick read richly
 scene.add(new THREE.HemisphereLight(0xc29e74, 0x1c1410, 0.86));
 
 // Primary Warm 2700K Overhead Oche Lamp (broad, even coverage across top & middle of board)
 const mainSpot = new THREE.SpotLight(0xffe2b4, 44, 22, Math.PI / 2.15, 0.85, 0.85);
-mainSpot.position.set(0.05, 3.05, 3.85);
-mainSpot.target.position.set(0.15, -0.15, 0);
+mainSpot.position.set(0.0, 3.05, 3.85);
+mainSpot.target.position.set(0.0, -0.12, 0);
 mainSpot.castShadow = true;
 mainSpot.shadow.mapSize.set(1024, 1024);
 mainSpot.shadow.bias = -0.0005;
@@ -3398,17 +3697,16 @@ const boardLowerFill = new THREE.PointLight(0xffe5bd, 18.5, 12, 1.15);
 boardLowerFill.position.set(0.0, -1.65, 3.75);
 scene.add(boardLowerFill);
 
-// Dedicated Even Warm Fill for the 3D Hand-Chalked Welsh Slate Door
-const slateLight = new THREE.PointLight(0xffedd0, 25.0, 12, 1.2);
+// Dedicated Even Warm Fill for BOTH 3D Hand-Chalked Welsh Slate Doors (Right = Score · Left = Instructions)
+const slateLight = new THREE.PointLight(0xffedd0, 25.0, 12.5, 1.2);
 slateLight.position.set(3.65, 0.65, 3.35);
 scene.add(slateLight);
 
-// Sculptural Pub Wall Sconce Glow from Left (illuminates bottle-green baize, vintage beer mats & 3D brass dart rack!)
-const coldRim = new THREE.DirectionalLight(0x7c9eb2, 1.05);
+const coldRim = new THREE.DirectionalLight(0x7c9eb2, 0.85);
 coldRim.position.set(-5.8, 2.0, 3.4);
 scene.add(coldRim);
-const leftDoorAccent = new THREE.PointLight(0xe5ab5a, 12.5, 10.5, 1.25);
-leftDoorAccent.position.set(-4.1, 0.75, 2.75);
+const leftDoorAccent = new THREE.PointLight(0xffedd0, 24.0, 12.5, 1.2);
+leftDoorAccent.position.set(-3.65, 0.65, 3.35);
 scene.add(leftDoorAccent);
 
 // Floating Chalk-Dust Motes inside the Warm Lamp Cone
@@ -4476,6 +4774,10 @@ class CoachTrev {
         tip = fdi
           ? `Oi, remember yer ${fdi.decade} Rule of ${fdi.sum}, sunshine! Stick a 1 in front of the last digit for ${fdi.treble}, then add to ${fdi.sum} for the double!`
           : `Right, on ${ch.item.score}: ${ch.item.cue}. Keep that Miss Rule tucked in yer back pocket!`;
+      } else if (ch.kind === 'board_audit') {
+        tip = `Check all five big trebles from 20 down to 16, sunshine — watch BOTH neighboring singles so a stray dart never leaves a dead bogey!`;
+      } else if (ch.kind === 'gauntlet170') {
+        tip = `170 Down blitz, mate! Drop the 1 — add 40 for T20, add 43 for T19 — finish the Golden 44, then call the big-single miss rule!`;
       } else if (ch.kind === 'tonplus') {
         tip = `Don't panic at three digits, me old china! Drop the one — add 40 for T20, add 43 for T19 — an' watch for sneaky splash traps!`;
       } else if (ch.kind === 'fdi_pair') {
@@ -4667,6 +4969,15 @@ const state = {
   fdiPairsOnly: false,
   fdiBridgesOnly: false,
   liveSlipChecks: true,
+  markRival: true,
+  favDouble: mastery.data.favDouble || 'D20', // 'D20' | 'D16' | 'D18'
+  weakSideMode: false,
+  gauntlet170Mode: false,
+  gauntlet170Idx: 0,
+  gauntlet170Streak: 0,
+  sessionOk: 0,
+  sessionTotal: 0,
+  sessionLog: [],
   rivalPressure: false,
   aimMode: '3beat', // '3beat' | '2beat' | 'scatter'
   useAimGauge: true,
@@ -4844,6 +5155,9 @@ const elAimVAmber    = document.getElementById('aim-v-amber');
 const elAimVGreen    = document.getElementById('aim-v-green');
 const elAimVNeedle   = document.getElementById('aim-v-needle');
 const elAimThrowBtn  = document.getElementById('aim-throw-btn');
+const elAimTacRow    = document.getElementById('aim-tac-row');
+const elAimLiePill   = document.getElementById('aim-lie-pill');
+const elAimBiasBtn   = document.getElementById('aim-bias-btn');
 
 /* ---------- 3-Beat / 2-Beat Oche Rhythm Multi-Axis Aiming Engine ---------- */
 const aimGauge = {
@@ -4851,6 +5165,7 @@ const aimGauge = {
   mode: null, // '301' | '501'
   aimedBed: null,
   aimXY: null,
+  baseAimXY: null,
   cfg: null,
   step: 'focus', // 'focus' | 'horiz' | 'vert'
   is2Beat: false,
@@ -4862,7 +5177,56 @@ const aimGauge = {
   horizU: 0,
   vertV: 0,
   curDrop: null,
+  bedLie: null,
+  wireBias: null,
+  biasActive: false,
+  cleanCoverSwitch: false,
 };
+
+function syncAimTacUI() {
+  if (!elAimTacRow) return;
+  const hasLie = !!aimGauge.bedLie;
+  const hasBias = !!aimGauge.wireBias;
+  elAimTacRow.classList.toggle('visible', hasLie || hasBias);
+  if (hasLie) {
+    elAimLiePill.textContent = aimGauge.bedLie.tag;
+    elAimLiePill.className = 'aim-flow-pill visible ' + (aimGauge.bedLie.lie === 'guide' ? 'flow-hot' : 'flow-cold');
+  } else {
+    elAimLiePill.textContent = '';
+    elAimLiePill.className = 'aim-flow-pill';
+  }
+  if (hasBias) {
+    elAimBiasBtn.classList.add('visible');
+    elAimBiasBtn.classList.toggle('active', !!aimGauge.biasActive);
+    elAimBiasBtn.textContent = aimGauge.biasActive
+      ? `✓ ${aimGauge.wireBias.tag} ACTIVE [B]`
+      : aimGauge.wireBias.btnLabel;
+  } else {
+    elAimBiasBtn.classList.remove('visible', 'active');
+  }
+}
+
+function toggleWireBias() {
+  if (!aimGauge.active || !aimGauge.wireBias) return;
+  aimGauge.biasActive = !aimGauge.biasActive;
+  const base = aimGauge.baseAimXY || aimGauge.aimXY;
+  if (aimGauge.biasActive) {
+    aimGauge.aimXY = {
+      x: base.x + (aimGauge.wireBias.xyShift?.x || 0),
+      y: base.y + (aimGauge.wireBias.xyShift?.y || 0),
+    };
+    audio.playBeatLock('green');
+    setFeedback(`[${aimGauge.wireBias.tag}] ${aimGauge.wireBias.cue}`, 'ok');
+  } else {
+    aimGauge.aimXY = { x: base.x, y: base.y };
+    audio.playBeatLock('amber');
+    setFeedback(`Wire bias cleared — centered on ${aimGauge.aimedBed.code}.`, 'cue');
+  }
+  aimAnchorRing.position.set(aimGauge.aimXY.x, aimGauge.aimXY.y, 0);
+  syncAimTacUI();
+  updateAimGauge(0);
+}
+if (elAimBiasBtn) elAimBiasBtn.addEventListener('click', (e) => { e.stopPropagation(); elAimBiasBtn.blur(); toggleWireBias(); });
 
 function aimConfigForDifficulty(diff = state.difficulty) { return engineAimConfigForDifficulty(diff); }
 
@@ -5003,10 +5367,27 @@ function relockLastAim() {
 function startAimGauge(mode, bed, rawXY) {
   const pt = rawXY ? { x: rawXY.x, y: rawXY.y } : bedToXY(bed.code);
   const mf = state.mathFlow || DEFAULT_MATH_FLOW;
-  const cfg = applyMathFlowToConfig(multiAxisConfigForDifficulty(state.difficulty), mf);
+  const cfg = { ...applyMathFlowToConfig(multiAxisConfigForDifficulty(state.difficulty), mf) };
   const sides = getScreenAxisLabels(bed, pt);
   const is2Beat = state.aimMode === '2beat';
   const now = performance.now();
+  const ch = state.challenge;
+  const remScore = mode === '501' && ch ? ch.liveRem : (ch ? ch.startScore : null);
+
+  // MECHANIC #3: Physical 3D Blocked Bed vs. Guide Dart ("Perfect Lie") evaluation!
+  const priorDarts = (ch && ch.dartCoords) ? ch.dartCoords.map(d => ({ bed: d.code, x: d.x, y: d.y })) : [];
+  const bedLie = evaluateBedLie(priorDarts, bed.code, remScore);
+  if (bedLie) {
+    cfg.focusSweet = Math.min(0.44, cfg.focusSweet * bedLie.focusMult);
+    cfg.horizSweet = Math.min(0.42, cfg.horizSweet * bedLie.horizMult);
+    cfg.vertSweet  = Math.min(0.40, cfg.vertSweet  * bedLie.vertMult);
+    cfg.vertAmber  = Math.min(0.68, cfg.vertAmber  * bedLie.vertMult);
+  }
+  const blockedT20 = bed.code === 'T19' ? evaluateBedLie(priorDarts, 'T20', remScore) : null;
+  const cleanCoverSwitch = Boolean(blockedT20 && blockedT20.lie === 'blocked');
+
+  // MECHANIC #5: Asymmetric Wire-Bias Safe Aiming ("20/5 Wire" on 106/109, "Give S20/S18 Respect", Bottom-Wire D18/D16)
+  const wireBias = mode === '501' ? getWireBiasInfo(remScore, state.dartsLeft, bed.code) : null;
 
   state.lastAimBed = bed;
   state.lastAimXY = pt;
@@ -5014,8 +5395,13 @@ function startAimGauge(mode, bed, rawXY) {
   aimGauge.active = true;
   aimGauge.mode = mode;
   aimGauge.aimedBed = bed;
-  aimGauge.aimXY = pt;
+  aimGauge.baseAimXY = { x: pt.x, y: pt.y };
+  aimGauge.aimXY = { x: pt.x, y: pt.y };
   aimGauge.cfg = cfg;
+  aimGauge.bedLie = bedLie;
+  aimGauge.wireBias = wireBias;
+  aimGauge.biasActive = false;
+  aimGauge.cleanCoverSwitch = cleanCoverSwitch;
   aimGauge.is2Beat = is2Beat;
   aimGauge.step = is2Beat ? 'horiz' : 'focus';
   aimGauge.startedAt = now;
@@ -5027,7 +5413,6 @@ function startAimGauge(mode, bed, rawXY) {
   aimGauge.curDrop = null;
   aimGauge.phase = (Math.random() < 0.5 ? -1 : 1) * (0.92 + Math.random() * 0.35);
 
-  const ch = state.challenge;
   const dartNum = (ch && ch.darts ? ch.darts.length : 0) + 1;
   // Dramatic tension heartbeat on Dart 3 for a 180!! OR aiming at a winning Double-Out in 501!
   const on180Dart = dartNum === 3 && ch && ch.darts && ch.darts[0] === 'T20' && ch.darts[1] === 'T20' && bed.code === 'T20';
@@ -5055,6 +5440,7 @@ function startAimGauge(mode, bed, rawXY) {
   elAimVNeedle.style.left = '50%';
   applyAimCorridorBars();
   syncAimRowClasses();
+  syncAimTacUI();
   elAimPanel.classList.add('visible');
   document.body.classList.add('aim-open');
 
@@ -5064,9 +5450,17 @@ function startAimGauge(mode, bed, rawXY) {
   aimGroup.visible = true;
   updateHoverBed(null);
   updateAimGauge(0);
-  setFeedback(is2Beat
-    ? `Locked on ${bed.code}! 1/2: Click or press Space to lock Horizontal Line (${sides.left} ← ${bed.sector || 'BULL'} → ${sides.right})!`
-    : `Locked on ${bed.code}! 1/3: Lock Focus/Grip on GREEN to steady your Line & Height!`, 'cue');
+  if (wireBias) {
+    setFeedback(`${wireBias.cue} (Tap Bias [B]!)`, 'cue');
+  } else if (bedLie) {
+    setFeedback(bedLie.cue, bedLie.lie === 'guide' ? 'ok' : 'warn');
+  } else if (cleanCoverSwitch) {
+    setFeedback('Smart switch to T19 cover around the blocked T20 bed!', 'ok');
+  } else {
+    setFeedback(is2Beat
+      ? `Locked on ${bed.code}! 1/2: Click or press Space to lock Horizontal Line (${sides.left} ← ${bed.sector || 'BULL'} → ${sides.right})!`
+      : `Locked on ${bed.code}! 1/3: Lock Focus/Grip on GREEN to steady your Line & Height!`, 'cue');
+  }
 }
 
 function cancelAimGauge() {
@@ -5076,12 +5470,18 @@ function cancelAimGauge() {
   aimGauge.mode = null;
   aimGauge.aimedBed = null;
   aimGauge.aimXY = null;
+  aimGauge.baseAimXY = null;
   aimGauge.cfg = null;
   aimGauge.focusRes = null;
   aimGauge.curDrop = null;
+  aimGauge.bedLie = null;
+  aimGauge.wireBias = null;
+  aimGauge.biasActive = false;
+  aimGauge.cleanCoverSwitch = false;
   aimLineGuide.visible = false;
   aimCrosshair.scale.setScalar(1.0);
   aimGroup.visible = false;
+  if (elAimTacRow) elAimTacRow.classList.remove('visible');
   elAimPanel.classList.remove('visible');
   document.body.classList.remove('aim-open');
 }
@@ -5090,6 +5490,8 @@ function updateAimGauge(dt) {
   if (!aimGauge.active) return;
   const cfg = aimGauge.cfg || multiAxisConfigForDifficulty(state.difficulty);
   const allowMiss = aimGauge.mode === '501';
+  const biasU = (aimGauge.biasActive && aimGauge.wireBias) ? (aimGauge.wireBias.shiftU || 0) : 0;
+  const biasV = (aimGauge.biasActive && aimGauge.wireBias) ? (aimGauge.wireBias.shiftV || 0) : 0;
 
   if (aimGauge.step === 'focus') {
     aimGauge.phase += dt * cfg.focusSpeed;
@@ -5113,7 +5515,8 @@ function updateAimGauge(dt) {
     const u = Math.sin(aimGauge.phase);
     aimGauge.horizU = u;
     elAimHNeedle.style.left = `${(u + 1) * 50}%`;
-    const drop = computeMultiAxisDrop(aimGauge.aimedBed, aimGauge.aimXY, f, u, 0, cfg, allowMiss);
+    const effU = Math.max(-1, Math.min(1, u + biasU));
+    const drop = computeMultiAxisDrop(aimGauge.aimedBed, aimGauge.aimXY, f, effU, biasV, cfg, allowMiss);
     aimGauge.curDrop = drop;
     aimCrosshair.scale.setScalar(1.0);
     aimCrosshair.position.set(drop.x, drop.y, 0);
@@ -5129,7 +5532,9 @@ function updateAimGauge(dt) {
   const v = Math.sin(aimGauge.phase);
   aimGauge.vertV = v;
   elAimVNeedle.style.left = `${(v + 1) * 50}%`;
-  const drop = computeMultiAxisDrop(aimGauge.aimedBed, aimGauge.aimXY, f, aimGauge.horizU, v, cfg, allowMiss);
+  const effU = Math.max(-1, Math.min(1, aimGauge.horizU + biasU));
+  const effV = Math.max(-1, Math.min(1, v + biasV));
+  const drop = computeMultiAxisDrop(aimGauge.aimedBed, aimGauge.aimXY, f, effU, effV, cfg, allowMiss);
   aimGauge.curDrop = drop;
   aimCrosshair.scale.setScalar(1.0);
   aimCrosshair.position.set(drop.x, drop.y, 0);
@@ -5146,6 +5551,8 @@ function releaseAimGauge() {
   aimGauge.lastLockAt = now;
   const cfg = aimGauge.cfg || multiAxisConfigForDifficulty(state.difficulty);
   const allowMiss = aimGauge.mode === '501';
+  const biasU = (aimGauge.biasActive && aimGauge.wireBias) ? (aimGauge.wireBias.shiftU || 0) : 0;
+  const biasV = (aimGauge.biasActive && aimGauge.wireBias) ? (aimGauge.wireBias.shiftV || 0) : 0;
 
   // Beat 1: Lock Focus / Grip Steadiness
   if (aimGauge.step === 'focus') {
@@ -5164,7 +5571,8 @@ function releaseAimGauge() {
 
   // Beat 2: Lock Horizontal Line (stays visible as a 3D radial spoke!)
   if (aimGauge.step === 'horiz') {
-    const dropH = computeMultiAxisDrop(aimGauge.aimedBed, aimGauge.aimXY, aimGauge.focusRes, aimGauge.horizU, 0, cfg, allowMiss);
+    const effU = Math.max(-1, Math.min(1, aimGauge.horizU + biasU));
+    const dropH = computeMultiAxisDrop(aimGauge.aimedBed, aimGauge.aimXY, aimGauge.focusRes, effU, biasV, cfg, allowMiss);
     audio.playBeatLock(dropH.horizZone);
     setAimLineGuide3D(dropH);
     aimGauge.step = 'vert';
@@ -5179,18 +5587,24 @@ function releaseAimGauge() {
   // Beat 3: Final Vertical Height Release + Focus Grip & Maths-Flow Dispersion Jitter!
   const mode = aimGauge.mode;
   const aimedBed = aimGauge.aimedBed;
+  const biasUsed = Boolean(aimGauge.biasActive && aimGauge.wireBias);
+  const biasTag = aimGauge.wireBias ? aimGauge.wireBias.tag : null;
+  const cleanCover = Boolean(aimGauge.cleanCoverSwitch);
+  const lieSnap = aimGauge.bedLie;
   const f = aimGauge.focusRes || { zone: 'amber', label: '2-BEAT', speedMult: 1.0, zoneMult: 1.0, jitter: 0.056 };
   const ja = Math.random() * Math.PI * 2;
   const jr = Math.random() * f.jitter * (cfg.jitterMult || 1.0);
   const jitterXY = { x: Math.cos(ja) * jr, y: Math.sin(ja) * jr };
-  const drop = computeMultiAxisDrop(aimedBed, aimGauge.aimXY, f, aimGauge.horizU, aimGauge.vertV, cfg, allowMiss, jitterXY);
+  const effU = Math.max(-1, Math.min(1, aimGauge.horizU + biasU));
+  const effV = Math.max(-1, Math.min(1, aimGauge.vertV + biasV));
+  const drop = computeMultiAxisDrop(aimedBed, aimGauge.aimXY, f, effU, effV, cfg, allowMiss, jitterXY);
   cancelAimGauge();
   state.lastPlayerInputAt = now;
 
   if (mode === '301') {
     commit301Dart(aimedBed, drop.bed, { x: drop.x, y: drop.y }, drop.zone);
   } else if (mode === '501') {
-    commit501Dart(aimedBed, drop.bed, { x: drop.x, y: drop.y }, drop.zone);
+    commit501Dart(aimedBed, drop.bed, { x: drop.x, y: drop.y }, drop.zone, { biasUsed, biasTag, cleanCover, lieSnap });
   }
 }
 
@@ -5239,6 +5653,174 @@ function setMethodBadge(text, cls = 'fdi-70') {
   elBridgeTag.textContent = text;
 }
 
+function syncX01LeftSlate(mode = '501') {
+  const ch = state.challenge;
+  if (state.spectator && state.spectator.active) {
+    const bA = BOT_PROFILES[state.spectator.botA];
+    const bB = BOT_PROFILES[state.spectator.botB];
+    renderLeftSlate({
+      header: 'BOT EXHIBITION',
+      big: 'LIVE 501',
+      sub: `${bA.short} vs ${bB.short}`,
+      lines: [
+        'Watch real-physics bots trade visits!',
+        'Click anywhere on the board to step up and take over.',
+      ],
+    });
+    return;
+  }
+  if (mode === '301') {
+    const phase = ch ? ch.phase : 'throw';
+    if (phase === 'chalk_visit') {
+      renderLeftSlate({
+        header: '301 · STEP 1: ADD',
+        big: 'CALL VISIT',
+        sub: 'Add the 3 darts in the board',
+        lines: [
+          '1. Spot 2 easy darts first (e.g. T20+S20=80).',
+          '2. Add the 3rd dart onto that pair.',
+          '3. Press [Tab] to circle a known pair!',
+        ],
+      });
+    } else if (phase === 'chalk_rem') {
+      renderLeftSlate({
+        header: '301 · STEP 2: SUBTRACT',
+        big: 'TAKE IT OFF',
+        sub: 'Subtract visit in clean round hops',
+        lines: [
+          '1. Hop a round chunk (-100, -60, -20, -10).',
+          '2. Adjust the small remainder (press [Tab] to hop!).',
+          '3. Fast clean math builds ⚡ IN FLOW!',
+        ],
+      });
+    } else {
+      renderLeftSlate({
+        header: 'LEVEL 4 · 301 GUIDE',
+        big: 'THROW & CHALK',
+        sub: 'Score down & dodge Bogeys (159-169)',
+        lines: [
+          '1. Click any bed to open the 3-Beat aim bezel.',
+          '2. After 3 darts, add your visit & subtract it.',
+          '3. On 179-189, cover teens to dodge bogeys!',
+        ],
+      });
+    }
+    return;
+  }
+  // Championship 501 Left Door Coaching Guide
+  const m = state.match501;
+  const rv = currentRival();
+  const phase = ch ? ch.phase : 'throw';
+  const rem = ch && typeof ch.liveRem === 'number' ? ch.liveRem : m.playerScore;
+  if (phase === 'mark_rival') {
+    renderLeftSlate({
+      header: "YOU'RE ON THE SLATE!",
+      big: `MARK ${rv.short}`,
+      sub: 'Live Pub Marker Challenge',
+      lines: [
+        `1. Add ${rv.short}'s 3 darts on the board.`,
+        '2. Press [Tab] to Snap 2 known darts first.',
+        '3. Call it fast to carry ⚡ IN FLOW into YOUR throw!',
+      ],
+    });
+  } else if (phase === 'oche_prep' && ch.ochePrep) {
+    const p = ch.ochePrep;
+    renderLeftSlate({
+      header: 'PRE-CALC OFF OCHE',
+      big: `${p.score} -> ${p.openBed}`,
+      sub: `${p.formulaName} while rival throws!`,
+      lines: [
+        `1. Add +${p.addConst} onto the last 2 digits (${String(p.score % 100).padStart(2, '0')}).`,
+        `2. That reveals your 2-dart finish right away.`,
+        '3. Nail it to step up ⚡ LOCKED IN!',
+      ],
+    });
+  } else if (phase === 'miss_check') {
+    renderLeftSlate({
+      header: 'SLIP RECOVERY',
+      big: 'ADAPT FAST',
+      sub: 'Call what is left for your next dart!',
+      lines: [
+        ch.slipInfo ? ch.slipInfo.badge : 'Subtract the single using -20 or -10 hops.',
+        'Fast call grants ⚡ IN FLOW on your recovery dart!',
+        'Press [Tab] to Hop a round chunk.',
+      ],
+    });
+  } else if (phase === 'chalk_visit') {
+    renderLeftSlate({
+      header: '501 · STEP 1: ADD',
+      big: 'ADD 3 DARTS',
+      sub: 'Croupier grouping beats counting 1-by-1',
+      lines: [
+        '1. Group 2 familiar darts first (press [Tab] to Snap).',
+        '2. Add the 3rd dart & press CALL.',
+        '3. Fast Step 1 earns ⚡ SMALL CALC (+2.5s)!',
+      ],
+    });
+  } else if (phase === 'chalk_rem') {
+    renderLeftSlate({
+      header: '501 · STEP 2: CHALK',
+      big: 'SUBTRACT',
+      sub: 'Fast chalk widens your next aim bars!',
+      lines: [
+        '1. Hop a clean round chunk ([Tab] to Hop!).',
+        '2. Keep the last digit steady where you can.',
+        '3. Reverse-Add check flashes after you CALL.',
+      ],
+    });
+  } else if (rem <= 59 && rem > 1 && !isCheckoutable1Dart(rem)) {
+    const pref = preferredDoubleSetup(rem, state.favDouble);
+    renderLeftSlate({
+      header: `FAV DOUBLE: ${state.favDouble}`,
+      big: String(rem),
+      sub: pref ? pref.formulaTag : 'Set up your double!',
+      lines: [
+        pref ? pref.cue : 'Leave an even double (D20, D16, or D18).',
+        'Watch for [B] Wire-Bias on S20/S18 so you never bust!',
+      ],
+    });
+  } else if (rem >= 61 && rem <= 100 && rem !== 99) {
+    const fdi = getFdiRule(rem);
+    renderLeftSlate({
+      header: '2-DART FINISH ZONE',
+      big: String(rem),
+      sub: fdi ? `${fdi.decade} FDI · Rule of ${fdi.sum}` : 'Golden 44 Checkout',
+      lines: fdi
+        ? [
+          `Open ${fdi.treble} — hit it for Live No-Peek!`,
+          `Rule of ${fdi.sum}: ${fdi.tNum} + D(?) = ${fdi.sum}.`,
+          `Single miss leaves ${fdi.miss} (Bull / 60 / 70)!`,
+        ]
+        : [
+          'Hit your opening treble to leave a clean double.',
+          'With 1 dart left on 62-70, bin odd FDIs for T10!',
+        ],
+    });
+  } else if (rem >= 101 && rem <= 170 && !BOGEY_NUMBERS.has(rem)) {
+    renderLeftSlate({
+      header: 'TON-PLUS ZONE',
+      big: String(rem),
+      sub: 'Rule of 40 (T20) · Rule of 43 (T19)',
+      lines: [
+        'Dodge neighbor splash traps (S1->102, S2/S3->99).',
+        'On 106 & 109, tap [B] to bias left toward 20/5 wire!',
+        'Hit T20 -> 2-dart finish + 25/30/35 FDI bridge.',
+      ],
+    });
+  } else {
+    renderLeftSlate({
+      header: `501 vs ${rv.short.toUpperCase()}`,
+      big: 'DOUBLE OUT',
+      sub: `Fav Double: ${state.favDouble} · Board IQ Live`,
+      lines: [
+        '1. Click a bed to open the 3-Beat aim bezel.',
+        '2. Watch for Blocked Bed -> T19 Cover or Guide Dart!',
+        '3. Fast chalking builds ⚡ IN FLOW (+18% sweet spot).',
+      ],
+    });
+  }
+}
+
 function draw301Slate({ pending = null, footer = '', footer2 = '', startOverride = null } = {}) {
   const isCal = state.stage === 'CALIBRATION';
   const rows = isCal
@@ -5253,6 +5835,7 @@ function draw301Slate({ pending = null, footer = '', footer2 = '', startOverride
     footer,
     footer2,
   });
+  syncX01LeftSlate('301');
 }
 
 function draw501Slate({ pendingLeft = null, pendingRight = null, footer = '', footer2 = '' } = {}) {
@@ -5272,6 +5855,7 @@ function draw501Slate({ pendingLeft = null, pendingRight = null, footer = '', fo
     footer,
     footer2,
   });
+  syncX01LeftSlate('501');
 }
 
 function setFeedback(text, cls = 'cue') {
@@ -5542,8 +6126,8 @@ function updateHudStats() {
 function getChalkAssistSpec() {
   const ch = state.challenge;
   if (!ch || state.inTrial || state.hintMode === 'blind') return null;
-  if (ch.kind === 'marking' || ((ch.kind === 'countdown301' || ch.kind === 'match501') && ch.phase === 'chalk_visit')) {
-    const darts = ch.kind === 'marking' ? ch.item?.darts : ch.darts;
+  if (ch.kind === 'marking' || ((ch.kind === 'countdown301' || ch.kind === 'match501') && (ch.phase === 'chalk_visit' || ch.phase === 'mark_rival'))) {
+    const darts = ch.kind === 'marking' ? ch.item?.darts : (ch.phase === 'mark_rival' ? ch.rivalVisitDarts : ch.darts);
     if (!darts || darts.length !== 3) return null;
     const snap = buildCroupierSnap(darts);
     return {
@@ -5552,6 +6136,17 @@ function getChalkAssistSpec() {
       used: !!ch.snappedPair,
       readout: ch.snappedPair ? snap.snapPrompt : '',
       snap,
+    };
+  }
+  if (ch.kind === 'match501' && ch.phase === 'oche_prep' && ch.ochePrep) {
+    const p = ch.ochePrep;
+    const last2 = String(p.score % 100).padStart(2, '0');
+    return {
+      mode: 'prep_cue',
+      btnLabel: ch.hopped ? `✓ ${p.formulaName}` : `Show ${p.formulaName} [Tab]`,
+      used: !!ch.hopped,
+      readout: ch.hopped ? `${last2} + ${p.addConst} = ?` : `Add +${p.addConst} to ${last2}!`,
+      prep: p,
     };
   }
   if ((ch.kind === 'countdown301' || ch.kind === 'match501') && ch.phase === 'chalk_rem') {
@@ -5571,6 +6166,18 @@ function getChalkAssistSpec() {
     if (!chunk.canHop) return null;
     return {
       mode: 'hop_miss',
+      btnLabel: ch.hopped ? `✓ Hopped -${chunk.hopChunk}` : `${chunk.hopLabel} [Tab]`,
+      used: !!ch.hopped,
+      readout: ch.hopped ? chunk.hopPrompt : `${chunk.tag} · tap to hop!`,
+      chunk,
+    };
+  }
+  if (ch.kind === 'gauntlet170' && ch.phase === 'miss_check' && ch.afterOpen) {
+    const a = ch.afterOpen;
+    const chunk = buildSubtractionChunk(a.rem1, a.miss2Val);
+    if (!chunk.canHop) return null;
+    return {
+      mode: 'hop_g170',
       btnLabel: ch.hopped ? `✓ Hopped -${chunk.hopChunk}` : `${chunk.hopLabel} [Tab]`,
       used: !!ch.hopped,
       readout: ch.hopped ? chunk.hopPrompt : `${chunk.tag} · tap to hop!`,
@@ -5626,8 +6233,9 @@ function triggerChalkAssist() {
     ch.snappedPair = true;
     const snap = spec.snap;
     audio.playBeatLock('green');
-    if (ch.dartCoords && ch.dartCoords.length === 3) {
-      const rings = ch.dartCoords.map((dc, idx) => ({
+    const coords = ch.phase === 'mark_rival' ? ch.rivalDartCoords : ch.dartCoords;
+    if (coords && coords.length === 3) {
+      const rings = coords.map((dc, idx) => ({
         x: dc.x, y: dc.y, color: idx === snap.oddIdx ? 0x7ba3c4 : 0xffe082,
       }));
       showBoardOverlays({ groupRings: rings });
@@ -5635,9 +6243,23 @@ function triggerChalkAssist() {
     setFeedback(`Croupier Snap (${snap.shapeTag}): ${snap.snapPrompt} = ?`, 'cue');
     if (ch.kind === 'countdown301') {
       draw301Slate({ startOverride: ch.startScore, pending: { scored: '?', rem: '…' }, footer: snap.snapPrompt, footer2: `${snap.shapeTag} — add the 3rd dart!` });
+    } else if (ch.kind === 'match501' && ch.phase === 'mark_rival') {
+      draw501Slate({ pendingRight: { scored: '?', rem: '…' }, footer: snap.snapPrompt, footer2: `${snap.shapeTag} — call ${currentRival().short}'s visit!` });
     } else if (ch.kind === 'match501') {
       draw501Slate({ pendingLeft: { scored: '?', rem: '…' }, footer: snap.snapPrompt, footer2: `${snap.shapeTag} — add the 3rd dart!` });
     }
+    syncChalkAssistUI();
+    return;
+  }
+
+  if (spec.mode === 'prep_cue') {
+    ch.hopped = true;
+    const p = spec.prep;
+    const last2 = String(p.score % 100).padStart(2, '0');
+    audio.playChalk();
+    elScoreBig.textContent = `${last2} + ${p.addConst}`;
+    setFeedback(`Oche Prep (${p.formulaName}): add +${p.addConst} onto ${last2} to reveal your 2-dart finish!`, 'cue');
+    draw501Slate({ footer: `OCHE PREP: ${p.score} -> ${p.openBed}`, footer2: `${p.formulaName}: ${last2} + ${p.addConst} = ?` });
     syncChalkAssistUI();
     return;
   }
@@ -5655,6 +6277,8 @@ function triggerChalkAssist() {
     draw501Slate({ pendingLeft: { scored: ch.visitTotal, rem: '?' }, footer: `${ch.startScore} -> ${c.hopMid} (${c.adjustText})`, footer2: c.hopPrompt });
   } else if (spec.mode === 'hop_miss' && ch.kind === 'match501') {
     draw501Slate({ pendingLeft: { scored: bedValue(ch.missSingle), rem: '?' }, footer: `${ch.missPromptFrom} -> ${c.hopMid} (${c.adjustText})`, footer2: c.hopPrompt });
+  } else if (spec.mode === 'hop_g170' && ch.kind === 'gauntlet170') {
+    renderChalkboard({ header: '170 DOWN · MISS RULE', big: `${c.hopMid} ${c.adjustText}`, sub: `Hopped -${c.hopChunk} from ${ch.afterOpen.rem1}`, lines: [c.hopPrompt] });
   } else if (spec.mode === 'hop_g44') {
     renderChalkboard({ header: 'MISS RULE · HOPPED', big: `${c.hopMid} ${c.adjustText}`, sub: `Hopped -${c.hopChunk} from ${ch.item.score}`, lines: [c.hopPrompt] });
   }
@@ -5787,7 +6411,13 @@ function nextChallengeForStage(stageId) {
       return { kind: 'fdi_pair', id: 'FDIP_' + score, score, variant, speedMs: variant === 'both' ? 8500 : 6500 };
     }
     if (roll < 0.48) {
-      const item = mastery.pickNext(BELOW_60_ITEMS, x => x.id, state.lastItemId);
+      const sideFor = (d) => d === 'D16' ? ['D16', 'D8', 'D4'] : d === 'D18' ? ['D18', 'D9'] : ['D20', 'D10'];
+      const preferredSet = new Set(sideFor(state.favDouble));
+      const item = mastery.pickNext(BELOW_60_ITEMS, x => x.id, state.lastItemId, x => {
+        if (x.targetD === 'ANY') return 1.0;
+        const onMySide = preferredSet.has(x.targetD);
+        return state.weakSideMode ? (onMySide ? 0.45 : 2.6) : (onMySide ? 2.4 : 0.75);
+      });
       return { kind: 'below60', item, speedMs: 3600 };
     }
     if (roll < 0.85) {
@@ -5810,11 +6440,31 @@ function nextChallengeForStage(stageId) {
     return { kind: 'sods', item, speedMs: 3800 };
   }
 
-  // LEVEL 6: Unified 3-Dart Finishes (101-170 Ton-Plus FDI Bridges & Splash Traps + Bogey Dodger)
+  // LEVEL 6: Unified 3-Dart Finishes (170 Down Gauntlet + 5-Treble Danger Audits + Ton-Plus FDI Bridges + Bogey Dodger)
   if (stageId === 'LEVEL_6') {
-    if (!state.fdiBridgesOnly && Math.random() < 0.24) {
-      const item = mastery.pickNext(BOGEY_ITEMS, x => x.id, state.lastItemId);
-      return { kind: 'bogey', item, speedMs: 3600 };
+    if (state.gauntlet170Mode && !state.inTrial) {
+      const idx = state.gauntlet170Idx % GAUNTLET_170_SCORES.length;
+      const score = GAUNTLET_170_SCORES[idx];
+      return {
+        kind: 'gauntlet170',
+        id: 'G170_' + score,
+        score,
+        step: build170GauntletStep(score),
+        phase: 'open',
+        speedMs: 10000,
+        chalkSpeedMs: 10000,
+      };
+    }
+    if (!state.fdiBridgesOnly) {
+      const r6 = Math.random();
+      if (r6 < 0.22) {
+        const item = mastery.pickNext(BOARD_AUDIT_101_109, x => x.id, state.lastItemId);
+        return { kind: 'board_audit', item, speedMs: 5200 };
+      }
+      if (r6 < 0.42) {
+        const item = mastery.pickNext(BOGEY_ITEMS, x => x.id, state.lastItemId);
+        return { kind: 'bogey', item, speedMs: 3600 };
+      }
     }
     const pool = state.fdiBridgesOnly ? TON_PLUS_ITEMS.filter(x => x.fdiBridge) : TON_PLUS_ITEMS;
     const item = mastery.pickNext(pool, x => x.id, state.lastItemId);
@@ -5923,8 +6573,27 @@ function loadChallenge(ch) {
       ch.dartCoords.push({ code, x: p.x, y: p.y });
       throwDartTo(p.x, p.y, { kind: code === 'BULL' ? 'BULL' : code[0], delay: idx * 0.13, accent: idx === it.oddIdx ? 0x2b4a69 : 0x8f231e });
     });
-    renderChalkboard({ header: 'LEVEL 3 · 3-DART ADD', big: '???', sub: '20–15, misses & Bull/25',
-      lines: [tier === 1 ? it.cue : 'Snap 2 known darts first ("What do I know?")'] });
+    const snap = buildCroupierSnap(it.darts);
+    const nDarts = it.darts.length;
+    renderChalkboard({
+      header: 'LEVEL 3 · HOW TO ADD',
+      big: `ADD ${nDarts} DARTS`,
+      sub: nDarts === 2 ? 'Read the 2 anchor darts & call the total!' : 'Group 2 easy darts first — then add the 3rd!',
+      lines: nDarts === 2
+        ? [
+            '1. Read both darts stuck in the board.',
+            tier === 1 ? `2. Anchor sum: ${snap.snapPrompt} = ?` : '2. Anchor on Bull (50) or Outer Bull (25) first.',
+            '3. Type the total below & press CALL!',
+          ]
+        : [
+            '1. Read the 3 darts stuck in the board.',
+            tier === 1
+              ? `2. Pair first: ${snap.snapPrompt} = ?`
+              : '2. Spot 2 familiar darts first (20/19/18/17).',
+            '3. Press [Tab] (Snap Pair) to circle 2 easy darts!',
+          ],
+      footer: 'Type total below & press CALL',
+    });
     if (tier === 1) applyChallengeHint(true);
   } else if (ch.kind === 'countdown301') {
     ch.darts = [];
@@ -6006,14 +6675,22 @@ function loadChallenge(ch) {
     const it = ch.item;
     state.remainingScore = it.score;
     state.dartsLeft = it.darts || 2;
-    elPromptSub.textContent = `${modeTag || 'Level 5'} · Below-60 Setup`;
+    const modeLbl = state.weakSideMode ? `Weak-Side (Off ${state.favDouble})` : `Fav: ${state.favDouble}`;
+    elPromptSub.textContent = `${modeTag || 'Level 5'} · Below-60 (${modeLbl})`;
     elScoreBig.textContent = String(it.score);
     elPromptTask.textContent = it.targetD === 'ANY'
       ? `${V} smart setup on ${it.score}`
       : `${V} single setup to leave ${it.targetD}`;
     showNumpad(false);
-    renderChalkboard({ header: 'LEVEL 5 · BELOW 60', big: it.score, sub: it.targetD === 'ANY' ? 'Safe setup / wedge' : `Target: ${it.targetD}`,
-      lines: [tier === 1 ? it.cue : 'Apply -2 (D16), +4 (D18/D8), +2 (D14/D4), +6 (D12)'] });
+    renderChalkboard({
+      header: state.weakSideMode ? 'WEAK-SIDE DRILL' : `BELOW 60 · ${state.favDouble}`,
+      big: it.score,
+      sub: it.targetD === 'ANY' ? 'Safe setup / wedge' : `Target Double: ${it.targetD}`,
+      lines: [
+        tier === 1 ? it.cue : 'D20: read off 40 · D16: -2 · D18/D8: +4',
+        state.weakSideMode ? `Weak-Side Challenge active (normally ${state.favDouble})` : 'Switch Fav Double or Weak-Side in Pub Ladder!',
+      ],
+    });
     if (tier === 1) applyChallengeHint(true);
   } else if (ch.kind === 'g44') {
     const it = ch.item;
@@ -6047,6 +6724,53 @@ function loadChallenge(ch) {
     showNumpad(false);
     renderChalkboard({ header: "SOD'S LAW", big: it.score, sub: `${it.darts} dart(s) in hand`,
       lines: [tier === 1 ? it.cue : 'Track darts in hand & <70 safety'] });
+    if (tier === 1) applyChallengeHint(true);
+  } else if (ch.kind === 'board_audit') {
+    const it = ch.item;
+    state.remainingScore = it.score;
+    state.dartsLeft = 3;
+    elPromptSub.textContent = `${modeTag || 'Level 6'} · 5-Treble Danger Audit`;
+    elScoreBig.textContent = String(it.score);
+    elPromptTask.textContent = `3 darts on ${it.score} — inspect T20–T16 & ${V.toLowerCase()} a trap-free opener!`;
+    showNumpad(false);
+    showBoardOverlays({
+      highlights: ['T20', 'T19', 'T18', 'T17', 'T16'].map(code => ({
+        code, color: 0xf3cc7d, opacity: 0.34, pulse: true,
+      })),
+    });
+    renderChalkboard({
+      header: '5-TREBLE BOARD AUDIT',
+      big: it.score,
+      sub: '3 darts · Inspect T20, T19, T18, T17 & T16',
+      lines: [
+        '1. Check both neighboring singles on each treble.',
+        '2. Dodge dead leaves (99, 102, 103, 105, 106, 108)!',
+        tier === 1 ? it.cue : `Tap a danger-free winner (press Cue [H] if stuck).`,
+      ],
+    });
+    if (tier === 1) applyChallengeHint(true);
+  } else if (ch.kind === 'gauntlet170') {
+    const stp = ch.step;
+    ch.phase = 'open';
+    ch.afterOpen = null;
+    state.remainingScore = ch.score;
+    state.dartsLeft = 3;
+    setMethodBadge(`170 DOWN · #${stp.index + 1}/34`, 'fdi-70');
+    elPromptSub.textContent = `170 Down Gauntlet · #${stp.index + 1}/${stp.total}`;
+    elScoreBig.textContent = String(ch.score);
+    elPromptTask.textContent = `Walk-Down ${ch.score}: ${V} your opening treble!`;
+    showNumpad(false);
+    renderChalkboard({
+      header: `170 DOWN · #${stp.index + 1}/34`,
+      big: ch.score,
+      sub: '10s Walk-Down Blitz (Bogeys Skipped!)',
+      lines: [
+        '1. Tap opening treble (+40 T20 / +43 T19).',
+        '2. Complete the 2-dart Golden 44 finish.',
+        '3. Nail the 2nd-dart Big-Single Miss Rule!',
+      ],
+      footer: tier === 1 ? stp.cue : `Streak: ${state.gauntlet170Streak} · Best: ${mastery.data.gauntlet170Best || 0}/34`,
+    });
     if (tier === 1) applyChallengeHint(true);
   } else if (ch.kind === 'tonplus') {
     const it = ch.item;
@@ -6108,6 +6832,10 @@ function loadChallenge(ch) {
     }
     elPromptTask.textContent = taskMsg;
     showNumpad(false);
+    if (m.preppedBed) {
+      showBoardOverlays({ highlights: [{ code: m.preppedBed, color: 0xf3cc7d, opacity: 0.36, pulse: true }] });
+      m.preppedBed = null;
+    }
     draw501Slate({
       footer: m.lastDaveNote || 'Double Out · Board IQ Live!',
       footer2: state.aimMode === '3beat' ? '1·Focus → 2·Line → 3·Height' : state.aimMode === '2beat' ? '1·Line → 2·Height' : 'Instant throw · Auditor active!',
@@ -6147,7 +6875,14 @@ function applyChallengeHint(auto = false) {
       setFeedback(`Cue: ${subtractionShortcut(ch.startScore, ch.visitTotal)} (${ch.startScore} - ${ch.visitTotal})`, 'cue');
     }
   } else if (ch.kind === 'match501') {
-    if (ch.phase === 'miss_check') {
+    if (ch.phase === 'mark_rival') {
+      const info = buildVisitCue(ch.rivalVisitDarts || []);
+      const rings = (ch.rivalDartCoords || []).map((dc, idx) => ({ x: dc.x, y: dc.y, color: idx === info.oddIdx ? 0x7ba3c4 : 0xf3cc7d }));
+      showBoardOverlays({ groupRings: rings });
+      setFeedback(`Marker Cue: ${info.cue}`, 'cue');
+    } else if (ch.phase === 'oche_prep' && ch.ochePrep) {
+      setFeedback(`Oche Prep Cue: ${ch.ochePrep.formulaHint}`, 'cue');
+    } else if (ch.phase === 'miss_check') {
       const sv = bedValue(ch.missSingle);
       setFeedback(ch.slipInfo ? `Recovery Cue: ${ch.slipInfo.cue}` : `Miss Rule Cue: ${ch.missPromptFrom} - ${sv} = ${ch.missExpected}`, 'cue');
     } else if (ch.phase === 'chalk_visit') {
@@ -6236,6 +6971,30 @@ function applyChallengeHint(auto = false) {
       : [];
     showBoardOverlays({ highlights: hl, trapBeds });
     setFeedback(`Cue: ${it.cue}`, 'cue');
+  } else if (ch.kind === 'board_audit') {
+    const it = ch.item;
+    showBoardOverlays({
+      highlights: [
+        ...it.winners.map(code => ({ code, color: 0x7ae09f, opacity: 0.52, pulse: true })),
+        ...Object.keys(it.traps || {}).map(code => ({ code, color: 0xf0685e, opacity: 0.34 })),
+      ],
+    });
+    setFeedback(`Board Audit Cue: ${it.cue}`, 'cue');
+  } else if (ch.kind === 'gauntlet170') {
+    const stp = ch.step;
+    if (ch.phase === 'open') {
+      showBoardOverlays({ highlights: stp.validOpeners.map(c => ({ code: c, color: 0xf3cc7d, opacity: 0.52, pulse: true })) });
+      setFeedback(`170 Down Cue: ${stp.cue}`, 'cue');
+    } else if (ch.phase === 'dart2' && ch.afterOpen) {
+      showBoardOverlays({ highlights: [{ code: ch.afterOpen.route2[0], color: 0xf3cc7d, opacity: 0.54, pulse: true }] });
+      setFeedback(`2-Dart Finish on ${ch.afterOpen.rem1}: ${ch.afterOpen.route2.join(' -> ')}!`, 'cue');
+    } else if (ch.phase === 'dart3' && ch.afterOpen) {
+      showBoardOverlays({ highlights: [{ code: ch.afterOpen.route2[1], color: 0x7ae09f, opacity: 0.56, pulse: true }] });
+      setFeedback(`Finish ${ch.score} on ${ch.afterOpen.route2[1]}!`, 'cue');
+    } else if (ch.phase === 'miss_check' && ch.afterOpen) {
+      const a = ch.afterOpen;
+      setFeedback(`Miss Rule Cue: ${a.rem1} - ${a.miss2Val} (${a.miss2Label}) = ${a.miss2Rem}!`, 'cue');
+    }
   } else if (ch.kind === 'tonplus') {
     const it = ch.item;
     const trapBeds = it.traps ? Object.keys(it.traps) : [];
@@ -6467,6 +7226,7 @@ function stepSpectatorTurn() {
     footer: note,
     footer2: visit.won ? `${bot.name} wins the leg!` : `${oppBot.name} stepping up on ${sp.scores[opp]}...`,
   });
+  syncX01LeftSlate('501');
   setFeedback(`${note} — Tap/click the 3D board anytime to play 501 yourself!`, visit.won ? 'ok' : 'cue');
   updateHudStats();
 
@@ -6532,20 +7292,22 @@ function runBigDaveTurn() {
 
   const daveScored = visit.visitTotal;
   const daveWon = visit.won;
-  m.rivalScore = visit.endScore;
-  m.rivalD1Darts = (m.rivalD1Darts || 0) + visit.d1Darts;
-  m.rivalRows = m.rivalRows || [{ scored: null, rem: 501 }];
-  m.rivalRows.push({ scored: visit.busted ? 'BUST' : daveScored, rem: m.rivalScore });
   const landedCodes = visit.throws.map(t => t.landed.code);
   const missedMatchDart = visit.throws.some(t => t.isMatchDart && !t.isWin);
 
-  if (daveWon) {
-    m.lastDaveNote = `${rv.name} checked out ${startScore} (${landedCodes.join('+')})!`;
-  } else if (visit.busted) {
-    m.lastDaveNote = `${rv.name} BUSTED on ${startScore}!`;
-  } else {
-    m.lastDaveNote = `${rv.name}: ${landedCodes.join('+')} (${daveScored}) -> ${m.rivalScore}`;
-  }
+  const ochePrep = (!state.ghostMode && state.markRival && !daveWon)
+    ? buildOchePrepPrompt(m.playerScore)
+    : null;
+  const doMarkRival = Boolean(
+    !state.ghostMode && state.markRival && !daveWon && !visit.busted &&
+    !ochePrep && visit.throws.length === 3
+  );
+
+  const finalNote = daveWon
+    ? `${rv.name} checked out ${startScore} (${landedCodes.join('+')})!`
+    : visit.busted
+      ? `${rv.name} BUSTED on ${startScore}!`
+      : `${rv.name}: ${landedCodes.join('+')} (${daveScored}) -> ${visit.endScore}`;
 
   // Physically fly your rival's colored darts to their EXACT computeAimDrop() coordinates!
   visit.throws.forEach((t, idx) => {
@@ -6566,21 +7328,106 @@ function runBigDaveTurn() {
     });
   });
 
+  // MECHANIC #1: "You're on the Slate!" — Hold rival's total & let the player call their 3 darts for Marker Flow!
+  if (doMarkRival) {
+    m.rivalD1Darts = (m.rivalD1Darts || 0) + visit.d1Darts;
+    draw501Slate({
+      pendingRight: { scored: '?', rem: '…' },
+      footer: `${rv.short} throwing… get ready to chalk!`,
+      footer2: "You're on the Slate! (Pause-Button Drill)",
+    });
+    setFeedback(`${rv.name} throws ${landedCodes.join(' + ')} — step up to the slate and call their total!`, 'cue');
+    state.advanceTimerId = setTimeout(() => {
+      state.advanceTimerId = null;
+      const ch = state.challenge;
+      if (!ch || ch.kind !== 'match501') return;
+      state.busy = false;
+      ch.phase = 'mark_rival';
+      ch.rivalVisitDarts = landedCodes;
+      ch.rivalDartCoords = visit.throws.map(t => ({ code: t.landed.code, x: t.x, y: t.y }));
+      ch.rivalExpected = daveScored;
+      ch.rivalStartScore = startScore;
+      ch.rivalEndScore = visit.endScore;
+      ch.rivalNote = finalNote;
+      ch.rivalMissedMatchDart = missedMatchDart;
+      ch.snappedPair = false;
+      ch.usedMethodAssist = false;
+      ch.mathRatios = [];
+      ch.mathWrongCount = 0;
+      ch.mathTimedOut = false;
+      ch.chalkSpeedMs = 7500;
+      state.hintShown = false;
+      state.challengeStartMs = performance.now();
+      state.bellChimed = false;
+      setMethodBadge("You're on the Slate!", 'fdi-60');
+      elPromptSub.textContent = `Level 7 · Mark ${rv.name}'s Visit`;
+      elScoreBig.textContent = `${rv.short} ?`;
+      elPromptTask.textContent = `${rv.short}: ${landedCodes.join(' + ')} — call the total!`;
+      showNumpad(true);
+      draw501Slate({
+        pendingRight: { scored: '?', rem: '…' },
+        footer: `${rv.short.toUpperCase()}: ${landedCodes.join(' + ')}`,
+        footer2: 'Call fast for ⚡ MARKER FLOW on your throw!',
+      });
+      setFeedback(`You're on the Slate! Call ${rv.name}'s 3 darts (${landedCodes.join(' + ')}) fast for ⚡ IN FLOW!`, 'cue');
+    }, 960);
+    return;
+  }
+
+  m.rivalScore = visit.endScore;
+  m.rivalD1Darts = (m.rivalD1Darts || 0) + visit.d1Darts;
+  m.rivalRows = m.rivalRows || [{ scored: null, rem: 501 }];
+  m.rivalRows.push({ scored: visit.busted ? 'BUST' : daveScored, rem: m.rivalScore });
+  m.lastDaveNote = finalNote;
+
   audio.playChalk();
-  const bo3Tag = state.matchFormat === 'bo3' ? `L${m.legsYou}-${m.legsRival} · ` : '';
   spawnCallout(
     daveWon ? `${rv.short} CHECKS OUT!` : visit.busted ? `${rv.short} BUSTS!` : daveScored === 180 ? `${rv.short}: 180!!` : daveScored === 26 ? `${rv.short}: 26 BREAKFAST!` : `${rv.short}: ${daveScored}!`,
     { x: 0, y: 0.4, style: daveWon || visit.busted || daveScored === 26 ? 'warn' : daveScored >= 100 ? 'gold' : 'ok', center: daveScored === 180 }
   );
   draw501Slate({
     footer: m.lastDaveNote,
-    footer2: daveWon ? `${rv.name} takes the leg!` : `Your throw on ${m.playerScore}!`,
+    footer2: daveWon ? `${rv.name} takes the leg!` : (ochePrep ? `Oche Prep: ${ochePrep.score} -> ${ochePrep.openBed} = ?` : `Your throw on ${m.playerScore}!`),
   });
   updateHudStats();
 
   if (daveWon) {
     audio.playPubGroan();
     state.advanceTimerId = setTimeout(() => { state.advanceTimerId = null; finish501Leg(false); }, 1650);
+    return;
+  }
+
+  // MECHANIC #2: "Pre-Calc While They Throw!" — Off-the-Oche Setup Flash for finishable 101..170 scores!
+  if (ochePrep) {
+    setFeedback(`${m.lastDaveNote} — Pre-calc ${ochePrep.score} off the oche!`, 'cue');
+    state.advanceTimerId = setTimeout(() => {
+      state.advanceTimerId = null;
+      const ch = state.challenge;
+      if (!ch || ch.kind !== 'match501') return;
+      state.busy = false;
+      ch.phase = 'oche_prep';
+      ch.ochePrep = ochePrep;
+      ch.hopped = false;
+      ch.usedMethodAssist = false;
+      ch.mathRatios = [];
+      ch.mathWrongCount = 0;
+      ch.mathTimedOut = false;
+      ch.chalkSpeedMs = 8000;
+      state.hintShown = false;
+      state.challengeStartMs = performance.now();
+      state.bellChimed = false;
+      setMethodBadge(`OCHE PREP · ${ochePrep.formulaName}`, 'fdi-70');
+      elPromptSub.textContent = `Level 7 · Pre-Calc Off the Oche`;
+      elScoreBig.textContent = `${ochePrep.score} -> ${ochePrep.openBed}`;
+      elPromptTask.textContent = `You're on ${ochePrep.score}! ${ochePrep.openBed} (${ochePrep.formulaName}) leaves what?`;
+      showBoardOverlays({ highlights: [{ code: ochePrep.openBed, color: 0xf3cc7d, opacity: 0.45, pulse: true }] });
+      showNumpad(true);
+      draw501Slate({
+        footer: `OCHE PREP: ${ochePrep.score} - ${ochePrep.openBed} = ?`,
+        footer2: `Nail ${ochePrep.formulaName} for ⚡ IN FLOW!`,
+      });
+      setFeedback(ochePrep.cue, 'cue');
+    }, 1150);
     return;
   }
 
@@ -6700,6 +7547,22 @@ function finish501Leg(playerWon) {
   updateHudStats();
 }
 
+function formatShotLogEntry(ch) {
+  if (!ch) return 'Shot';
+  if (ch.kind === 'double_find' || ch.kind === 'double_val' || ch.kind === 'treble_find' || ch.kind === 'treble_val') return `${ch.target} = ${ch.val}`;
+  if (ch.kind === 'halving') return `${ch.start} -> ${ch.target}`;
+  if (ch.kind === 'marking' && ch.item) return `${ch.item.darts.join('+')} = ${ch.item.total}`;
+  if (ch.kind === 'fdi_pair' && ch.fdi) return `${ch.score}: T${ch.fdi.tNum} D${ch.fdi.dNum}`;
+  if (ch.kind === 'below60' && ch.item) return `${ch.item.score}: ${ch.item.setup[0]} -> ${ch.item.targetD}`;
+  if (ch.kind === 'g44' && ch.item) return `${ch.item.score}: ${ch.item.route.join(' ')}`;
+  if (ch.kind === 'sods' && ch.item) return `${ch.item.score}: ${ch.item.valid[0]}`;
+  if (ch.kind === 'tonplus' && ch.item) return `${ch.item.score} OUT`;
+  if (ch.kind === 'board_audit' && ch.item) return `Audit ${ch.item.score}: ${ch.item.best}`;
+  if (ch.kind === 'gauntlet170') return `170 Down: ${ch.score}`;
+  if (ch.kind === 'bogey' && ch.item) return `${ch.item.rem} -> ${ch.item.cover}`;
+  return ch.id || 'Shot';
+}
+
 function completeChallenge(correct, customMsg = null, customCueLines = null) {
   const ch = state.challenge;
   if (!ch) return;
@@ -6708,6 +7571,10 @@ function completeChallenge(correct, customMsg = null, customCueLines = null) {
   let rec = { xpGain: 0, flowMult: 1, lightning: false, rankedUp: null };
   if (!state.ghostMode) {
     rec = mastery.record(id, correct, ms, state.usedHint, ch.speedMs || 3000);
+    state.sessionTotal = (state.sessionTotal || 0) + 1;
+    if (correct) state.sessionOk = (state.sessionOk || 0) + 1;
+    state.sessionLog.push({ ok: !!correct, label: formatShotLogEntry(ch) });
+    if (state.sessionLog.length > 12) state.sessionLog.shift();
     if (state.stage === 'CALIBRATION') {
       state.calibStats.total++;
       const gate = (ch.speedMs || 3200) * currentProfile().masteryMult;
@@ -6753,9 +7620,15 @@ function completeChallenge(correct, customMsg = null, customCueLines = null) {
     }
 
     let justUnlockedTrial = false;
+    let justEarnedFirstPip = false;
     if (!state.ghostMode && state.stage !== 'CALIBRATION' && state.stage !== 'LEVEL_7') {
       const prevPips = mastery.getPips(state.stage);
       const nextPips = mastery.addPip(state.stage);
+      if (prevPips === 0 && nextPips === 1 && !mastery.data.pipsExplained) {
+        mastery.data.pipsExplained = true;
+        mastery.save();
+        justEarnedFirstPip = true;
+      }
       if (prevPips < PRACTICE_PIPS_NEEDED && nextPips >= PRACTICE_PIPS_NEEDED && !state.trialReadyNotified[state.stage]) {
         state.trialReadyNotified[state.stage] = true;
         justUnlockedTrial = true;
@@ -6763,11 +7636,16 @@ function completeChallenge(correct, customMsg = null, customCueLines = null) {
     }
 
     updateHudStats();
+    if (ch.kind !== 'countdown301' && ch.kind !== 'match501') renderProgressSlate();
     const stageCleared = checkStagePromotion(rec.rankedUp);
     if (justUnlockedTrial) {
       spawnCallout('TRIAL UNLOCKED!', { center: true, style: 'big' });
       trev.say("Wahey! Eight out of eight practice pips in the bag, sunshine! Hit 'Take Trial' up top whenever yer ready to win yer Brass Stars!", {
         mood: 'toast', holdMs: 4200, forceOpen: true, speak: true,
+      });
+    } else if (justEarnedFirstPip) {
+      trev.say("Nice one! That's yer first brass pip lit up top-left (1/8) — light all 8 pips on a level to unlock its timed Pub Trial an' earn yer Brass Stars!", {
+        mood: 'cheer', holdMs: 3600, forceOpen: true, speak: true,
       });
     } else {
       trev.onCorrect(ms, ch, { rankedUp: rec.rankedUp, stageCleared });
@@ -6925,14 +7803,27 @@ function commit301Dart(aimedBed, landedBed, pt, zone = null) {
   }
 }
 
-function commit501Dart(aimedBed, landedBed, pt, zone = null) {
+function commit501Dart(aimedBed, landedBed, pt, zone = null, tac = {}) {
   const ch = state.challenge;
   if (!ch || ch.kind !== 'match501' || ch.phase !== 'throw') return;
   const m = state.match501;
   const rv = currentRival();
   const remBefore = ch.liveRem;
   const isCheckoutZone = remBefore <= 189;
-  const audit = isCheckoutZone ? audit501Decision(remBefore, state.dartsLeft, aimedBed, m.rivalScore, rv.name) : null;
+  const audit = isCheckoutZone ? audit501Decision(remBefore, state.dartsLeft, aimedBed, m.rivalScore, rv.name, state.favDouble) : null;
+
+  if (tac.biasUsed && !state.ghostMode && !ch.awardedBiasXp) {
+    ch.awardedBiasXp = true;
+    mastery.data.xp = (mastery.data.xp || 0) + 10;
+    mastery.save();
+    spawnCallout(`${tac.biasTag || 'SAFE WIRE'} ✓ +10`, { x: pt.x, y: pt.y + 0.34, style: 'gold' });
+  }
+  if (tac.cleanCover && landedBed.sector === 19 && !state.ghostMode && !ch.awardedCoverXp) {
+    ch.awardedCoverXp = true;
+    mastery.data.xp = (mastery.data.xp || 0) + 10;
+    mastery.save();
+    spawnCallout('CLEAN T19 COVER ✓ +10', { x: pt.x, y: pt.y + 0.34, style: 'gold' });
+  }
 
   if (audit) {
     m.auditTotal++;
@@ -7461,6 +8352,152 @@ function handleBoardClick(bed, rawXY) {
     return;
   }
 
+  // 4b. 5-Treble Danger Audit (Level 6 — 101-109 T20..T16 splash-trap & dead-leave audit)
+  if (ch.kind === 'board_audit') {
+    const it = ch.item;
+    if (it.traps && it.traps[bed.code]) {
+      const tr = it.traps[bed.code];
+      const dp = bedToXY(tr.drift);
+      throwDartTo(dp.x, dp.y, { kind: tr.drift[0], wireTink: true });
+      if (!state.inTrial) applyChallengeHint(false);
+      renderChalkboard({
+        header: 'AUDIT TRAP!',
+        big: it.score - bedValue(tr.drift),
+        sub: `${bed.code} drifted -> ${tr.drift}`,
+        lines: [{ text: tr.why, kind: 'warn' }],
+      });
+      completeChallenge(false, tr.why);
+      return;
+    }
+    if (it.winners.includes(bed.code)) {
+      throwDartTo(x, y, { kind: bed.ring });
+      state.dartsLeft = 2;
+      const isBest = bed.code === it.best;
+      if (isBest && !state.ghostMode) {
+        mastery.data.xp = (mastery.data.xp || 0) + 10;
+        mastery.save();
+        spawnCallout(`BEST AUDIT: ${bed.code} ✓ +10`, { x, y: y + 0.24, style: 'gold' });
+      }
+      completeChallenge(true, `${isBest ? 'Textbook best opener!' : 'Safe opener!'} ${it.cue}`, [
+        { text: `${it.score}: ${bed.code} passes 5-Treble Audit!`, kind: 'ok' },
+        it.cue,
+      ]);
+    } else {
+      throwDartTo(x, y, { kind: bed.ring, wireTink: true });
+      if (!state.inTrial) applyChallengeHint(false);
+      completeChallenge(false, `${bed.code} isn't a top trap-free opener on ${it.score}. ${it.cue}`);
+    }
+    return;
+  }
+
+  // 4c. "170 Down" Timed Walk-Down Gauntlet (Level 6 — 170 -> 130 skipping bogeys!)
+  if (ch.kind === 'gauntlet170') {
+    const stp = ch.step;
+    if (ch.phase === 'open') {
+      if (stp.validOpeners.includes(bed.code)) {
+        throwDartTo(x, y, { kind: bed.ring });
+        const after = stp.resolveAfterOpener(bed.code);
+        ch.afterOpen = after;
+        ch.phase = 'dart2';
+        state.remainingScore = after.rem1;
+        state.dartsLeft = 2;
+        clearGroup(overlayGroup);
+        elScoreBig.textContent = String(after.rem1);
+        setBridgeBadge(after.fdi || null);
+        const fNote = bed.code === 'T20' ? `+40 -> ${after.rem1}` : bed.code === 'T19' ? `+43 -> ${after.rem1}` : `${bed.code} -> ${after.rem1}`;
+        elPromptTask.textContent = `${fNote} — ${actionVerb().toLowerCase()} Dart 2 on ${after.rem1}!`;
+        renderChalkboard({
+          header: `170 DOWN · #${stp.index + 1}/34`,
+          big: after.rem1,
+          sub: `${ch.score} -> ${bed.code} = ${after.rem1}`,
+          lines: [
+            after.fdi ? `${after.fdi.decade} FDI · Rule of ${after.fdi.sum}` : `2-Dart Finish on ${after.rem1}`,
+            `Route: ${after.route2.join(' -> ')} (or any clean 2-dart finish)`,
+          ],
+        });
+        setFeedback(`${bed.code} hits! ${fNote} — finish ${after.rem1} in 2 darts!`, 'ok');
+        updateHudStats();
+      } else {
+        throwDartTo(x, y, { kind: bed.ring, wireTink: true });
+        state.gauntlet170Streak = 0;
+        if (!state.inTrial) applyChallengeHint(false);
+        completeChallenge(false, `Check your opening treble on ${ch.score}. ${stp.cue}`);
+      }
+      return;
+    }
+    if (ch.phase === 'dart2' && ch.afterOpen) {
+      const rem = state.remainingScore;
+      const leaves = rem - bed.value;
+      const validSecond = (leaves === 50) || (leaves >= 2 && leaves <= 40 && leaves % 2 === 0);
+      if (validSecond) {
+        throwDartTo(x, y, { kind: bed.ring });
+        // Keep Miss Rule aligned with whichever valid 2nd dart the player actually picked
+        if (bed.code !== ch.afterOpen.route2[0]) {
+          const mLabel = bed.code === 'BULL' ? '25' : bed.code[0] === 'T' ? ('S' + bed.code.slice(1)) : bed.code;
+          const mVal = bedValue(mLabel);
+          ch.afterOpen = {
+            ...ch.afterOpen,
+            route2: [bed.code, leaves === 50 ? 'BULL' : 'D' + (leaves / 2)],
+            miss2Label: mLabel,
+            miss2Val: mVal,
+            miss2Rem: rem - mVal,
+          };
+        }
+        state.remainingScore = leaves;
+        state.dartsLeft = 1;
+        ch.phase = 'dart3';
+        clearGroup(overlayGroup);
+        const targetOut = leaves === 50 ? 'BULL' : 'D' + (leaves / 2);
+        elScoreBig.textContent = String(leaves);
+        elPromptTask.textContent = `${bed.code} hits! Finish ${ch.score} on ${targetOut}!`;
+        renderChalkboard({
+          header: `170 DOWN · #${stp.index + 1}/34`,
+          big: leaves,
+          sub: `1 dart left -> ${targetOut}`,
+          lines: [`Nail ${targetOut}, then call the Miss Rule!`],
+        });
+        setFeedback(`${bed.code} leaves ${targetOut} (${leaves})!`, 'ok');
+        updateHudStats();
+      } else {
+        throwDartTo(x, y, { kind: bed.ring, wireTink: true });
+        state.gauntlet170Streak = 0;
+        completeChallenge(false, `${bed.code} leaves ${leaves} (not a 1-dart finish)! Route: ${ch.afterOpen.route2.join(' -> ')}.`);
+      }
+      return;
+    }
+    if (ch.phase === 'dart3' && ch.afterOpen) {
+      const targetOut = state.remainingScore === 50 ? 'BULL' : 'D' + (state.remainingScore / 2);
+      if (bed.code === targetOut) {
+        throwDartTo(x, y, { kind: targetOut === 'BULL' ? 'BULL' : 'D' });
+        state.dartsLeft = 0;
+        ch.phase = 'miss_check';
+        ch.chalkSpeedMs = 8000;
+        state.numInput = '';
+        renderNumpadDisplay();
+        state.challengeStartMs = performance.now();
+        state.bellChimed = false;
+        const a = ch.afterOpen;
+        elPromptSub.textContent = `170 Down · Miss Rule Check`;
+        elScoreBig.textContent = `${a.rem1} - ${a.miss2Label}`;
+        elPromptTask.textContent = `Checkout ${ch.score}! Quick: if Dart 2 slipped into ${a.miss2Label}, what's left?`;
+        showNumpad(true);
+        renderChalkboard({
+          header: '170 DOWN · MISS RULE',
+          big: '?',
+          sub: `${a.rem1} - ${a.miss2Label} = ?`,
+          lines: [`Dart 2 (${a.route2[0]}) slipped into ${a.miss2Label} (${a.miss2Val}) — call what's left!`],
+        });
+        setFeedback(`Checkout ${ch.score} ✓! Now call the Miss Rule: ${a.rem1} - ${a.miss2Label} = ?`, 'cue');
+      } else {
+        throwDartTo(x, y, { kind: bed.ring, wireTink: true });
+        state.gauntlet170Streak = 0;
+        completeChallenge(false, `Need ${targetOut} (${state.remainingScore}) to check out ${ch.score}!`);
+      }
+      return;
+    }
+    return;
+  }
+
   // 5. Ton-Plus (Level 6 — 101-170, Live 25/30/35 FDI Bridges & Splash Traps)
   if (ch.kind === 'tonplus') {
     const it = ch.item;
@@ -7675,6 +8712,37 @@ function submitNumericAnswer(rawStr) {
     return;
   }
 
+  if (ch.kind === 'gauntlet170' && ch.phase === 'miss_check' && ch.afterOpen) {
+    const a = ch.afterOpen;
+    if (val === a.miss2Rem) {
+      recordMathFlowStep(ch, { isFinal: true, silent: true });
+      showNumpad(false);
+      state.gauntlet170Streak = (state.gauntlet170Streak || 0) + 1;
+      const clearedNum = state.gauntlet170Idx + 1;
+      state.gauntlet170Idx = (state.gauntlet170Idx + 1) % GAUNTLET_170_SCORES.length;
+      if (state.gauntlet170Streak > (mastery.data.gauntlet170Best || 0)) {
+        mastery.data.gauntlet170Best = state.gauntlet170Streak;
+      }
+      if (!state.ghostMode && state.gauntlet170Streak % 5 === 0) {
+        mastery.data.xp = (mastery.data.xp || 0) + 20;
+        spawnCallout(`🔥 170 DOWN ×${state.gauntlet170Streak}! +20 XP`, { x: 0, y: 0.44, style: 'gold' });
+      }
+      mastery.save();
+      const lapDone = state.gauntlet170Idx === 0;
+      completeChallenge(true,
+        lapDone
+          ? `CLEAN SWEEP! All 34 finishes 170→130 conquered! (${ch.score}: ${a.openBed} ${a.route2.join(' ')} · Miss ${a.miss2Rem})`
+          : `170 Down #${clearedNum}/34 ✓ (${ch.score}: ${a.openBed} ${a.route2.join(' ')} · Miss -> ${a.miss2Rem})`,
+        [{ text: `${ch.score}: ${a.openBed} → ${a.route2.join(' → ')}`, kind: 'ok' }, `Miss Rule: ${a.rem1} - ${a.miss2Val} = ${a.miss2Rem}`]);
+    } else {
+      ch.mathWrongCount = (ch.mathWrongCount || 0) + 1;
+      state.gauntlet170Streak = 0;
+      state.numInput = ''; renderNumpadDisplay();
+      completeChallenge(false, `Miss Rule check: ${a.rem1} - ${a.miss2Val} (${a.miss2Label}) = ${a.miss2Rem}!`);
+    }
+    return;
+  }
+
   if (ch.kind === 'marking') {
     const it = ch.item;
     if (val === it.total) {
@@ -7782,10 +8850,87 @@ function submitNumericAnswer(rawStr) {
     }
   }
 
-  // Level 7 — Championship 501 (Universal Slip Recovery + Step 1: Chalk Visit -> Step 2: Subtract -> Pub Rival's Turn!)
+  // Level 7 — Championship 501 (Universal Slip Recovery + Mark Rival + Oche Prep + Step 1/2 Chalk Chain!)
   if (ch.kind === 'match501') {
     const m = state.match501;
     const rv = currentRival();
+    if (ch.phase === 'mark_rival') {
+      m.chalkAttempts++;
+      if (val === ch.rivalExpected) {
+        m.chalkOk++;
+        const mf = recordMathFlowStep(ch, { isFinal: true });
+        m.rivalScore = ch.rivalEndScore;
+        m.rivalRows = m.rivalRows || [{ scored: null, rem: 501 }];
+        m.rivalRows.push({ scored: ch.rivalExpected, rem: ch.rivalEndScore });
+        m.lastDaveNote = ch.rivalNote;
+        showNumpad(false);
+        setMethodBadge(null);
+        audio.playBell('ok');
+        if (!state.ghostMode && !state.usedHint) {
+          mastery.data.xp = (mastery.data.xp || 0) + 15;
+          mastery.save();
+          spawnCallout(`MARKED ${ch.rivalExpected}! +15 XP`, { x: 0, y: 0.42, style: 'gold' });
+        }
+        const flowTxt = mf && mf.pill && mf.cls !== 'neutral' ? ` · ${mf.pill}` : '';
+        draw501Slate({
+          footer: m.lastDaveNote,
+          footer2: mf && mf.pill && mf.cls !== 'neutral' ? `Marked ✓ · ${mf.pill}` : `Back to you on ${m.playerScore}!`,
+        });
+        updateHudStats();
+        if (ch.rivalExpected === 180) {
+          audio.playCrowdRoar(1.0);
+          trev.say(`Sharp chalkin' — ${rv.name} banged in a 180! Hold yer nerve an' hit straight back!`, { mood: 'wince', holdMs: 2200, speak: true });
+        } else if (ch.rivalExpected === 26) {
+          audio.playPubGroan();
+          trev.say(`Haha! 26 Breakfast for ${rv.name} — spot-on call, now bury 'em, sunshine!`, { mood: 'cheer', holdMs: 2000, speak: true });
+        } else if (ch.rivalMissedMatchDart) {
+          trev.say(rv.missQuip || `Nice markin'! ${rv.name} missed at double — nick this leg right now!`, { mood: 'toast', holdMs: 2200, speak: true });
+        }
+        setFeedback(`Spot-on pub marking! ${m.lastDaveNote}${flowTxt} — Step up on ${m.playerScore}!`, 'ok');
+        state.busy = true;
+        state.advanceTimerId = setTimeout(() => { state.advanceTimerId = null; loadChallenge(nextChallengeForStage('LEVEL_7')); }, 820);
+      } else {
+        ch.mathWrongCount = (ch.mathWrongCount || 0) + 1;
+        audio.playWireTink(false);
+        state.numInput = ''; renderNumpadDisplay();
+        const breakdown = (ch.rivalVisitDarts || []).map(d => `${d}(${bedValue(d)})`).join(' + ');
+        setFeedback(`Not ${val}! Check ${rv.short}'s darts: ${breakdown} (press Snap Pair [Tab] or Cue [H]!)`, 'warn');
+      }
+      return;
+    }
+    if (ch.phase === 'oche_prep' && ch.ochePrep) {
+      m.chalkAttempts++;
+      const p = ch.ochePrep;
+      if (val === p.answer) {
+        m.chalkOk++;
+        const mf = recordMathFlowStep(ch, { isFinal: true });
+        m.preppedBed = p.openBed;
+        showNumpad(false);
+        setMethodBadge(null);
+        audio.playBell('ok');
+        if (!state.ghostMode && !state.usedHint) {
+          mastery.data.xp = (mastery.data.xp || 0) + 15;
+          mastery.save();
+          spawnCallout(`OCHE PREP ✓ +15 XP`, { x: 0, y: 0.42, style: 'gold' });
+        }
+        const flowTxt = mf && mf.pill && mf.cls !== 'neutral' ? ` · ${mf.pill}` : '';
+        draw501Slate({
+          footer: `${p.score} -> ${p.openBed} = ${p.answer} (${p.followUp})`,
+          footer2: mf && mf.pill && mf.cls !== 'neutral' ? `Locked In! ${mf.pill}` : `Step up & throw ${p.openBed}!`,
+        });
+        setFeedback(`Pre-calced! ${p.formulaHint}${flowTxt} — step up to ${p.openBed}!`, 'ok');
+        trev.say(`Class preparation, sunshine! ${p.score}, ${p.openBed} leaves ${p.answer} — step straight up an' pin it!`, { mood: 'cheer', holdMs: 2200, speak: true });
+        state.busy = true;
+        state.advanceTimerId = setTimeout(() => { state.advanceTimerId = null; loadChallenge(nextChallengeForStage('LEVEL_7')); }, 800);
+      } else {
+        ch.mathWrongCount = (ch.mathWrongCount || 0) + 1;
+        audio.playWireTink(false);
+        state.numInput = ''; renderNumpadDisplay();
+        const last2 = String(p.score % 100).padStart(2, '0');
+        setFeedback(`Not ${val}! ${p.formulaName}: add +${p.addConst} onto ${last2} (press [Tab] or Cue [H]!)`, 'warn');
+      }
+      return;
+    }
     if (ch.phase === 'miss_check') {
       m.chalkAttempts++;
       if (val === ch.missExpected) {
@@ -7945,6 +9090,10 @@ function tickGhost(dt) {
       else if (rem <= 40 && rem % 2 === 0) code = 'D' + (rem / 2);
       else if (G44_BY_SCORE[rem]) code = G44_BY_SCORE[rem].route[0];
       handleBoardClick({ code, ring: code === 'BULL' ? 'BULL' : code[0], sector: parseInt(code.slice(1), 10) || 20, value: bedValue(code) });
+    } else if (ch.phase === 'mark_rival') {
+      submitNumericAnswer(String(ch.rivalExpected));
+    } else if (ch.phase === 'oche_prep' && ch.ochePrep) {
+      submitNumericAnswer(String(ch.ochePrep.answer));
     } else if (ch.phase === 'miss_check') {
       submitNumericAnswer(String(ch.missExpected));
     } else if (ch.phase === 'chalk_visit') {
@@ -7971,6 +9120,18 @@ function tickGhost(dt) {
       const pick = rem === 68 ? 'T16' : rem === 74 ? 'T14' : rem === 66 ? 'T10' : rem === 60 ? 'S20' : rem === 58 ? 'S18' : 'S' + (rem - 32);
       const code = bedValue(pick) > 0 && rem - bedValue(pick) >= 8 ? pick : 'S20';
       handleBoardClick({ code, ring: code[0], value: bedValue(code) });
+    }
+  } else if (ch.kind === 'board_audit') {
+    const code = ch.item.best;
+    handleBoardClick({ code, ring: code[0], value: bedValue(code) });
+  } else if (ch.kind === 'gauntlet170') {
+    if (ch.phase === 'miss_check' && ch.afterOpen) {
+      submitNumericAnswer(String(ch.afterOpen.miss2Rem));
+    } else {
+      const code = ch.phase === 'open' ? ch.step.primary
+        : ch.phase === 'dart2' && ch.afterOpen ? ch.afterOpen.route2[0]
+        : ch.afterOpen ? ch.afterOpen.route2[1] : 'T20';
+      handleBoardClick({ code, ring: code === 'BULL' ? 'BULL' : code[0], value: bedValue(code) });
     }
   } else if (ch.kind === 'tonplus') {
     const it = ch.item;
@@ -8126,6 +9287,11 @@ window.addEventListener('keydown', (e) => {
   if (aimGauge.active && (e.key === ' ' || e.key === 'Enter')) {
     e.preventDefault();
     releaseAimGauge();
+    return;
+  }
+  if (aimGauge.active && e.key.toLowerCase() === 'b' && aimGauge.wireBias) {
+    e.preventDefault();
+    toggleWireBias();
     return;
   }
   if (!aimGauge.active && e.key === ' ' && !elNumpad.classList.contains('visible')) {
@@ -8285,6 +9451,12 @@ function stageProgressPct(stageId) {
 function renderDrawer() {
   if (drawerTab === 'stages') {
     const prof = currentProfile();
+    const FAV_DOUBLE_META = {
+      D20: { label: 'Tops (D20)', rule: 'Read straight off 40 (41–59) & off 20 (21–39)' },
+      D16: { label: 'Double 16 (D16)', rule: 'Last digit −2 for D16 (33–52), cap 53+ → D20' },
+      D18: { label: 'Double 18 (D18)', rule: 'Last digit +4 for D18 (37–56), 42 → S6!' },
+    };
+    const favMeta = FAV_DOUBLE_META[state.favDouble] || FAV_DOUBLE_META.D20;
     elDrawerBody.innerHTML = `
       <div class="setting-row">
         <div>
@@ -8305,6 +9477,22 @@ function renderDrawer() {
           <button class="seg-btn ${state.hintMode === 'blind' ? 'active' : ''}" data-hint="blind">Match Blind</button>
         </div>
       </div>
+      <div class="setting-row" style="flex-wrap:wrap">
+        <div>
+          <div><span>Favorite Double Archetype</span></div>
+          <div style="font-size:11px;color:var(--chalk-dim);margin-top:2px">${
+            state.weakSideMode
+              ? `Weak-Side Challenge ON (drilling off-${state.favDouble} doubles!)`
+              : `${favMeta.label} — ${favMeta.rule}`
+          }</div>
+        </div>
+        <div class="seg-group" style="flex-wrap:wrap">
+          <button class="seg-btn ${state.favDouble === 'D20' ? 'active' : ''}" data-favd="D20">D20 (Off 40)</button>
+          <button class="seg-btn ${state.favDouble === 'D16' ? 'active' : ''}" data-favd="D16">D16 (-2)</button>
+          <button class="seg-btn ${state.favDouble === 'D18' ? 'active' : ''}" data-favd="D18">D18 (+4)</button>
+          <button class="seg-btn ${state.weakSideMode ? 'active' : ''}" data-weakside="1">Weak-Side</button>
+        </div>
+      </div>
       <div class="setting-row">
         <span>Level 5 · FDI Training Mode</span>
         <div class="seg-group">
@@ -8312,11 +9500,19 @@ function renderDrawer() {
           <button class="seg-btn ${state.fdiPairsOnly ? 'active' : ''}" data-fdipair="1">FDI Pair Hunter (25/30/35)</button>
         </div>
       </div>
-      <div class="setting-row">
-        <span>Level 6 Big-Finish Focus</span>
-        <div class="seg-group">
-          <button class="seg-btn ${!state.fdiBridgesOnly ? 'active' : ''}" data-fdi="0">All 101–170</button>
-          <button class="seg-btn ${state.fdiBridgesOnly ? 'active' : ''}" data-fdi="1">25/30/35 Bridges</button>
+      <div class="setting-row" style="flex-wrap:wrap">
+        <div>
+          <div><span>Level 6 · Big-Finish Mode</span></div>
+          <div style="font-size:11px;color:var(--chalk-dim);margin-top:2px">${
+            state.gauntlet170Mode
+              ? `170 Down Walk-Down (${state.gauntlet170Idx + 1}/34 · Best Streak: ${mastery.data.gauntlet170Best || 0})`
+              : state.fdiBridgesOnly ? 'Focused 25/30/35 FDI bridge finishes' : '101–170 finishes, Bogey Dodger & 5-Treble Danger Audits'
+          }</div>
+        </div>
+        <div class="seg-group" style="flex-wrap:wrap">
+          <button class="seg-btn ${!state.fdiBridgesOnly && !state.gauntlet170Mode ? 'active' : ''}" data-l6mode="all">All 101–170</button>
+          <button class="seg-btn ${state.fdiBridgesOnly && !state.gauntlet170Mode ? 'active' : ''}" data-l6mode="bridges">25/30/35 Bridges</button>
+          <button class="seg-btn ${state.gauntlet170Mode ? 'active' : ''}" data-l6mode="gauntlet170">170 Down (170→130)</button>
         </div>
       </div>
       <div class="setting-row" style="flex-wrap:wrap">
@@ -8363,6 +9559,13 @@ function renderDrawer() {
         <div class="seg-group">
           <button class="seg-btn ${state.liveSlipChecks ? 'active' : ''}" data-slipchk="1">On (Miss/Stray)</button>
           <button class="seg-btn ${!state.liveSlipChecks ? 'active' : ''}" data-slipchk="0">Off</button>
+        </div>
+      </div>
+      <div class="setting-row">
+        <span>Level 7 · Pub Marker &amp; Oche Prep</span>
+        <div class="seg-group">
+          <button class="seg-btn ${state.markRival ? 'active' : ''}" data-markrival="1">On (Mark &amp; Prep)</button>
+          <button class="seg-btn ${!state.markRival ? 'active' : ''}" data-markrival="0">Off</button>
         </div>
       </div>
       <div class="setting-row" style="flex-wrap:wrap">
@@ -8421,6 +9624,18 @@ function renderDrawer() {
     elDrawerBody.querySelectorAll('[data-hint]').forEach(b => b.addEventListener('click', () => {
       state.hintMode = b.dataset.hint; renderDrawer(); loadChallenge(nextChallengeForStage(state.stage));
     }));
+    elDrawerBody.querySelectorAll('[data-favd]').forEach(b => b.addEventListener('click', () => {
+      state.favDouble = b.dataset.favd;
+      mastery.data.favDouble = state.favDouble;
+      mastery.save();
+      renderDrawer();
+      if (state.stage === 'LEVEL_5' && !state.fdiPairsOnly) loadChallenge(nextChallengeForStage('LEVEL_5'));
+    }));
+    elDrawerBody.querySelectorAll('[data-weakside]').forEach(b => b.addEventListener('click', () => {
+      state.weakSideMode = !state.weakSideMode;
+      renderDrawer();
+      if (state.stage === 'LEVEL_5') loadChallenge(nextChallengeForStage('LEVEL_5'));
+    }));
     elDrawerBody.querySelectorAll('[data-fdipair]').forEach(b => b.addEventListener('click', () => {
       state.fdiPairsOnly = b.dataset.fdipair === '1';
       renderDrawer();
@@ -8431,9 +9646,19 @@ function renderDrawer() {
         loadChallenge(nextChallengeForStage('LEVEL_5'));
       }
     }));
-    elDrawerBody.querySelectorAll('[data-fdi]').forEach(b => b.addEventListener('click', () => {
-      state.fdiBridgesOnly = b.dataset.fdi === '1'; renderDrawer();
-      if (state.stage === 'LEVEL_6') loadChallenge(nextChallengeForStage('LEVEL_6'));
+    elDrawerBody.querySelectorAll('[data-l6mode]').forEach(b => b.addEventListener('click', () => {
+      const mode = b.dataset.l6mode;
+      state.fdiBridgesOnly = mode === 'bridges';
+      state.gauntlet170Mode = mode === 'gauntlet170';
+      if (state.gauntlet170Mode) {
+        state.gauntlet170Idx = 0;
+        state.gauntlet170Streak = 0;
+        closeDrawer();
+        selectStage('LEVEL_6', true, false);
+      } else {
+        renderDrawer();
+        if (state.stage === 'LEVEL_6') loadChallenge(nextChallengeForStage('LEVEL_6'));
+      }
     }));
     elDrawerBody.querySelectorAll('[data-aimmode]').forEach(b => b.addEventListener('click', () => {
       state.aimMode = b.dataset.aimmode;
@@ -8469,6 +9694,10 @@ function renderDrawer() {
     }));
     elDrawerBody.querySelectorAll('[data-slipchk]').forEach(b => b.addEventListener('click', () => {
       state.liveSlipChecks = b.dataset.slipchk === '1';
+      renderDrawer();
+    }));
+    elDrawerBody.querySelectorAll('[data-markrival]').forEach(b => b.addEventListener('click', () => {
+      state.markRival = b.dataset.markrival === '1';
       renderDrawer();
     }));
     elDrawerBody.querySelectorAll('[data-kvoice]').forEach(b => b.addEventListener('click', () => {
@@ -8601,11 +9830,10 @@ function onResize() {
     BASE_CAM.set(0.0, 0.42, zPortrait);
     BASE_LOOK.set(0.0, 0.30, 0);
   } else {
-    // Landscape / Desktop: frame full board (with 20 clear below HUD) + entire right 3D slate chalkboard cleanly
-    const aspectPad = Math.max(0, 1.55 - camera.aspect) * 3.2;
-    const wide = camera.aspect >= 1.15;
-    BASE_CAM.set(wide ? 0.92 : 0.22, 0.44, 10.65 + aspectPad);
-    BASE_LOOK.set(wide ? 0.86 : 0.14, 0.22, 0);
+    // Landscape / Desktop: symmetrical framing showing Left Coaching Slate, center 3D Dartboard & Right Score Slate cleanly!
+    const aspectPad = Math.max(0, 1.62 - camera.aspect) * 3.8;
+    BASE_CAM.set(0.0, 0.34, 11.45 + aspectPad);
+    BASE_LOOK.set(0.0, 0.14, 0.0);
   }
   camera.updateProjectionMatrix();
   postMat.uniforms.uFar.value = camera.far;
@@ -8707,7 +9935,7 @@ function animate(now) {
   mainSpot.intensity = (44 + flowBoost * 7.5 + curTension * 9.5) * flicker;
   boardLowerFill.intensity = (18.5 + flowBoost * 3.0 + curTension * 2.0) * flicker;
   slateLight.intensity = (25.0 + flowBoost * 3.5 - curTension * 3.0) * flicker;
-  leftDoorAccent.intensity = Math.max(5.5, 12.5 + flowBoost * 1.5 - curTension * 5.0);
+  leftDoorAccent.intensity = (24.0 + flowBoost * 3.0 - curTension * 4.0) * flicker;
   if (typeof lampConeMat !== 'undefined') {
     lampConeMat.uniforms.uIntensity.value = (0.115 + flowBoost * 0.065 + curTension * 0.075) * flicker;
   }
@@ -8737,8 +9965,8 @@ function animate(now) {
     ((state.challenge.kind === 'countdown301' || state.challenge.kind === 'match501') && state.challenge.phase !== 'throw')
   );
   if (camera.aspect >= 0.95 && isChalking) {
-    targetCam.x += 0.22;
-    targetCam.z -= 0.18;
+    targetCam.x += 0.08;
+    targetCam.z -= 0.14;
   }
   // On stacked/portrait viewports when the compact Slate Numpad or Aim Gauge is visible, gently zoom & lift so the entire dartboard sits cleanly between top HUD and bottom keypad!
   if ((window.innerWidth <= 780 || camera.aspect < 0.95) && (elNumpad.classList.contains('visible') || aimGauge.active)) {

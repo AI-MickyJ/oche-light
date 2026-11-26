@@ -12,7 +12,7 @@ export const R_TREBLE_IN  = 0.93;
 export const R_TREBLE_OUT = 1.09;
 export const R_DOUBLE_IN  = 1.56;
 export const R_DOUBLE_OUT = 1.72;
-export const R_NUM_RING   = 1.98;
+export const R_NUM_RING   = 2.09;
 export const R_BOARD_EDGE = 2.26;
 
 export const ESSENTIAL_TREBLES = [10, 12, 13, 14, 15, 16, 17, 18, 19, 20];
@@ -586,8 +586,23 @@ export function subtractionMethodInfo(start, visit) {
 }
 
 export function buildCroupierSnap(darts) {
-  const vals = darts.map(bedValue);
-  const total = vals[0] + vals[1] + vals[2];
+  const clean = Array.isArray(darts) ? darts.filter(Boolean) : [];
+  const vals = clean.map(bedValue);
+  const total = vals.reduce((s, v) => s + v, 0);
+  if (clean.length < 3) {
+    const a = clean[0] || 'S0', b = clean[1];
+    const prompt = b ? `${a} (${vals[0]}) + ${b} (${vals[1]})` : `${a} (${vals[0]})`;
+    return {
+      groupIdx: clean.length === 2 ? [0, 1] : [0],
+      oddIdx: -1,
+      pairSum: total,
+      oddVal: 0,
+      total,
+      shapeTag: clean.length === 2 ? '2-Dart Anchor' : 'Single Dart',
+      snapPrompt: prompt,
+      cue: `${prompt} = ${total}!`,
+    };
+  }
   let g = [0, 1], odd = 2;
   const pairs = [[0, 1, 2], [0, 2, 1], [1, 2, 0]];
   let bestScore = -1;
@@ -595,7 +610,7 @@ export function buildCroupierSnap(darts) {
   for (const [a, b, c] of pairs) {
     let sc = 0;
     let tag = 'Known Pair';
-    const da = darts[a], db = darts[b];
+    const da = String(clean[a] || ''), db = String(clean[b] || '');
     const va = vals[a], vb = vals[b];
     if (da === db) { sc += 6; tag = da[0] === 'T' ? '6× Double Treble' : 'Matched Pair'; }
     else if ((da === 'BULL' || da === '25') && (db === 'BULL' || db === '25')) { sc += 6; tag = 'Bull/25 Anchor'; }
@@ -614,7 +629,7 @@ export function buildCroupierSnap(darts) {
   }
   const pairSum = vals[g[0]] + vals[g[1]];
   const oddVal = vals[odd];
-  const oddCode = darts[odd];
+  const oddCode = clean[odd];
   // Nearest-10/20 rounding nudge for awkward odd 3rd dart (Mark Pt 3!)
   let roundTip = '';
   if (oddVal >= 15 && oddVal <= 19) roundTip = ` (+20, -${20 - oddVal})`;
@@ -626,8 +641,8 @@ export function buildCroupierSnap(darts) {
     oddVal,
     total,
     shapeTag: bestTag,
-    snapPrompt: `${darts[g[0]]}+${darts[g[1]]} = ${pairSum}  +  ${oddCode} (${oddVal})${roundTip}`,
-    cue: `Snap ${darts[g[0]]}+${darts[g[1]]} (${pairSum}) + ${oddCode} (${oddVal}) = ${total}!`,
+    snapPrompt: `${clean[g[0]]}+${clean[g[1]]} = ${pairSum}  +  ${oddCode} (${oddVal})${roundTip}`,
+    cue: `Snap ${clean[g[0]]}+${clean[g[1]]} (${pairSum}) + ${oddCode} (${oddVal}) = ${total}!`,
   };
 }
 
@@ -1213,7 +1228,7 @@ export function clamp301Dart(startScore, visitTotalSoFar, landedBed, pt, rng = M
 }
 
 // Live @yourdarts Board-Management Auditor for Level 7 (Championship 501)
-export function audit501Decision(rem, dartsLeft, aimedBed, rivalScore, rivalName = 'Big Dave') {
+export function audit501Decision(rem, dartsLeft, aimedBed, rivalScore, rivalName = 'Big Dave', favDouble = 'D20') {
   const leaves = rem - aimedBed.value;
   const cleanDoubles = new Set([40, 36, 32, 28, 24, 20, 16, 12, 8]);
 
@@ -1318,8 +1333,10 @@ export function audit501Decision(rem, dartsLeft, aimedBed, rivalScore, rivalName
         msg: `Crisp Below-60 setup! ${aimedBed.code} leaves D${leaves / 2} (${leaves})!` };
     }
     if (leaves % 2 === 1 || leaves < 2) {
+      const pref = preferredDoubleSetup(rem, favDouble);
+      const prefTip = pref ? `${pref.single} -> ${pref.targetD} (${pref.formulaTag})` : 'D16 (-2) or D18 (+4)';
       return { grade: 'bad', tag: 'ODD LEAVE',
-        msg: `Watch out — ${aimedBed.code} on ${rem} leaves ${leaves}! Aim a single to leave D16 (-2) or D18 (+4)!` };
+        msg: `Watch out — ${aimedBed.code} on ${rem} leaves ${leaves}! Try ${prefTip}!` };
     }
     return null;
   }
@@ -1335,4 +1352,447 @@ export function audit501Decision(rem, dartsLeft, aimedBed, rivalScore, rivalName
     }
   }
   return null;
+}
+
+/* ============================================================================
+   PHASE 6: @yourdarts PREFERRED DOUBLE, 3D BED LIE, WIRE BIAS, OCHE PREP,
+   5-TREBLE BOARD AUDIT & 170-DOWN WALK-DOWN GAUNTLET
+   ============================================================================ */
+
+export const FAV_DOUBLES = ['D20', 'D16', 'D18'];
+
+export function preferredDoubleSetup(score, favDouble = 'D20') {
+  const fav = FAV_DOUBLES.includes(favDouble) ? favDouble : 'D20';
+  if (score < 3 || score > 59 || score === 50 || isCheckoutable1Dart(score)) return null;
+
+  // D16 player (-2 rule, valid 33..52)
+  if (fav === 'D16') {
+    if (score >= 33 && score <= 52) {
+      const s = score - 32;
+      const band = score <= 41 ? 'lower half (33-41)' : score <= 51 ? 'upper half (42-51)' : 'D16 ceiling (52)';
+      return {
+        score, favDouble: fav, targetD: 'D16', single: 'S' + s, singleVal: s,
+        formulaTag: 'D16 (-2)', isFallback: false, aimHigh: s === 20,
+        cue: `D16 (-2) · ${band}: ${score % 10} - 2 -> S${s} leaves D16 (32)!`,
+      };
+    }
+    if (score > 52) {
+      const s = score - 40;
+      return {
+        score, favDouble: fav, targetD: 'D20', single: 'S' + s, singleVal: s,
+        formulaTag: 'D16 CAP -> D20', isFallback: true, aimHigh: false,
+        cue: `${score} exceeds D16 ceiling (52)! Read off 40 -> S${s} leaves D20 (40)!`,
+      };
+    }
+    // Below 33: All the 8s (+4) to D8 (17..31) or All the 4s (+2) to D4 (9..15)
+    if (score >= 17) {
+      const s = score - 16;
+      return {
+        score, favDouble: fav, targetD: 'D8', single: 'S' + s, singleVal: s,
+        formulaTag: 'D8 (+4)', isFallback: false, aimHigh: false,
+        cue: `All the 8s (+4): S${s} leaves D8 (16) on your 16s/8s side!`,
+      };
+    }
+    if (score >= 9) {
+      const s = score - 8;
+      return {
+        score, favDouble: fav, targetD: 'D4', single: 'S' + s, singleVal: s,
+        formulaTag: 'D4 (+2)', isFallback: false, aimHigh: false,
+        cue: `All the 4s (+2): S${s} leaves D4 (8)!`,
+      };
+    }
+    return {
+      score, favDouble: fav, targetD: 'D2', single: 'S' + (score - 4), singleVal: score - 4,
+      formulaTag: 'CLEAN D2', isFallback: false, aimHigh: false,
+      cue: `S${score - 4} leaves D2 (4)!`,
+    };
+  }
+
+  // D18 player (+4 rule, valid 37..56)
+  if (fav === 'D18') {
+    if (score >= 37 && score <= 56) {
+      const s = score - 36;
+      const band = score <= 45 ? 'lower half (37-45)' : score <= 55 ? 'upper half (46-55)' : 'D18 ceiling (56)';
+      const warn42 = score === 42 ? ' (S6, NOT S16!)' : '';
+      return {
+        score, favDouble: fav, targetD: 'D18', single: 'S' + s, singleVal: s,
+        formulaTag: 'D18 (+4)', isFallback: false, aimHigh: s === 20,
+        cue: `D18 (+4) · ${band}: ${score % 10} + 4 -> S${s}${warn42} leaves D18 (36)!`,
+      };
+    }
+    if (score > 56) {
+      const s = score - 40;
+      return {
+        score, favDouble: fav, targetD: 'D20', single: 'S' + s, singleVal: s,
+        formulaTag: 'D18 CAP -> D20', isFallback: true, aimHigh: false,
+        cue: `${score} exceeds D18 ceiling (56)! Read off 40 -> S${s} leaves D20 (40)!`,
+      };
+    }
+    if (score >= 19) {
+      const s = score - 18;
+      return {
+        score, favDouble: fav, targetD: 'D9', single: 'S' + s, singleVal: s,
+        formulaTag: 'D18/D9', isFallback: false, aimHigh: false,
+        cue: score >= 21 && score <= 35 && (score - 16) <= 19
+          ? `S${score - 16} leaves fat D8 (16) [or S${s} -> D9]`
+          : `S${s} leaves D9 (18)!`,
+      };
+    }
+    const dVal = score > 8 ? 8 : 4;
+    const s = score - dVal;
+    return {
+      score, favDouble: fav, targetD: 'D' + (dVal / 2), single: 'S' + s, singleVal: s,
+      formulaTag: `D${dVal / 2}`, isFallback: false, aimHigh: false,
+      cue: `S${s} leaves D${dVal / 2} (${dVal})!`,
+    };
+  }
+
+  // D20 player (Read straight off 40 for 41..59, Read off 20 for 21..39, D8/D4 below)
+  if (score >= 41) {
+    const s = score - 40;
+    return {
+      score, favDouble: fav, targetD: 'D20', single: 'S' + s, singleVal: s,
+      formulaTag: 'READ OFF 40', isFallback: false, aimHigh: false,
+      cue: score === 46
+        ? 'D20 (10/6 Pizza Wedge!): S6 -> D20 (or S10 -> D18, T6 -> D14)!'
+        : `Read off 40: S${s} leaves Tops D20 (40)!`,
+    };
+  }
+  if (score >= 21) {
+    const s = score - 20;
+    return {
+      score, favDouble: fav, targetD: 'D10', single: 'S' + s, singleVal: s,
+      formulaTag: 'READ OFF 20', isFallback: false, aimHigh: false,
+      cue: `Read off 20: S${s} leaves D10 (20) on your 20s/10s side!`,
+    };
+  }
+  const dVal = score > 8 ? 8 : score > 4 ? 4 : 2;
+  const s = score - dVal;
+  return {
+    score, favDouble: fav, targetD: 'D' + (dVal / 2), single: 'S' + s, singleVal: s,
+    formulaTag: `D${dVal / 2}`, isFallback: false, aimHigh: false,
+    cue: `S${s} leaves D${dVal / 2} (${dVal})!`,
+  };
+}
+
+// Physical 3D Blocked Bed vs. Guide Dart ("Perfect Lie") evaluator for Trebles (T20..T16)
+export function evaluateBedLie(dartsSoFar, targetBedCode, remScore = null) {
+  if (!Array.isArray(dartsSoFar) || !dartsSoFar.length || !targetBedCode) return null;
+  const p = parseBedCode(targetBedCode);
+  if (p.ring !== 'T' || p.sector < 15) return null;
+
+  // Find latest dart landed in this exact treble bed with recorded (x, y)
+  let hit = null;
+  for (let i = dartsSoFar.length - 1; i >= 0; i--) {
+    const d = dartsSoFar[i];
+    if (d && (d.bed || d.code) === targetBedCode && typeof d.x === 'number' && typeof d.y === 'number') {
+      hit = d;
+      break;
+    }
+  }
+  if (!hit) return null;
+
+  const center = bedToXY(targetBedCode, { jitter: 0 });
+  const rCenter = Math.hypot(center.x, center.y) || 1;
+  const urx = center.x / rCenter, ury = center.y / rCenter; // outward radial unit vector
+  const utx = ury, uty = -urx; // tangential unit vector along arc
+  const dx = hit.x - center.x, dy = hit.y - center.y;
+  const radialOff = dx * urx + dy * ury;    // negative = sitting low/inner blocking entry, positive = high/upper wire
+  const tangentOff = Math.abs(dx * utx + dy * uty);
+
+  const coverMap = { T20: 'T19', T19: 'T18', T18: 'T19', T17: 'T19', T16: 'T19' };
+  const coverBed = coverMap[targetBedCode] || 'T19';
+
+  // Even ton-plus "Perfect Lie" stay-on-T20 scores after opening T20 (142->82, 136->76, 134->74, 132->72, 130->70)
+  const perfectStayMap = { 82: 'D11', 76: 'D8', 74: 'D7', 72: 'D6', 70: 'D5' };
+  const stayDbl = targetBedCode === 'T20' && remScore !== null ? perfectStayMap[remScore] : null;
+
+  // Blocked Bed: dart sitting right in center-to-lower-front of the treble bed
+  if (tangentOff <= 0.056 && radialOff <= 0.020) {
+    return {
+      lie: 'blocked',
+      targetBed: targetBedCode,
+      coverBed,
+      focusMult: 0.90,
+      vertMult: 0.84,
+      horizMult: 0.92,
+      tag: '🧱 BLOCKED BED',
+      cue: stayDbl
+        ? `${targetBedCode} blocked! Drop to your standalone 2-dart route instead of forcing a 2nd ${targetBedCode}!`
+        : `${targetBedCode} blocked by Dart ${dartsSoFar.indexOf(hit) + 1} — drop to ${coverBed} cover (or hold tight height)!`,
+    };
+  }
+
+  // Guide Dart ("Perfect Lie"): dart sits cleanly on upper wire or side wing as a marker!
+  return {
+    lie: 'guide',
+    targetBed: targetBedCode,
+    coverBed,
+    stayDouble: stayDbl || null,
+    focusMult: 1.12,
+    vertMult: 1.12,
+    horizMult: 1.08,
+    tag: stayDbl ? `🎯 PERFECT LIE -> ${stayDbl}` : '🎯 GUIDE DART (+12%)',
+    cue: stayDbl
+      ? `Perfect Lie on T20! Follow your guide dart straight back into T20 for ${stayDbl}!`
+      : `Clean guide dart on ${targetBedCode} — +12% grouping stability if you follow it straight in!`,
+  };
+}
+
+// Asymmetric Wire-Bias Safe Aiming ("Aim 20/5 Wire" on 106/109, "Give S20/S18 Respect", Bottom-Wire D18/D16)
+export function getWireBiasInfo(score, dartsLeft, targetBedCode) {
+  if (!score || !targetBedCode) return null;
+
+  // 106 & 109 (3 darts on T20): S5 is a safe 2-dart out (101/104), S1 is dead (105/108)!
+  if ((score === 106 || score === 109) && dartsLeft === 3 && targetBedCode === 'T20') {
+    return {
+      id: `BIAS_${score}_20_5`,
+      axis: 'horiz',
+      shiftU: -0.22,
+      shiftV: 0,
+      xyShift: { x: -0.075, y: 0 },
+      safeSide: 'S5',
+      safeLeave: score - 5,
+      dangerSide: 'S1',
+      dangerLeave: score - 1,
+      btnLabel: 'Bias Left -> 20/5 Wire [B]',
+      tag: '20/5 SAFE WIRE',
+      cue: `Aim toward the 20/5 wire! Drift left (S5) leaves ${score - 5} (2-dart out); drift right (S1) leaves dead ${score - 1}!`,
+    };
+  }
+
+  // 76 (2 darts on D18): bottom wire inside miss S18 leaves 58 instead of outside 0!
+  if (score === 76 && dartsLeft <= 2 && targetBedCode === 'D18') {
+    return {
+      id: 'BIAS_76_D18',
+      axis: 'vert',
+      shiftU: 0,
+      shiftV: -0.20,
+      xyShift: { x: -0.04, y: -0.065 },
+      safeSide: 'S18',
+      safeLeave: 58,
+      dangerSide: 'MISS',
+      dangerLeave: 76,
+      btnLabel: 'Bias Bottom Wire [B]',
+      tag: 'BOTTOM WIRE D18',
+      cue: 'Aim D18 bottom wire — inside miss S18 leaves 58 (stay on 18s) instead of wiring out for 0!',
+    };
+  }
+
+  // 64 (2 darts on D16): inner wire inside miss S16 leaves 48 (16/8 wedge) instead of outside 0!
+  if (score === 64 && dartsLeft <= 2 && targetBedCode === 'D16') {
+    return {
+      id: 'BIAS_64_D16',
+      axis: 'horiz',
+      shiftU: 0.20,
+      shiftV: 0,
+      xyShift: { x: 0.06, y: 0.03 },
+      safeSide: 'S16',
+      safeLeave: 48,
+      dangerSide: 'MISS',
+      dangerLeave: 64,
+      btnLabel: 'Bias Inner Wire [B]',
+      tag: 'INNER WIRE D16',
+      cue: 'Aim D16 inner wire — inside miss S16 leaves 48 (16/8 safe wedge) instead of 0!',
+    };
+  }
+
+  // 52 / 56 / 60 aiming S20: "Give S20 respect" — bias high into Outer S20 away from busting T20!
+  if ((score === 52 || score === 56 || score === 60) && dartsLeft >= 2 && targetBedCode === 'S20') {
+    return {
+      id: `BIAS_${score}_OS20`,
+      axis: 'vert',
+      shiftU: 0,
+      shiftV: 0.24,
+      xyShift: { x: 0, y: 0.13 },
+      safeSide: 'OS20',
+      safeLeave: score - 20,
+      dangerSide: 'T20',
+      dangerLeave: score === 60 ? '0 (NO DBL)' : 'BUST',
+      btnLabel: 'Aim High Above T20 [B]',
+      tag: 'RESPECT S20',
+      cue: `Give S20 respect! Bias high above T20 so scoring muscle-memory won't hit T20 and bust ${score}!`,
+    };
+  }
+
+  // 50 (2-3 darts aiming S18): bias high into Outer S18 away from T18 (54) bust!
+  if (score === 50 && dartsLeft >= 2 && targetBedCode === 'S18') {
+    return {
+      id: 'BIAS_50_OS18',
+      axis: 'vert',
+      shiftU: 0,
+      shiftV: 0.22,
+      xyShift: { x: 0.06, y: 0.11 },
+      safeSide: 'OS18',
+      safeLeave: 32,
+      dangerSide: 'T18',
+      dangerLeave: 'BUST',
+      btnLabel: 'Aim High Above T18 [B]',
+      tag: 'RESPECT S18',
+      cue: 'Give S18 respect! Bias high above T18 (54) so you leave fat D16 (32) cleanly!',
+    };
+  }
+
+  return null;
+}
+
+// Off-the-Oche "Pre-Calc While They Throw" prompt for finishable 101..170 scores
+export function buildOchePrepPrompt(score) {
+  if (!score || score < 101 || score > 170 || BOGEY_NUMBERS.has(score)) return null;
+  const tp = TON_PLUS_BY_SCORE[score];
+  let openBed = 'T20';
+  if (tp && tp.open && tp.open.length) {
+    openBed = tp.open[0];
+  } else if ([129, 126, 123, 119, 107, 104, 103].includes(score)) {
+    openBed = 'T19';
+  } else if ([128, 122].includes(score)) {
+    openBed = 'T18';
+  }
+  const addConst = openBed === 'T20' ? 40 : openBed === 'T19' ? 43 : openBed === 'T18' ? 46 : openBed === 'T17' ? 49 : 52;
+  const answer = score - bedValue(openBed);
+  const g = G44_BY_SCORE[answer];
+  const followUp = g
+    ? `${g.route[0]} -> ${g.route[1]}`
+    : (answer <= 59 && !isCheckoutable1Dart(answer))
+      ? (() => { const s = preferredDoubleSetup(answer, 'D20'); return s ? `${s.single} -> ${s.targetD}` : `${answer}`; })()
+      : (isCheckoutable1Dart(answer) ? (answer === 50 ? 'BULL' : 'D' + (answer / 2)) : `${answer}`);
+  const last2 = score % 100;
+  const formulaName = openBed === 'T20' ? 'Rule of 40' : openBed === 'T19' ? 'Rule of 43' : openBed === 'T18' ? 'Rule of 46' : `Rule of ${addConst}`;
+  return {
+    score,
+    openBed,
+    addConst,
+    answer,
+    followUp,
+    formulaName,
+    formulaHint: `${formulaName}: ${String(last2).padStart(2, '0')} + ${addConst} = ${answer} (${followUp})`,
+    cue: `Pre-calc while they throw! You're on ${score} — ${openBed} (${formulaName}) leaves what?`,
+  };
+}
+
+// 5-Treble Board Management Danger Audit Matrix (101..109 with 3 darts, straight from @yourdarts #1-#9)
+export const BOARD_AUDIT_101_109 = [
+  {
+    id: 'BA_101', score: 101, winners: ['T20', 'T19', 'T18', 'T16'], best: 'T20',
+    traps: { T17: { drift: 'S2', why: '3-dart trap! Stray S2 next to 17 leaves 99 (needs 3 darts!). T20 (S1->100) wins!' } },
+    cue: '5-Treble Audit (101 · 3 darts): Spot the danger treble (T17 -> S2=99) & tap a safe opener (T20 wins)!',
+  },
+  {
+    id: 'BA_102', score: 102, winners: ['T20', 'T18', 'T16'], best: 'T20',
+    traps: {
+      T19: { drift: 'S3', why: 'Trap! Stray S3 next to 19 leaves 99 (no 2-dart out!). Top half T20/T18/T16 is safe!' },
+      T17: { drift: 'S3', why: 'Trap! Stray S3 next to 17 leaves 99 (no 2-dart out!). Open T20, T18 or T16!' },
+    },
+    cue: '5-Treble Audit (102 · 3 darts): Avoid the S3->99 bottom trap (T19/T17) — tap T20, T18, or T16!',
+  },
+  {
+    id: 'BA_103', score: 103, winners: ['T19', 'T17', 'T16'], best: 'T19',
+    traps: {
+      T20: { drift: 'S1', why: 'Splash Trap! Stray S1 leaves 102 (no 2-dart out!). Bottom of board (T19/T17/T16) wins!' },
+      T18: { drift: 'S4', why: 'Double Trap! S1 leaves 102 AND S4 leaves 99! Bottom of board (T19/T17/T16) is danger-free!' },
+    },
+    cue: '5-Treble Audit (103 · 3 darts): Top of board (T20/T18) has S1->102/S4->99 traps — bottom wins (T19)!',
+  },
+  {
+    id: 'BA_104', score: 104, winners: ['T19', 'T16'], best: 'T19',
+    traps: {
+      T20: { drift: 'S5', why: 'Double Danger! S1 leaves 103 AND S5 leaves 99! Co-winners are T19 (S3->101) & T16!' },
+      T18: { drift: 'S1', why: 'Revised Rule! T18 is 2-dart only — with 3 darts, S1 leaves dead 103! Play T19 or T16!' },
+      T17: { drift: 'S2', why: 'Trap! Stray S2 leaves 102! Play T19 or T16!' },
+    },
+    cue: '5-Treble Audit (104 · 3 darts): Only TWO trebles are danger-free (T19 & T16) — dodge T20/T18/T17!',
+  },
+  {
+    id: 'BA_105', score: 105, winners: ['T20', 'T18'], best: 'T20',
+    traps: {
+      T19: { drift: 'S3', why: 'Trap! Stray S3 leaves 102! T20 (S1->104, S5->100) & T18 (S1->104, S4->101) win!' },
+      T17: { drift: 'S3', why: 'Double Trap! S2->103 and S3->102! Open T20 or T18!' },
+      T16: { drift: 'S8', why: 'Weak second chances (98/97) — T20 (104/100) & T18 (104/101) give elite second chances!' },
+    },
+    cue: '5-Treble Audit (105 · 3 darts): T20 (S5->100, S1->104) & T18 (S4->101, S1->104) crush the bottom beds!',
+  },
+  {
+    id: 'BA_106', score: 106, winners: ['T20'], best: 'T20',
+    traps: {
+      T19: { drift: 'S3', why: 'Double Danger! S3->103 & S7->99! T20 (biased left toward 20/5 wire: S5->101!) is sole winner!' },
+      T18: { drift: 'S4', why: 'Double Danger! S4->102 & S1->105! T20 biased toward 20/5 wire wins!' },
+      T17: { drift: 'S3', why: 'Trap! S3->103 & harder +49 math! T20 (20/5 wire -> S5 leaves 101) wins!' },
+      T16: { drift: 'S7', why: 'Trap! S7 leaves 99! T20 biased left toward the 20/5 wire wins!' },
+    },
+    cue: '5-Treble Audit (106 · 3 darts): Every treble has a danger — pick sole winner T20 (bias 20/5 wire -> S5=101)!',
+  },
+  {
+    id: 'BA_107', score: 107, winners: ['T19'], best: 'T19',
+    traps: {
+      T20: { drift: 'S1', why: 'Double Danger! S1->106 & S5->102! T19 (S7->100, S3->104) is the SOLE winner for 2 & 3 darts!' },
+      T18: { drift: 'S4', why: 'Double Danger! S1->106 & S4->103! T19 is sole winner!' },
+      T17: { drift: 'S2', why: 'Trap! S2 leaves 105! T19 is sole winner!' },
+      T16: { drift: 'S8', why: 'Trap! S8 leaves 99! T19 is sole winner!' },
+    },
+    cue: '5-Treble Audit (107 · 3 darts): Only ONE treble is completely trap-free (S7->100, S3->104) — find it!',
+  },
+  {
+    id: 'BA_109', score: 109, winners: ['T20'], best: 'T20',
+    traps: {
+      T19: { drift: 'S7', why: 'Double Danger! S3->106 & S7->102! T20 biased left toward 20/5 wire (S5->104!) wins!' },
+      T18: { drift: 'S1', why: 'Double Danger! S1->108 & S4->105! T20 (20/5 wire -> S5=104) wins!' },
+      T17: { drift: 'S3', why: 'Trap! S3 leaves 106 + hard +49 math! T20 (20/5 wire) wins!' },
+      T16: { drift: 'S7', why: 'Trap! S7 leaves 102! T20 biased left toward the 20/5 wire wins!' },
+    },
+    cue: '5-Treble Audit (109 · 3 darts): Sole winner T20 — bias aim toward 20/5 wire (S5->104, dodge S1->108)!',
+  },
+];
+
+// "170 Down" Timed Walk-Down Gauntlet (all 34 finishable checkouts from 170 down to 130, skipping bogeys!)
+export const GAUNTLET_170_SCORES = [
+  170, 167, 164, 161, 160,
+  158, 157, 156, 155, 154, 153, 152, 151, 150,
+  149, 148, 147, 146, 145, 144, 143, 142, 141, 140,
+  139, 138, 137, 136, 135, 134, 133, 132, 131, 130,
+];
+
+export function build170GauntletStep(score) {
+  const tp = TON_PLUS_BY_SCORE[score];
+  const validOpeners = (tp && tp.open && tp.open.length) ? tp.open.slice() : ['T20'];
+  // Allow canonical T19 alternates across 167/164/161/157/155/154/153/151/150/147/146/144/143/142/139/138/137/134/133/130
+  if ([167, 164, 161, 157, 155, 154, 153, 151, 150, 147, 146, 144, 143, 142, 139, 138, 137, 134, 133, 130].includes(score) && !validOpeners.includes('T19')) {
+    validOpeners.push('T19');
+  }
+  if ((score === 135 || score === 132) && !validOpeners.includes('BULL')) {
+    validOpeners.push('BULL');
+  }
+  const primary = validOpeners[0];
+
+  const resolveAfterOpener = (openBed) => {
+    const rem1 = score - bedValue(openBed);
+    const g = G44_BY_SCORE[rem1];
+    const route2 = g ? g.route.slice() : ['T20', 'D20'];
+    const alts2 = g ? g.alts.map(a => a.slice()) : [];
+    const d2Parsed = parseBedCode(route2[0]);
+    const miss2Val = route2[0] === 'BULL' ? 25 : (d2Parsed.sector || 20);
+    const miss2Rem = rem1 - miss2Val;
+    const miss2Label = route2[0] === 'BULL' ? 'Outer 25' : 'S' + d2Parsed.sector;
+    const fdi = getFdiRule(rem1);
+    return {
+      openBed,
+      rem1,
+      route2,
+      alts2,
+      fdi,
+      miss2Label,
+      miss2Val,
+      miss2Rem,
+      addConst: openBed === 'T20' ? 40 : openBed === 'T19' ? 43 : openBed === 'T18' ? 46 : null,
+    };
+  };
+
+  return {
+    score,
+    index: GAUNTLET_170_SCORES.indexOf(score),
+    total: GAUNTLET_170_SCORES.length,
+    validOpeners,
+    primary,
+    cue: tp ? tp.cue : `Rule of 40: ${score} -> T20 leaves ${score - 60}!`,
+    resolveAfterOpener,
+  };
 }

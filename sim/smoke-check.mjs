@@ -96,6 +96,8 @@ async function run() {
   for (const it of engine.MARKING_ITEMS) {
     const sum = it.darts.reduce((s, c) => s + engine.bedValue(c), 0);
     assert(sum === it.total, `MARKING_ITEM ${it.id} mismatch: ${sum} vs ${it.total}`);
+    const snap = engine.buildCroupierSnap(it.darts);
+    assert(snap && snap.total === it.total, `buildCroupierSnap(${it.id}) total mismatch`);
   }
   assert(engine.GOLDEN_44.length === 44, 'Expected 44 GOLDEN_44 items');
   for (const g of engine.GOLDEN_44) {
@@ -172,7 +174,7 @@ async function run() {
   assert(d6Lbls.right === 'OUT' && d6Lbls.high === '13' && d6Lbls.low === '10', `D6 axis labels mismatch: ${JSON.stringify(d6Lbls)}`);
   assert(engine.subtractionMethodInfo(301, 85).badge === 'Method: -100, +?', 'Round-100 subtraction method badge');
   assert(engine.subtractionMethodInfo(301, 57).badge === 'Method: -60, +?', 'Round-up tens subtraction method badge');
-  for (const domId of ['aim-row-focus', 'aim-row-horiz', 'aim-row-vert', 'aim-f-needle', 'aim-h-needle', 'aim-v-needle', 'aim-flow-pill', 'aim-low-lbl', 'aim-high-lbl', 'chalk-assist', 'chalk-assist-btn']) {
+  for (const domId of ['aim-row-focus', 'aim-row-horiz', 'aim-row-vert', 'aim-f-needle', 'aim-h-needle', 'aim-v-needle', 'aim-flow-pill', 'aim-low-lbl', 'aim-high-lbl', 'aim-tac-row', 'aim-lie-pill', 'aim-bias-btn', 'chalk-assist', 'chalk-assist-btn']) {
     assert(idxHtml.includes(`id="${domId}"`), `Missing DOM element #${domId}`);
   }
   // Unified Chalk Chain (Croupier Snap, Chunk Hop) & Universal Slip Recovery assertions
@@ -219,7 +221,63 @@ async function run() {
     const p = engine.sectorNumberXY(sec);
     assert(engine.xyToSectorNumber(p.x, p.y) === sec, `Outer-ring number hit round-trip for sector ${sec}`);
   }
-  console.log('PASS: Curriculum, auditor, 3-beat physics, subtraction method, maths-flow & FDI outer-ring assertions (all green)');
+
+  // Phase 6: Preferred Double, Blocked Bed vs. Guide Dart, Wire-Bias Aiming, Oche Prep, 5-Treble Audit & 170 Down Gauntlet
+  assert(engine.R_NUM_RING === 2.09, 'Blade-6 outer-rim R_NUM_RING === 2.09');
+  const pd16 = engine.preferredDoubleSetup(49, 'D16');
+  assert(pd16 && pd16.single === 'S17' && pd16.targetD === 'D16' && !pd16.isFallback, `Preferred D16 (-2): 49 -> S17 -> D16 (got ${JSON.stringify(pd16)})`);
+  const pd16Cap = engine.preferredDoubleSetup(53, 'D16');
+  assert(pd16Cap && pd16Cap.isFallback && pd16Cap.targetD === 'D20', `Preferred D16 cap on 53 -> D20 (got ${JSON.stringify(pd16Cap)})`);
+  const pd18 = engine.preferredDoubleSetup(42, 'D18');
+  assert(pd18 && pd18.single === 'S6' && pd18.targetD === 'D18', `Preferred D18 (+4): 42 -> S6 -> D18 (got ${JSON.stringify(pd18)})`);
+  const pd20 = engine.preferredDoubleSetup(55, 'D20');
+  assert(pd20 && pd20.single === 'S15' && pd20.targetD === 'D20', `Preferred D20 (off 40): 55 -> S15 -> D20 (got ${JSON.stringify(pd20)})`);
+
+  // Blocked Bed vs. Guide Dart (actual 3D landing coordinates)
+  const t20c = engine.bedToXY('T20');
+  const lieBlocked = engine.evaluateBedLie([{ bed: 'T20', x: t20c.x, y: t20c.y - 0.045 }], 'T20', 441);
+  assert(lieBlocked && lieBlocked.lie === 'blocked' && lieBlocked.vertMult < 0.90 && lieBlocked.coverBed === 'T19', `Blocked T20 lie check (got ${JSON.stringify(lieBlocked)})`);
+  const lieGuide = engine.evaluateBedLie([{ bed: 'T20', x: t20c.x, y: t20c.y + 0.038 }], 'T20', 441);
+  assert(lieGuide && lieGuide.lie === 'guide' && lieGuide.vertMult > 1.08, `Guide T20 lie check (got ${JSON.stringify(lieGuide)})`);
+  const lieStay82 = engine.evaluateBedLie([{ bed: 'T20', x: t20c.x, y: t20c.y + 0.038 }], 'T20', 82);
+  assert(lieStay82 && lieStay82.lie === 'guide' && lieStay82.stayDouble === 'D11', `Perfect Lie 82 -> D11 check (got ${JSON.stringify(lieStay82)})`);
+  const lieOther = engine.evaluateBedLie([{ bed: 'S20', x: t20c.x, y: t20c.y + 0.04 }], 'D11', 22);
+  assert(lieOther === null, 'Different target bed has no T20 blockage');
+
+  // Asymmetric Wire-Bias Safe Aiming
+  const wb106 = engine.getWireBiasInfo(106, 3, 'T20');
+  assert(wb106 && wb106.shiftU < 0 && wb106.btnLabel.includes('20/5'), `Wire-bias 106 T20 shifts toward 5 wire (got ${JSON.stringify(wb106)})`);
+  const wb76 = engine.getWireBiasInfo(76, 2, 'D18');
+  assert(wb76 && wb76.shiftV < 0, `Wire-bias 76 D18 shifts to bottom wire (got ${JSON.stringify(wb76)})`);
+  const wb52 = engine.getWireBiasInfo(52, 2, 'S20');
+  assert(wb52 && wb52.shiftV > 0, `Wire-bias 52 S20 aims high (got ${JSON.stringify(wb52)})`);
+  const wb50 = engine.getWireBiasInfo(50, 2, 'S18');
+  assert(wb50 && wb50.shiftV > 0, `Wire-bias 50 S18 aims high (got ${JSON.stringify(wb50)})`);
+
+  // Off-the-Oche Pre-Calc
+  const op149 = engine.buildOchePrepPrompt(149);
+  assert(op149 && op149.openBed === 'T20' && op149.answer === 89, `Oche prep 149 -> T20 = 89 (got ${JSON.stringify(op149)})`);
+  const op126 = engine.buildOchePrepPrompt(126);
+  assert(op126 && op126.openBed === 'T19' && op126.answer === 69, `Oche prep 126 -> T19 = 69 (got ${JSON.stringify(op126)})`);
+  const op128 = engine.buildOchePrepPrompt(128);
+  assert(op128 && op128.openBed === 'T18' && op128.answer === 74, `Oche prep 128 -> T18 = 74 (got ${JSON.stringify(op128)})`);
+  const op169 = engine.buildOchePrepPrompt(169);
+  assert(op169 === null, 'Oche prep skips bogey 169');
+
+  // 5-Treble Board Audit (101..109) & 170 Down Gauntlet (170..130, 34 finishable scores skipping bogeys)
+  assert(engine.BOARD_AUDIT_101_109.length === 8, `Expected 8 BOARD_AUDIT_101_109 items (got ${engine.BOARD_AUDIT_101_109.length})`);
+  const ba107 = engine.BOARD_AUDIT_101_109.find(x => x.score === 107);
+  assert(ba107 && ba107.best === 'T19' && ba107.traps.T20, 'Board Audit 107 best T19 & T20 trap');
+  assert(engine.GAUNTLET_170_SCORES.length === 34 && engine.GAUNTLET_170_SCORES[0] === 170 && engine.GAUNTLET_170_SCORES[33] === 130, `Expected 34 GAUNTLET_170_SCORES 170..130 (got ${engine.GAUNTLET_170_SCORES.length})`);
+  for (const gs of engine.GAUNTLET_170_SCORES) {
+    assert(!engine.BOGEY_NUMBERS.has(gs), `GAUNTLET_170_SCORES must skip bogey ${gs}`);
+    const stp = engine.build170GauntletStep(gs);
+    assert(stp && stp.validOpeners.length >= 1, `build170GauntletStep(${gs}) valid`);
+    const aft = stp.resolveAfterOpener(stp.primary);
+    assert(aft && aft.rem1 === gs - engine.bedValue(stp.primary) && aft.route2.length === 2, `170 Down ${gs} resolveAfterOpener valid`);
+    assert(aft.route2.reduce((s, c) => s + engine.bedValue(c), 0) === aft.rem1, `170 Down ${gs} 2-dart route sums to ${aft.rem1}`);
+  }
+  console.log('PASS: Curriculum, auditor, 3-beat physics, subtraction method, maths-flow, FDI outer-ring & Phase 6 mechanics assertions (all green)');
 
   // 4. Smoke test all 5 physics bots
   const rng = engine.createSeededRng(42);
