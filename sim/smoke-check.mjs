@@ -277,6 +277,27 @@ async function run() {
     assert(aft && aft.rem1 === gs - engine.bedValue(stp.primary) && aft.route2.length === 2, `170 Down ${gs} resolveAfterOpener valid`);
     assert(aft.route2.reduce((s, c) => s + engine.bedValue(c), 0) === aft.rem1, `170 Down ${gs} 2-dart route sums to ${aft.rem1}`);
   }
+
+  // Cockney Trev Chatterbox Studio Voice Pack verification
+  const voiceDir = path.join(ROOT, 'assets', 'trev_voice');
+  const manifestPath = path.join(voiceDir, 'manifest.json');
+  assert(fs.existsSync(manifestPath), 'Missing assets/trev_voice/manifest.json');
+  const voiceManifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+  const clipIds = Object.keys(voiceManifest.clips || {});
+  assert(clipIds.length >= 90, `Expected >=90 Cockney Trev studio clips (got ${clipIds.length})`);
+  for (const cid of clipIds) {
+    const fp = path.join(voiceDir, `${cid}.mp3`);
+    assert(fs.existsSync(fp) && fs.statSync(fp).size > 2000, `Missing or tiny MP3 clip: ${cid}.mp3`);
+  }
+  const usedClipIds = [
+    ...[...rawScript.matchAll(/clipId:\s*['"]([a-z0-9_]+)['"]/g)].map(m => m[1]),
+    ...[...rawScript.matchAll(/cid:\s*['"]([a-z0-9_]+)['"]/g)].map(m => m[1]),
+  ];
+  assert(usedClipIds.length >= 75, `Expected >=75 wired clipId/deck references in index.html (got ${usedClipIds.length})`);
+  for (const cid of usedClipIds) {
+    assert(cid in voiceManifest.clips, `index.html references missing clipId "${cid}"`);
+  }
+  console.log(`PASS: Cockney Trev Chatterbox voice pack (${clipIds.length} MP3 clips, ${usedClipIds.length} wired call sites & deck items)`);
   console.log('PASS: Curriculum, auditor, 3-beat physics, subtraction method, maths-flow, FDI outer-ring & Phase 6 mechanics assertions (all green)');
 
   // 4. Smoke test all 5 physics bots
