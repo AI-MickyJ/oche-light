@@ -1,616 +1,616 @@
 {
-  "engine": "Chatterbox TTS (MIT, mlx-community/chatterbox-fp16)",
-  "speaker": "Archival East London Cockney Male (Internet Archive Dialect Collection)",
+  "engine": "Qwen3-TTS-12Hz-1.7B-Base-8bit (MLX ICL)",
+  "speaker": "Archival East London Cockney Male (13.15s clean sentence-bound reference)",
   "params": {
-    "exaggeration": 0.68,
-    "cfg_weight": 0.38,
-    "temperature": 0.7
+    "temperature": 0.65,
+    "repetition_penalty": 1.08,
+    "lang_code": "english"
   },
   "clips": {
     "welcome_pips": {
       "file": "assets/trev_voice/welcome_pips.mp3",
       "text": "Awright mate! I'm Trev \u2014 click any bed to grab the arrows. See those eight little brass dots top-left? Light all eight with clean shots to unlock each level's Pub Trial and win your Brass Stars!",
-      "bytes": 85868
+      "bytes": 82604
     },
     "first_pip": {
       "file": "assets/trev_voice/first_pip.mp3",
       "text": "Nice one, mate! That's your first brass pip lit up top-left. Seven more clean shots unlocks the Pub Trial \u2014 keep those arrows flying!",
-      "bytes": 64364
+      "bytes": 56300
     },
     "eight_pips": {
       "file": "assets/trev_voice/eight_pips.mp3",
       "text": "Eight out of eight pips in the bag, pal! Hit Take Trial up top whenever you're ready to go for your Brass Stars!",
-      "bytes": 46124
+      "bytes": 37868
     },
     "sub_trick_intro": {
       "file": "assets/trev_voice/sub_trick_intro.mp3",
       "text": "Quick chalker's trick, mate: don't wrestle with big numbers in your head! Knock a clean hundred off first, then chuck the spare back on \u2014 hit Tab if you want me to hop the slate for ya.",
-      "bytes": 60140
+      "bytes": 67820
     },
     "sound_on": {
       "file": "assets/trev_voice/sound_on.mp3",
       "text": "Wahey, sound's up! Hear the regulars chatting and the jukebox in the corner? Proper East End boozer now, mate.",
-      "bytes": 47084
+      "bytes": 42860
     },
     "voice_on": {
       "file": "assets/trev_voice/voice_on.mp3",
       "text": "Awright mate, Trev's loud and clear \u2014 let's put some arrows in the board!",
-      "bytes": 35564
+      "bytes": 22124
     },
     "voice_cockney_demo": {
       "file": "assets/trev_voice/voice_cockney_demo.mp3",
       "text": "Awright mate! Proper East End Trev on the mic now \u2014 grab your arrows and let's get some trebles in the lipstick!",
-      "bytes": 54380
+      "bytes": 39212
     },
     "stage_cal": {
       "file": "assets/trev_voice/stage_cal.mp3",
       "text": "Twelve quick arrows across Levels one to six so I can see where you're sharp and where you need a hand. Don't overthink it \u2014 just throw natural, mate!",
-      "bytes": 64748
+      "bytes": 54956
     },
     "stage_1": {
       "file": "assets/trev_voice/stage_1.mp3",
       "text": "Level one, mate \u2014 gotta know your doubles in your sleep! Hit the double I call, or tell me what a lit double's worth. Keep an eye on twenty down to fifteen and their neighbors!",
-      "bytes": 80684
+      "bytes": 60332
     },
     "stage_2": {
       "file": "assets/trev_voice/stage_2.mp3",
       "text": "Level two \u2014 trebles all round the clock! Hit the treble or call the score fast. Twenty down to fifteen pop up most, and don't let treble fourteen being forty-two mug you off!",
-      "bytes": 87788
+      "bytes": 62636
     },
     "stage_3": {
       "file": "assets/trev_voice/stage_3.mp3",
       "text": "Level three \u2014 proper pub chalking! Three darts land together. Stop counting one by one like it's primary school \u2014 snap two easy darts first, then slap the third one on!",
-      "bytes": 92588
+      "bytes": 74732
     },
     "stage_4": {
       "file": "assets/trev_voice/stage_4.mp3",
       "text": "Level four \u2014 three-oh-one chalk and countdown! Throw your three arrows, add the visit, then take it off the slate in clean round hops. Fast chalk widens your aim bars!",
-      "bytes": 84908
+      "bytes": 63980
     },
     "stage_5": {
       "file": "assets/trev_voice/stage_5.mp3",
       "text": "Level five \u2014 two-dart finishes! Below-sixty setup tricks, the Golden Forty-Four using your twenty-five, thirty, thirty-five pairs with no peeking, plus Sod's Law recoveries!",
-      "bytes": 82604
+      "bytes": 73388
     },
     "stage_6": {
       "file": "assets/trev_voice/stage_6.mp3",
       "text": "Level six \u2014 ton-plus outs! Drop the one, add forty for treble twenty or forty-three for treble nineteen, dodge the sneaky splash traps, and keep well clear of those bogey numbers!",
-      "bytes": 83564
+      "bytes": 75500
     },
     "stage_7": {
       "file": "assets/trev_voice/stage_7.mp3",
       "text": "Championship five-oh-one, mate! Double out, chalk your own arrows, mark your rival on the slate, and remember \u2014 I'm watching every single board-management call like a hawk!",
-      "bytes": 86828
+      "bytes": 63980
     },
     "praise_01": {
       "file": "assets/trev_voice/praise_01.mp3",
       "text": "Oh, that's filthy \u2014 bang in the lipstick, mate!",
-      "bytes": 29228
+      "bytes": 17900
     },
     "praise_02": {
       "file": "assets/trev_voice/praise_02.mp3",
       "text": "Tidy arrow, pal \u2014 sweet as a nut!",
-      "bytes": 27500
+      "bytes": 14444
     },
     "praise_03": {
       "file": "assets/trev_voice/praise_03.mp3",
       "text": "Go on then! Making it look easy now.",
-      "bytes": 23660
+      "bytes": 15404
     },
     "praise_04": {
       "file": "assets/trev_voice/praise_04.mp3",
       "text": "Spot on, mate \u2014 didn't even blink!",
-      "bytes": 20588
+      "bytes": 10220
     },
     "praise_05": {
       "file": "assets/trev_voice/praise_05.mp3",
       "text": "Look at that grouping \u2014 proper pub league stuff, pal!",
-      "bytes": 28268
+      "bytes": 20588
     },
     "praise_06": {
       "file": "assets/trev_voice/praise_06.mp3",
       "text": "Even Big Dave's gone quiet over by the fruit machine!",
-      "bytes": 26924
+      "bytes": 20396
     },
     "praise_07": {
       "file": "assets/trev_voice/praise_07.mp3",
       "text": "Right on the button, mate \u2014 lovely stuff!",
-      "bytes": 17900
+      "bytes": 13292
     },
     "praise_08": {
       "file": "assets/trev_voice/praise_08.mp3",
       "text": "Who needs a warm-up when you're throwing like that?!",
-      "bytes": 20780
+      "bytes": 19244
     },
     "praise_09": {
       "file": "assets/trev_voice/praise_09.mp3",
       "text": "Clean as a whistle, pal \u2014 keep that arm nice and loose!",
-      "bytes": 32684
+      "bytes": 21356
     },
     "praise_10": {
       "file": "assets/trev_voice/praise_10.mp3",
       "text": "That dart had eyes on it, mate \u2014 class!",
-      "bytes": 24044
+      "bytes": 16748
     },
     "praise_11": {
       "file": "assets/trev_voice/praise_11.mp3",
       "text": "Boom! Straight in the paint, no messing about.",
-      "bytes": 31724
+      "bytes": 17708
     },
     "praise_12": {
       "file": "assets/trev_voice/praise_12.mp3",
       "text": "Tell you what, mate, you've definitely had your Weetabix today!",
-      "bytes": 31724
+      "bytes": 17324
     },
     "praise_13": {
       "file": "assets/trev_voice/praise_13.mp3",
       "text": "Smooth as a fresh pint of bitter, pal!",
-      "bytes": 23468
+      "bytes": 15404
     },
     "praise_14": {
       "file": "assets/trev_voice/praise_14.mp3",
       "text": "Dead center, mate \u2014 the spider wire didn't even flinch!",
-      "bytes": 29804
+      "bytes": 19244
     },
     "streak_3a": {
       "file": "assets/trev_voice/streak_3a.mp3",
       "text": "Three on the spin \u2014 hang on, who are you and what have you done with my student? Keep 'em flying!",
-      "bytes": 49004
+      "bytes": 35756
     },
     "streak_3b": {
       "file": "assets/trev_voice/streak_3b.mp3",
       "text": "Three in a row, mate! Starting to make me look like a proper darts coach now!",
-      "bytes": 38828
+      "bytes": 26156
     },
     "pint_classic": {
       "file": "assets/trev_voice/pint_classic.mp3",
       "text": "Blimey, mate, you are so accurate I'd let you have a go at knocking this off \u2014 except I don't want to part with a perfectly good pint!",
-      "bytes": 62060
+      "bytes": 45356
     },
     "pint_london": {
       "file": "assets/trev_voice/pint_london.mp3",
       "text": "Five on the spin! I'd balance my pint on my head for ya \u2014 if it weren't over seven quid a pop in London! Tidy throwing, mate!",
-      "bytes": 59948
+      "bytes": 50732
     },
     "pint_tab": {
       "file": "assets/trev_voice/pint_tab.mp3",
       "text": "Five clean shots in a row! Keep this up and I'm putting you on the pub team \u2014 first round's on the house, pal!",
-      "bytes": 53228
+      "bytes": 37100
     },
     "streak_8a": {
       "file": "assets/trev_voice/streak_8a.mp3",
       "text": "Leave it out, pal! You're making treble twenty look like a dinner plate \u2014 Ally Pally's gonna be ringing your mobile in a minute!",
-      "bytes": 48044
+      "bytes": 46124
     },
     "streak_8b": {
       "file": "assets/trev_voice/streak_8b.mp3",
       "text": "Proper Bobby Dazzler, mate! Even the blokes by the fruit machine have stopped playing to watch you throw!",
-      "bytes": 40364
+      "bytes": 33836
     },
     "streak_8c": {
       "file": "assets/trev_voice/streak_8c.mp3",
       "text": "Are you having a laugh?! Eight straight \u2014 someone check his arrows, they've got magnets in 'em!",
-      "bytes": 36140
+      "bytes": 35948
     },
     "tonplus_1": {
       "file": "assets/trev_voice/tonplus_1.mp3",
       "text": "Boom! Ton-plus checkout, clean as a whistle \u2014 I'm getting the next round in, mate!",
-      "bytes": 47084
+      "bytes": 26156
     },
     "tonplus_2": {
       "file": "assets/trev_voice/tonplus_2.mp3",
       "text": "Proper diamond finish, pal! Collapsed three digits without even breaking a sweat.",
-      "bytes": 44780
+      "bytes": 27500
     },
     "tonplus_3": {
       "file": "assets/trev_voice/tonplus_3.mp3",
       "text": "Look at that checkout, mate \u2014 ice in your veins! Proper match-winner!",
-      "bytes": 34988
+      "bytes": 25964
     },
     "ton_big_1": {
       "file": "assets/trev_voice/ton_big_1.mp3",
       "text": "Lovely ton-plus visit, mate \u2014 you're throwing arrows like a machine!",
-      "bytes": 36524
+      "bytes": 22508
     },
     "ton_big_2": {
       "file": "assets/trev_voice/ton_big_2.mp3",
       "text": "Heavy scoring, pal! That'll make 'em sweat over by the bar!",
-      "bytes": 36524
+      "bytes": 24812
     },
     "miss_01": {
       "file": "assets/trev_voice/miss_01.mp3",
       "text": "Clang! Kissed the spider wire, mate \u2014 shake it off and stick the next one in.",
-      "bytes": 34028
+      "bytes": 30188
     },
     "miss_02": {
       "file": "assets/trev_voice/miss_02.mp3",
       "text": "Ooh, cheeky bounce-out, pal! Have a quick look and nail the next one.",
-      "bytes": 30188
+      "bytes": 30572
     },
     "miss_03": {
       "file": "assets/trev_voice/miss_03.mp3",
       "text": "Unlucky, mate \u2014 that wire's thicker than a bus ticket today! Go again.",
-      "bytes": 31724
+      "bytes": 26540
     },
     "miss_04": {
       "file": "assets/trev_voice/miss_04.mp3",
       "text": "Bit shy there, pal \u2014 don't worry, we'll pretend nobody at the bar saw that!",
-      "bytes": 33068
+      "bytes": 24236
     },
     "miss_05": {
       "file": "assets/trev_voice/miss_05.mp3",
       "text": "Ooh, close! Right idea, mate \u2014 tighten it up a touch and it's sorted.",
-      "bytes": 34028
+      "bytes": 28844
     },
     "miss_06": {
       "file": "assets/trev_voice/miss_06.mp3",
       "text": "Haha, the dartboard's fighting back a bit! Brush it off, you've got the next one.",
-      "bytes": 32684
+      "bytes": 28460
     },
     "miss_07": {
       "file": "assets/trev_voice/miss_07.mp3",
       "text": "Nearly had it, mate \u2014 even the pros clip the odd wire. Reset and go again!",
-      "bytes": 40748
+      "bytes": 27308
     },
     "miss_08": {
       "file": "assets/trev_voice/miss_08.mp3",
       "text": "Bit rusty on that one, pal \u2014 good job we're practising before Friday league night!",
-      "bytes": 38060
+      "bytes": 28268
     },
     "miss_09": {
       "file": "assets/trev_voice/miss_09.mp3",
       "text": "Not quite, mate \u2014 keep your head up, the rhythm's coming together nicely.",
-      "bytes": 37100
+      "bytes": 23468
     },
     "miss_10": {
       "file": "assets/trev_voice/miss_10.mp3",
       "text": "Ooh, harsh bounce! Have a quick breather and pop the next one straight in.",
-      "bytes": 33260
+      "bytes": 26348
     },
     "breakfast_1": {
       "file": "assets/trev_voice/breakfast_1.mp3",
       "text": "Awright mate! Twenty-six \u2014 bed and breakfast! Toast is burnt an' all. Laugh it off, next visit's a ton.",
-      "bytes": 61100
+      "bytes": 39212
     },
     "breakfast_2": {
       "file": "assets/trev_voice/breakfast_2.mp3",
       "text": "Full English twenty-six, pal \u2014 sausage, egg, and beans! Every pub player's favourite score. Shake it off!",
-      "bytes": 51308
+      "bytes": 42668
     },
     "breakfast_3": {
       "file": "assets/trev_voice/breakfast_3.mp3",
       "text": "Twenty-six! Classic five, twenty, one \u2014 at least you're hitting the top of the board, mate! Go again.",
-      "bytes": 48044
+      "bytes": 34412
     },
     "breakfast_4": {
       "file": "assets/trev_voice/breakfast_4.mp3",
       "text": "Bed and breakfast served piping hot, pal! Leave it behind ya and bang a ton in next visit.",
-      "bytes": 39404
+      "bytes": 37100
     },
     "wire_miss_1": {
       "file": "assets/trev_voice/wire_miss_1.mp3",
       "text": "Bit wide there, pal \u2014 nearly took the landlord's crisp rack out! Deep breath, next arrow's right on it.",
-      "bytes": 46700
+      "bytes": 37868
     },
     "wire_miss_2": {
       "file": "assets/trev_voice/wire_miss_2.mp3",
       "text": "Whoops, hit the black stuff for zero, mate! Mind the wallpaper \u2014 steady up and go again.",
-      "bytes": 42284
+      "bytes": 31340
     },
     "wire_miss_3": {
       "file": "assets/trev_voice/wire_miss_3.mp3",
       "text": "Just outside the double wire, pal \u2014 right postcode, wrong door! Next one's in.",
-      "bytes": 42284
+      "bytes": 34604
     },
     "wire_miss_4": {
       "file": "assets/trev_voice/wire_miss_4.mp3",
       "text": "Giving the surround a bit of wear and tear there, mate! Deep breath, bring it inside the wire.",
-      "bytes": 43628
+      "bytes": 34412
     },
     "wire_pull_1": {
       "file": "assets/trev_voice/wire_pull_1.mp3",
       "text": "Snuck into the wrong bedroom there, mate! Happens to the best of us \u2014 reset the wrist and go again.",
-      "bytes": 40748
+      "bytes": 35948
     },
     "wire_pull_2": {
       "file": "assets/trev_voice/wire_pull_2.mp3",
       "text": "Bit of a pull across the wire, pal \u2014 good news is you're still on the board. Adapt and carry on!",
-      "bytes": 47660
+      "bytes": 37100
     },
     "wire_pull_3": {
       "file": "assets/trev_voice/wire_pull_3.mp3",
       "text": "Dragged that one into the neighbor's garden, mate! Loosen the grip and straighten it up.",
-      "bytes": 39020
+      "bytes": 30764
     },
     "wire_pull_4": {
       "file": "assets/trev_voice/wire_pull_4.mp3",
       "text": "Classic pub drift into the neighbor, pal \u2014 keep your elbow still and watch it fly straight!",
-      "bytes": 48428
+      "bytes": 32684
     },
     "bust_1": {
       "file": "assets/trev_voice/bust_1.mp3",
       "text": "Ooh, bust! Got a bit greedy there, didn't ya? Score goes right back \u2014 shake it off, leg's still wide open.",
-      "bytes": 44780
+      "bytes": 41324
     },
     "bust_2": {
       "file": "assets/trev_voice/bust_2.mp3",
       "text": "Bust! Bit too much mustard on that dart, mate \u2014 no drama, you'll get another crack at it.",
-      "bytes": 46508
+      "bytes": 34028
     },
     "bust_3": {
       "file": "assets/trev_voice/bust_3.mp3",
       "text": "Overcooked it, pal \u2014 bust! Take a sip, clear the head, and nail it next visit.",
-      "bytes": 38060
+      "bytes": 35756
     },
     "madhouse_1": {
       "file": "assets/trev_voice/madhouse_1.mp3",
       "text": "Welcome to the Madhouse, mate \u2014 nobody wants to live on double one! Deep breath, stick it in the basement.",
-      "bytes": 51308
+      "bytes": 37868
     },
     "madhouse_2": {
       "file": "assets/trev_voice/madhouse_2.mp3",
       "text": "Oh no, down in the Madhouse on double one! Don't panic, pal \u2014 nice soft throw, get yourself out of there!",
-      "bytes": 52844
+      "bytes": 34988
     },
     "bell_1": {
       "file": "assets/trev_voice/bell_1.mp3",
       "text": "Bell beat ya, pal \u2014 even Big Dave's pint went flat waiting! No sweat, keep the next one smooth.",
-      "bytes": 46700
+      "bytes": 35564
     },
     "bell_2": {
       "file": "assets/trev_voice/bell_2.mp3",
       "text": "Ding-ding, clock got ya, mate! Don't overthink it \u2014 trust your first instinct next go.",
-      "bytes": 38444
+      "bytes": 34412
     },
     "bell_3": {
       "file": "assets/trev_voice/bell_3.mp3",
       "text": "Out of time, pal \u2014 the barman nearly called last orders! Shake it off, you'll get quicker every round.",
-      "bytes": 44780
+      "bytes": 34604
     },
     "flow_hot_1": {
       "file": "assets/trev_voice/flow_hot_1.mp3",
       "text": "Lightning chalking, mate! You're right in the flow now \u2014 watch your aim bars slow down and open wide!",
-      "bytes": 52460
+      "bytes": 39020
     },
     "flow_hot_2": {
       "file": "assets/trev_voice/flow_hot_2.mp3",
       "text": "Sharp as a tack on that slate, pal \u2014 you've earned yourself a massive sweet spot!",
-      "bytes": 39980
+      "bytes": 34412
     },
     "flow_cold_1": {
       "file": "assets/trev_voice/flow_cold_1.mp3",
       "text": "Clock rattled ya on the chalk, mate \u2014 head's spinning a bit, so your next throw's gonna feel tighter. Shake it off!",
-      "bytes": 48428
+      "bytes": 42476
     },
     "two_in_t20_1": {
       "file": "assets/trev_voice/two_in_t20_1.mp3",
       "text": "Two in the lipstick! Shhh \u2014 whole boozer's gone quiet, mate. Don't bottle it now, stick the third one in!",
-      "bytes": 52844
+      "bytes": 51116
     },
     "two_in_t20_2": {
       "file": "assets/trev_voice/two_in_t20_2.mp3",
       "text": "Two in treble twenty, pal! Hold your breath \u2014 one more arrow and the roof's coming off this pub!",
-      "bytes": 39788
+      "bytes": 33836
     },
     "trial_fail": {
       "file": "assets/trev_voice/trial_fail.mp3",
       "text": "Unlucky off the wire, mate \u2014 two slips in the Trial. Warm up a couple more arrows and smash it next go!",
-      "bytes": 54188
+      "bytes": 44780
     },
     "trial_nopeek": {
       "file": "assets/trev_voice/trial_nopeek.mp3",
       "text": "No peeking in a Pub Trial, pal! Put the crib sheet away \u2014 you've got this wired in!",
-      "bytes": 39980
+      "bytes": 34028
     },
     "trial_slip1": {
       "file": "assets/trev_voice/trial_slip1.mp3",
       "text": "Clipped the wire \u2014 one slip left in this Trial, mate! Steady up, you've got this.",
-      "bytes": 37100
+      "bytes": 31532
     },
     "marking_miss_1": {
       "file": "assets/trev_voice/marking_miss_1.mp3",
       "text": "Don't count 'em one by one like it's primary school, mate! Snap the two amber darts together first, then slap the stray one on.",
-      "bytes": 63404
+      "bytes": 46124
     },
     "marking_miss_2": {
       "file": "assets/trev_voice/marking_miss_2.mp3",
       "text": "Easy on the fingers, pal! Pair up the two familiar darts first, then add the odd one on top.",
-      "bytes": 58604
+      "bytes": 35372
     },
     "trap_104": {
       "file": "assets/trev_voice/trap_104.mp3",
       "text": "Whoa there, mate! With three darts on a hundred and four, treble eighteen risks stray single one \u2014 leaves a hundred and three, dead in the water! Go treble nineteen or sixteen.",
-      "bytes": 75500
+      "bytes": 72812
     },
     "trap_163": {
       "file": "assets/trev_voice/trap_163.mp3",
       "text": "Blimey, no! Never chuck twenty-five on two-two-eight, two-six-eight, or three-oh-eight \u2014 leaves bogey one-six-three! Stick to single eighteen for the Big Fish.",
-      "bytes": 74924
+      "bytes": 63212
     },
     "trap_99": {
       "file": "assets/trev_voice/trap_99.mp3",
       "text": "Walked straight into the ninety-nine trap, pal! Ninety-nine's the only two-digit three-darter \u2014 dodge that wire next time!",
-      "bytes": 61100
+      "bytes": 44204
     },
     "rival_180": {
       "file": "assets/trev_voice/rival_180.mp3",
       "text": "Blimey, they just banged in a hundred and eighty! Hold your nerve and hit straight back, mate!",
-      "bytes": 42668
+      "bytes": 33836
     },
     "rival_26_1": {
       "file": "assets/trev_voice/rival_26_1.mp3",
       "text": "Haha, they just ordered bed and breakfast! Step up and put 'em out of their misery, mate!",
-      "bytes": 39404
+      "bytes": 29996
     },
     "rival_26_2": {
       "file": "assets/trev_voice/rival_26_2.mp3",
       "text": "Twenty-six from your rival! Even the barman's chuckling \u2014 go on, punish 'em now, pal!",
-      "bytes": 44204
+      "bytes": 28076
     },
     "rival_bust_1": {
       "file": "assets/trev_voice/rival_bust_1.mp3",
       "text": "Wahey, they've gone and busted! Door's wide open \u2014 step up and punish 'em!",
-      "bytes": 41324
+      "bytes": 23660
     },
     "rival_bust_2": {
       "file": "assets/trev_voice/rival_bust_2.mp3",
       "text": "Haha, they've bottled it and busted! Step up to the oche and take the leg, mate!",
-      "bytes": 46508
+      "bytes": 31148
     },
     "rival_miss_dbl_1": {
       "file": "assets/trev_voice/rival_miss_dbl_1.mp3",
       "text": "Ooh, knees are knocking at double \u2014 step up right now and nick their pint money!",
-      "bytes": 39788
+      "bytes": 29804
     },
     "rival_miss_dbl_2": {
       "file": "assets/trev_voice/rival_miss_dbl_2.mp3",
       "text": "They've left the double begging, pal! Stay cool and put this leg to bed!",
-      "bytes": 31724
+      "bytes": 26156
     },
     "rival_low": {
       "file": "assets/trev_voice/rival_low.mp3",
       "text": "Heads up, mate \u2014 they're sitting on a finish! Time to show a bit of bottle.",
-      "bytes": 31148
+      "bytes": 23660
     },
     "pace_decline_slow": {
       "file": "assets/trev_voice/pace_decline_slow.mp3",
       "text": "Fair play, pal \u2014 love the bottle! Let's have it then!",
-      "bytes": 24428
+      "bytes": 18284
     },
     "pace_decline_fast": {
       "file": "assets/trev_voice/pace_decline_fast.mp3",
       "text": "No rush, mate \u2014 lock it in nice and steady at your own pace.",
-      "bytes": 35564
+      "bytes": 24044
     },
     "slip_big_single": {
       "file": "assets/trev_voice/slip_big_single.mp3",
       "text": "Sod's Law, mate \u2014 dropped into the big single! Call what's left quick to keep your rhythm!",
-      "bytes": 42284
+      "bytes": 30188
     },
     "slip_stray_treble": {
       "file": "assets/trev_voice/slip_stray_treble.mp3",
       "text": "Blimey, stray neighbor treble! Stay sharp \u2014 call what's left to calm the throwing arm!",
-      "bytes": 40364
+      "bytes": 38060
     },
     "bev_praise_1": {
       "file": "assets/trev_voice/bev_praise_1.mp3",
       "text": "Lovely arrow, mate! Even my missus Bev would put the tea towel down to clap that one \u2014 love her to bits, she never claps mine!",
-      "bytes": 53228
+      "bytes": 44780
     },
     "bev_praise_2": {
       "file": "assets/trev_voice/bev_praise_2.mp3",
       "text": "Proper class, pal! If I threw like that, Bev might actually let me keep the dartboard in the kitchen \u2014 bless her, not a chance!",
-      "bytes": 58028
+      "bytes": 50348
     },
     "bev_praise_3": {
       "file": "assets/trev_voice/bev_praise_3.mp3",
       "text": "Bang on the money, mate! Wait till I tell Bev about that one \u2014 love her dearly, she'll still ask if I remembered the milk!",
-      "bytes": 55148
+      "bytes": 47084
     },
     "bev_pint": {
       "file": "assets/trev_voice/bev_pint.mp3",
       "text": "Five on the spin! I'd buy you a pint, mate, except Bev's got me on a strict tenner a night \u2014 bless her, she knows me too well!",
-      "bytes": 63404
+      "bytes": 49196
     },
     "bev_streak8": {
       "file": "assets/trev_voice/bev_streak8.mp3",
       "text": "Eight straight?! Leave it out, mate \u2014 Bev's gonna think I've been sneaking Luke Littler into the boozer behind her back!",
-      "bytes": 51884
+      "bytes": 39596
     },
     "bev_miss_1": {
       "file": "assets/trev_voice/bev_miss_1.mp3",
       "text": "Nearly took the crisp rack out, pal! Reminds me of when I put a hole in Bev's kitchen wallpaper \u2014 love her dearly, didn't speak to me till Tuesday!",
-      "bytes": 65324
+      "bytes": 53804
     },
     "bev_miss_2": {
       "file": "assets/trev_voice/bev_miss_2.mp3",
       "text": "Unlucky off the wire, mate \u2014 still less grief than I got from Bev for turning up ten minutes late for Sunday roast! Shake it off.",
-      "bytes": 55148
+      "bytes": 49772
     },
     "bev_wire_pull": {
       "file": "assets/trev_voice/bev_wire_pull.mp3",
       "text": "Snuck into the wrong bedroom there, mate! Don't tell Bev I said that \u2014 bless her, she'd have my arrows in the wheelie bin!",
-      "bytes": 58988
+      "bytes": 46700
     },
     "bev_breakfast": {
       "file": "assets/trev_voice/bev_breakfast.mp3",
       "text": "Twenty-six \u2014 bed and breakfast, mate! Still better than the burnt toast Bev makes me when I'm late back from the pub \u2014 love her to bits, though!",
-      "bytes": 61484
+      "bytes": 53036
     },
     "bev_bust": {
       "file": "assets/trev_voice/bev_bust.mp3",
       "text": "Ooh, bust! Got greedy, mate \u2014 like me telling Bev I'm only popping out for one swift half. Bless her, she never buys it either!",
-      "bytes": 59948
+      "bytes": 51308
     },
     "bev_bell": {
       "file": "assets/trev_voice/bev_bell.mp3",
       "text": "Bell beat ya, pal! Faster than Bev ringing my mobile at ten past nine \u2014 love her dearly, she's got a sixth sense for last orders!",
-      "bytes": 62060
+      "bytes": 46892
     },
     "bev_madhouse": {
       "file": "assets/trev_voice/bev_madhouse.mp3",
       "text": "Welcome to the Madhouse, mate! Still less scary than walking through the front door with muddy boots on Bev's new carpet \u2014 bless her!",
-      "bytes": 55340
+      "bytes": 44972
     },
     "bev_rival_miss": {
       "file": "assets/trev_voice/bev_rival_miss.mp3",
       "text": "Knees are knocking at double! Even Bev throws straighter than that when she's lobbing my slippers at me \u2014 love her to bits! Go nick the leg!",
-      "bytes": 63404
+      "bytes": 52460
     },
     "bev_darts_unlock": {
       "file": "assets/trev_voice/bev_darts_unlock.mp3",
       "text": "Wahey! You've unlocked Bev's leopard-print flights, mate \u2014 love her to bits, don't tell her I nicked the pattern off her favorite cardigan!",
-      "bytes": 70700
+      "bytes": 46700
     },
     "intro_menu_tour": {
       "file": "assets/trev_voice/intro_menu_tour.mp3",
-      "text": "Awright mate! I'm Trev \u2014 welcome to the boozer! Quick tour before we grab the arrows: click the Levels menu top-left anytime to jump between Career Levels one to seven, Arcade Drills, or a full five-oh-one match. Light all eight brass pips to unlock each level's Pub Trial, or hit Skip if you already know the ropes!",
-      "bytes": 134060
+      "text": "Alright mate! I'm Trev \u2014 welcome to the boozer! Quick tour before we grab the arrows: click the Levels menu top-left anytime to jump between Career Levels one to seven, Arcade Drills, or a full five-oh-one match. Light all eight brass pips to unlock each level's Pub Trial, or hit Skip if you already know the ropes!",
+      "bytes": 132524
     },
     "lesson_l1": {
       "file": "assets/trev_voice/lesson_l1.mp3",
       "text": "Level one \u2014 Doubles Mastery, mate! You'll be tested both ways here: sometimes I call a total like thirty-two and you click double sixteen on the board, and other times a double lights up and you type what it's worth in the number box on the right! Twenty down to fifteen pop up most, plus inside-miss halving escapes!",
-      "bytes": 134828
+      "bytes": 115820
     },
     "lesson_l2": {
       "file": "assets/trev_voice/lesson_l2.mp3",
       "text": "Level two \u2014 Trebles Mastery! Just like doubles, I'll test ya both ways: either I call a score like fifty-seven and you click treble nineteen on the board, or a treble lights up and you enter its total in the number box! Lock twenty down to fifteen in cold \u2014 and don't let treble fourteen being forty-two mug ya off!",
-      "bytes": 137324
+      "bytes": 133484
     },
     "lesson_l3": {
       "file": "assets/trev_voice/lesson_l3.mp3",
       "text": "Level three \u2014 three-dart adding! The purpose here is counting visits in your head like a proper pub marker. Quick lesson reminder: never add one plus two plus three! Snap the two easy darts together first \u2014 like treble twenty and single twenty is eighty \u2014 then slap the stray third dart on top!",
-      "bytes": 139244
+      "bytes": 130604
     },
     "lesson_l4": {
       "file": "assets/trev_voice/lesson_l4.mp3",
       "text": "Level four \u2014 three-oh-one chalk and countdown! Here we put throwing, adding, and subtracting together on the live slate. Quick lesson reminder: don't wrestle with big subtractions \u2014 knock a clean hundred or sixty off first, then chuck the spare back on! Fast chalking puts ya in flow and widens your aim bars!",
-      "bytes": 144044
+      "bytes": 116396
     },
     "lesson_l5": {
       "file": "assets/trev_voice/lesson_l5.mp3",
       "text": "Level five \u2014 two-dart finishes! This turns you into a lethal finisher from a hundred and ten down. Quick reminder of the tricks: under sixty, use your favourite double rule; in the sixties, treble plus double equals twenty-five; seventies equals thirty; eighties equals thirty-five \u2014 no peeking at the scoreboard!",
-      "bytes": 132140
+      "bytes": 113900
     },
     "lesson_l6": {
       "file": "assets/trev_voice/lesson_l6.mp3",
       "text": "Level six \u2014 three-dart finishes and board traps! This teaches you to collapse big ton-plus outs in one clean jump. Quick reminder: drop the leading one and add forty for treble twenty, or add forty-three for treble nineteen \u2014 watch those sneaky splash traps on one-oh-one to one-oh-nine, and dodge every bogey number!",
-      "bytes": 146540
+      "bytes": 133676
     },
     "lesson_l7": {
       "file": "assets/trev_voice/lesson_l7.mp3",
       "text": "Final level \u2014 Championship five-oh-one! Everything you've learnt comes together in a real double-out match against the regulars. Chalk your own throws, mark your rival on the slate, hold your nerve with a deep breath on match darts, and remember \u2014 I'm grading every board-management call!",
-      "bytes": 122348
+      "bytes": 113132
     },
     "nerve_breathe": {
       "file": "assets/trev_voice/nerve_breathe.mp3",
       "text": "Shhh, whole boozer's gone quiet, mate \u2014 match dart! Hit deep breath to steady those knees and pin that double!",
-      "bytes": 48044
+      "bytes": 51692
     },
     "nerve_wire_gasp": {
       "file": "assets/trev_voice/nerve_wire_gasp.mp3",
       "text": "Ooooh, kissed the wire! Knees are knocking a touch, pal \u2014 take a deep breath, shake it off, next arrow's in!",
-      "bytes": 56684
+      "bytes": 46700
     }
   }
 }

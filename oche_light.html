@@ -293,39 +293,41 @@
   }
   .mfinish-pill.visible { display: inline-block; }
   .mfinish-pill.on { border-color: rgba(126, 224, 160, 0.72); background: rgba(24, 72, 42, 0.62); color: #c8f9d8; }
-  /* Authentic Darts-in-Hand Fanned Grip Widget (replaces glowing cabinet rack!) */
+  /* Authentic Illustrated Off-Hand Gripping Spare Darts (replaces glowing cabinet rack & dark UI box!) */
   .hand-darts {
-    position: fixed; right: 16px; bottom: 64px; z-index: 18;
-    pointer-events: none; display: flex; flex-direction: column; align-items: center; gap: 3px;
-    padding: 7px 12px 6px; border-radius: 10px;
-    background: linear-gradient(180deg, rgba(30, 19, 13, 0.86), rgba(15, 9, 6, 0.92));
-    border: 1px solid rgba(214, 170, 92, 0.48);
-    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.72), inset 0 1px 0 rgba(255, 234, 180, 0.22);
-    transition: opacity 0.2s ease, transform 0.2s ease;
+    position: fixed; right: 0; bottom: 58px; z-index: 18;
+    pointer-events: none; display: flex; flex-direction: column; align-items: flex-end; gap: 2px;
+    padding: 0; background: transparent; border: none; box-shadow: none;
+    transition: opacity 0.24s ease, transform 0.24s ease;
+    filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.78));
   }
-  .hand-darts.hidden, body.numpad-open .hand-darts { opacity: 0; transform: translateY(8px); }
+  .hand-darts.hidden, body.numpad-open .hand-darts { opacity: 0; transform: translateY(14px); }
   .hand-darts-fan {
-    display: flex; align-items: flex-end; justify-content: center; gap: 3px; height: 56px; padding: 0 4px;
-    position: relative;
+    width: 176px; height: 112px; display: block; position: relative;
   }
-  .hand-darts-fan::after {
-    content: ''; position: absolute; left: 8px; right: 8px; bottom: 1px; height: 9px;
-    background: radial-gradient(ellipse at 50% 80%, rgba(214, 162, 114, 0.34), rgba(140, 88, 52, 0.14) 70%, transparent 100%);
-    border-radius: 50%; pointer-events: none;
+  .hand-darts-fan svg { width: 100%; height: 100%; overflow: visible; display: block; }
+  .hand-darts-fan .hd-dart {
+    transition: opacity 0.28s ease, transform 0.34s cubic-bezier(0.22, 1, 0.36, 1);
   }
-  .hand-dart-slot {
-    width: 24px; height: 52px; transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.24s ease;
-    transform-origin: center bottom;
+  .hand-darts-fan .hd-dart.spent {
+    opacity: 0; transform: translate(-26px, -12px);
   }
-  .hand-dart-slot:nth-child(1) { transform: rotate(-14deg) translateY(2px); }
-  .hand-dart-slot:nth-child(2) { transform: rotate(0deg); }
-  .hand-dart-slot:nth-child(3) { transform: rotate(14deg) translateY(2px); }
-  .hand-dart-slot.spent { opacity: 0.14; transform: translateY(-18px) scale(0.84) !important; filter: grayscale(0.9); }
   .hand-darts-lbl {
-    font-family: var(--font-mono); font-size: 9px; font-weight: 700;
-    letter-spacing: 0.7px; text-transform: uppercase; color: var(--brass-bright);
+    margin-right: 16px; padding: 2px 9px; border-radius: 99px;
+    background: linear-gradient(180deg, rgba(32, 21, 14, 0.92), rgba(16, 10, 7, 0.96));
+    border: 1px solid rgba(214, 170, 92, 0.54);
+    font-family: var(--font-mono); font-size: 9px; font-weight: 800;
+    letter-spacing: 0.75px; text-transform: uppercase; color: var(--brass-foil);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.65);
   }
-  @media (max-width: 960px) { .hand-darts { display: none; } }
+  @media (max-width: 960px) {
+    .hand-darts { right: 6px; bottom: 56px; }
+    .hand-darts-fan { width: 126px; height: 80px; }
+    body.aim-open .hand-darts { opacity: 0; transform: translateY(14px); }
+  }
+  @media (max-width: 780px) {
+    .hand-darts { display: none; }
+  }
 
   /* Match-Dart Game Nerves & Deep Breath Composure UI */
   .aim-gauge-panel.nervous {
@@ -1907,7 +1909,7 @@ class MasteryEngine {
       items: {}, streak: 0, bestStreak: 0, totalCorrect: 0, totalAttempts: 0,
       xp: 0, difficulty: 'adaptive', welcomed: false, promotedStages: {},
       levelPips: {}, levelStars: {}, seenIntros: {}, seenLessons: {}, seenMenuTour: false, adaptive: {},
-      autoCall: true, dartSet: 'pub_brass', matchFinishThrow: false,
+      autoCall: true, dartSet: 'pub_brass', matchFinishThrow: true,
       records: { bestVisit: 0, count180: 0, tonPlusVisits: 0, fastestMs: 99999, legsWon501: 0, bestLegDarts: 999 },
     };
     try {
@@ -1916,6 +1918,7 @@ class MasteryEngine {
         const parsed = JSON.parse(raw);
         return {
           ...base, ...parsed,
+          matchFinishThrow: parsed.matchFinishThrow !== undefined ? !!parsed.matchFinishThrow : true,
           seenIntros: { ...base.seenIntros, ...(parsed.seenIntros || {}) },
           seenLessons: { ...base.seenLessons, ...(parsed.seenLessons || {}) },
           adaptive: { ...base.adaptive, ...(parsed.adaptive || {}) },
@@ -1932,9 +1935,9 @@ class MasteryEngine {
     const diff = this.data.difficulty || 'adaptive';
     this.data = {
       items: {}, streak: 0, bestStreak: 0, totalCorrect: 0, totalAttempts: 0,
-      xp: 0, difficulty: diff, welcomed: true, promotedStages: {},
+      xp: 0, difficulty: diff, welcomed: false, promotedStages: {},
       levelPips: {}, levelStars: {}, seenIntros: {}, seenLessons: {}, seenMenuTour: false, adaptive: {},
-      autoCall: this.data.autoCall !== false, dartSet: 'pub_brass', matchFinishThrow: !!this.data.matchFinishThrow,
+      autoCall: this.data.autoCall !== false, dartSet: 'pub_brass', matchFinishThrow: true,
       records: { bestVisit: 0, count180: 0, tonPlusVisits: 0, fastestMs: 99999, legsWon501: 0, bestLegDarts: 999 },
     };
     this.recentRt = [];
@@ -2779,6 +2782,8 @@ const postMat = new THREE.ShaderMaterial({
     uFlowBoost: { value: 0 },
     uTension: { value: 0 },
     uRattled: { value: 0 },
+    uNervePulse: { value: 0 },
+    uNerveCalm: { value: 0 },
   },
   vertexShader: `
     varying vec2 vUv;
@@ -2799,6 +2804,8 @@ const postMat = new THREE.ShaderMaterial({
     uniform float uFlowBoost;
     uniform float uTension;
     uniform float uRattled;
+    uniform float uNervePulse;
+    uniform float uNerveCalm;
     varying vec2 vUv;
 
     float linearizeDepth(float d) {
@@ -2884,10 +2891,19 @@ const postMat = new THREE.ShaderMaterial({
       vec3 quantized = floor(col * levels + b * 0.85 + 0.5) / levels;
       col = mix(col, quantized, ditherAmt);
 
-      // Reactive cinema vignette — gently tightens like an Ally-Pally spotlight on 180-Darts & Match Darts!
-      float vigAmt = 0.66 + uTension * 0.44 - uFlowBoost * 0.07;
-      float vig = 1.0 - dot(vc * vec2(1.06, 1.03), vc * vec2(1.06, 1.03)) * vigAmt;
-      col *= clamp(vig, 0.44, 1.03);
+      // Reactive cinema vignette + live heartbeat tunnel-vision pulse on Match Darts (eases open on Deep Breath [S]!)
+      float r2 = dot(vc * vec2(1.08, 1.04), vc * vec2(1.08, 1.04));
+      float vigAmt = 0.66 + uTension * 0.44 + uNervePulse * 0.52 - uFlowBoost * 0.07;
+      float vig = 1.0 - r2 * vigAmt;
+      col *= clamp(vig, 0.30, 1.03);
+      if (uNervePulse > 0.01) {
+        float edgeMask = smoothstep(0.14, 0.46, r2);
+        col += vec3(0.14, 0.015, 0.01) * uNervePulse * edgeMask;
+      }
+      if (uNerveCalm > 0.01) {
+        float calmHalo = smoothstep(0.18, 0.48, r2);
+        col += vec3(0.015, 0.09, 0.045) * uNerveCalm * calmHalo;
+      }
 
       // Whisper-subtle analog pub film grain
       float grain = (hash12(gl_FragCoord.xy + fract(uTime * 17.3) * 100.0) - 0.5) * 0.011;
@@ -3985,28 +4001,94 @@ function getFlightPatternTexture(pattern, flightHex, trimHex) {
   return tex;
 }
 
-// Render Authentic Fanned "Darts-in-Hand" Grip Indicator mirroring the player's equipped 3D Dart Set!
-function buildHandDartSvg(spec) {
+// Render Authentic Illustrated Pub Off-Hand Gripping Spare Darts (3-layer sandwich: Palm -> Darts -> Thumb!)
+function buildHandWithDartsSvg(spec, leftCount) {
   const hex = (n) => '#' + Number(n).toString(16).padStart(6, '0');
   const fCol = hex(spec.flightHex), tCol = hex(spec.trimHex), bCol = hex(spec.barrelHex), sCol = hex(spec.stemHex);
-  const patternSvg = spec.pattern === 'leopard'
-    ? `<circle cx="9.5" cy="40" r="2.2" fill="#2b160a"/><circle cx="14.5" cy="43.5" r="2.1" fill="#2b160a"/><circle cx="11.5" cy="47.5" r="1.9" fill="#2b160a"/><circle cx="15" cy="37.5" r="1.6" fill="#99571c"/>`
+  const flightPattern = (idSuffix) => spec.pattern === 'leopard'
+    ? `<circle cx="107" cy="-3.5" r="2.2" fill="#2a1509"/><circle cx="114" cy="1.8" r="2.0" fill="#2a1509"/><circle cx="103" cy="3.6" r="1.9" fill="#2a1509"/><circle cx="117" cy="-3.2" r="1.7" fill="#9a571c"/>`
     : spec.pattern === 'stripe'
-      ? `<rect x="5" y="42" width="14" height="2.2" fill="${tCol}"/><rect x="6" y="46" width="12" height="1.4" fill="${tCol}"/>`
+      ? `<rect x="101" y="-8.5" width="3.2" height="17" fill="${tCol}" opacity="0.92"/><rect x="108" y="-7.2" width="2" height="14.4" fill="${tCol}" opacity="0.88"/>`
       : spec.pattern === 'chevron'
-        ? `<path d="M5 46 L12 41 L19 46" stroke="${tCol}" stroke-width="2" fill="none"/>`
-        : `<rect x="5" y="45" width="14" height="2.2" fill="${tCol}" opacity="0.88"/>`;
-  return `<svg viewBox="0 0 24 54" width="24" height="52" xmlns="http://www.w3.org/2000/svg">
-    <path d="M12 2 L13.1 12 L10.9 12 Z" fill="#cfd6dc"/>
-    <rect x="9.6" y="12" width="4.8" height="14" rx="1.6" fill="${bCol}" stroke="#1a120c" stroke-width="0.7"/>
-    <line x1="9.6" y1="16" x2="14.4" y2="16" stroke="#e5c172" stroke-width="1.2"/>
-    <line x1="9.6" y1="19.5" x2="14.4" y2="19.5" stroke="#e5c172" stroke-width="1.2"/>
-    <line x1="9.6" y1="23" x2="14.4" y2="23" stroke="#e5c172" stroke-width="1.2"/>
-    <rect x="10.9" y="26" width="2.2" height="10" fill="${sCol}"/>
-    <rect x="10.2" y="34" width="3.6" height="2" fill="#d8ad5a"/>
-    <path d="M12 35 L4.5 39 L4.5 49 L12 52 L19.5 49 L19.5 39 Z" fill="${fCol}" stroke="#20130b" stroke-width="1.1"/>
-    ${patternSvg}
-    <line x1="12" y1="35" x2="12" y2="52" stroke="rgba(255,245,215,0.45)" stroke-width="1"/>
+        ? `<path d="M101 -7 L109 0 L101 7" stroke="${tCol}" stroke-width="2.4" fill="none" stroke-linecap="round"/>`
+        : `<rect x="104" y="-8" width="3.2" height="16" fill="${tCol}" opacity="0.85"/>`;
+
+  // Each dart drawn horizontally along +X (tip at x=0 pointing left, barrel x=20..58, stem x=58..90, sculpted pear flight x=88..122)
+  const renderDart = (idx, tx, ty, rotDeg) => {
+    const spent = idx >= leftCount ? ' spent' : '';
+    return `<g class="hd-dart${spent}" transform="translate(${tx},${ty}) rotate(${rotDeg})">
+      <!-- Metallic steel point -->
+      <path d="M0 0 L22 -1.6 L22 1.6 Z" fill="url(#hdSteel)" stroke="#1b120d" stroke-width="0.7"/>
+      <!-- Knurled tungsten/brass barrel with grip rings -->
+      <rect x="21" y="-3.3" width="36" height="6.6" rx="2.4" fill="${bCol}" stroke="#1a100a" stroke-width="1.05"/>
+      <line x1="29" y1="-3.1" x2="29" y2="3.1" stroke="#efd089" stroke-width="1.25"/>
+      <line x1="35" y1="-3.1" x2="35" y2="3.1" stroke="#efd089" stroke-width="1.25"/>
+      <line x1="41" y1="-3.1" x2="41" y2="3.1" stroke="#efd089" stroke-width="1.25"/>
+      <line x1="47" y1="-3.1" x2="47" y2="3.1" stroke="#efd089" stroke-width="1.25"/>
+      <line x1="23" y1="-1.5" x2="55" y2="-1.5" stroke="rgba(255,248,225,0.42)" stroke-width="1"/>
+      <!-- Shaft / Stem + brass flight collar -->
+      <rect x="57" y="-1.7" width="32" height="3.4" rx="1" fill="${sCol}" stroke="#1b110b" stroke-width="0.8"/>
+      <rect x="85" y="-2.5" width="4.5" height="5" rx="0.8" fill="#dfb35c" stroke="#1b110b" stroke-width="0.7"/>
+      <!-- Sculpted pear flight (top + bottom wings + center spine) -->
+      <path d="M89 0 L98 -9.5 L116 -9 L123 0 L116 9 L98 9.5 Z" fill="${fCol}" stroke="#20110a" stroke-width="1.25" stroke-linejoin="round"/>
+      ${flightPattern(idx)}
+      <line x1="89" y1="0" x2="122" y2="0" stroke="rgba(255,244,214,0.52)" stroke-width="1.15"/>
+    </g>`;
+  };
+
+  return `<svg viewBox="0 0 190 120" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="hdSkin" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#f2c49c"/>
+        <stop offset="52%" stop-color="#d7966a"/>
+        <stop offset="100%" stop-color="#a5643f"/>
+      </linearGradient>
+      <linearGradient id="hdSkinDeep" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#cf8d62"/>
+        <stop offset="100%" stop-color="#8b4e2e"/>
+      </linearGradient>
+      <linearGradient id="hdSteel" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="#eef3f7"/>
+        <stop offset="100%" stop-color="#7c8791"/>
+      </linearGradient>
+      <linearGradient id="hdCuff" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#a83329"/>
+        <stop offset="100%" stop-color="#611914"/>
+      </linearGradient>
+    </defs>
+
+    <!-- LAYER 1: Back of Cupped Off-Hand (Wrist, Rolled Pub Sleeve & Cradling Back Fingers) -->
+    <g stroke="#24120a" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">
+      <!-- Rolled pub shirt sleeve cuff at bottom-right wrist -->
+      <path d="M148 82 L188 74 L190 118 L142 118 Z" fill="url(#hdCuff)"/>
+      <path d="M147 84 L188 76" stroke="#f0d598" stroke-width="2.2"/>
+      <!-- Cupped palm & lower heel of hand -->
+      <path d="M154 78 C134 62, 108 56, 86 64 C66 72, 60 92, 74 106 C92 120, 128 118, 152 108 Z" fill="url(#hdSkinDeep)"/>
+      <!-- 4 cradling back fingers behind the dart barrels -->
+      <path d="M62 48 C56 36, 68 28, 79 36 L94 56 L78 65 Z" fill="url(#hdSkin)"/>
+      <path d="M77 40 C74 28, 88 22, 97 32 L110 54 L94 61 Z" fill="url(#hdSkin)"/>
+      <path d="M94 38 C93 26, 107 22, 114 33 L124 56 L109 62 Z" fill="url(#hdSkin)"/>
+      <path d="M111 43 C112 32, 125 30, 130 41 L137 62 L123 68 Z" fill="url(#hdSkin)"/>
+    </g>
+
+    <!-- LAYER 2: 3 Angled Sculpted Darts Cradled Across the Fingers (pointing toward the board!) -->
+    ${renderDart(2, 10, 48, 11)}
+    ${renderDart(1, 14, 34, 15)}
+    ${renderDart(0, 20, 20, 19)}
+
+    <!-- LAYER 3: Foreground Thumb & Curled Fingertip Pads Overlapping the Barrels! -->
+    <g stroke="#24120a" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">
+      <!-- Soft grip shadow cast by thumb onto barrels -->
+      <ellipse cx="96" cy="64" rx="22" ry="9" transform="rotate(-14 96 64)" fill="rgba(22,10,5,0.34)" stroke="none"/>
+      <!-- Lower curled index/middle finger tips cradling underneath the barrels -->
+      <path d="M58 68 C52 78, 62 90, 76 86 L86 80 C82 72, 70 64, 58 68 Z" fill="url(#hdSkin)"/>
+      <path d="M73 81 C68 91, 80 101, 93 96 L104 89 C98 81, 84 76, 73 81 Z" fill="url(#hdSkin)"/>
+      <!-- Foreground Thumb resting snugly across the dart barrels! -->
+      <path d="M150 82 C136 66, 112 52, 86 52 C74 52, 68 60, 74 69 C80 78, 98 76, 114 82 C126 88, 136 98, 148 106 Z" fill="url(#hdSkin)"/>
+      <!-- Thumbnail + warm knuckle highlight -->
+      <path d="M75 58 C78 55, 84 55, 86 60 C84 65, 78 65, 75 62 Z" fill="#f7dec4" stroke="#7d4a2d" stroke-width="1"/>
+      <path d="M104 60 C112 62, 120 67, 126 73" fill="none" stroke="rgba(255,235,210,0.48)" stroke-width="1.5"/>
+    </g>
   </svg>`;
 }
 
@@ -4020,9 +4102,8 @@ function renderHandDarts() {
   const hideForSpec = typeof state !== 'undefined' && (state.spectator && state.spectator.active);
   const isMarkingDone = typeof state !== 'undefined' && left === 0 && state.challenge && state.challenge.kind === 'marking';
   wrap.classList.toggle('hidden', !!hideForSpec || !!isMarkingDone);
-  const svg = buildHandDartSvg(spec);
-  fan.innerHTML = [0, 1, 2].map(idx => `<div class="hand-dart-slot ${idx >= left ? 'spent' : ''}">${svg}</div>`).join('');
-  lbl.textContent = left > 0 ? `${left} IN HAND` : 'COLLECTING…';
+  fan.innerHTML = buildHandWithDartsSvg(spec, left);
+  lbl.textContent = left > 0 ? `${left} IN HAND` : 'EMPTY HAND';
 }
 
 function applyDartSetToRack(setId) {
@@ -4122,9 +4203,9 @@ const pintFoam = new THREE.Mesh(
 pintFoam.position.set(3.85, -2.53, 0.08);
 scene.add(pintFoam);
 
-// Overhead Victorian Green-Enamel & Brass Gooseneck Oche Lamp (brought cleanly into visible frame right above the cabinet!)
+// Overhead Victorian Green-Enamel & Brass Gooseneck Oche Lamp (positioned cleanly below Desktop top HUD!)
 const lampGroup = new THREE.Group();
-lampGroup.position.set(0, 2.86, 1.38);
+lampGroup.position.set(0, 2.74, 1.32);
 scene.add(lampGroup);
 
 // Curved brass gooseneck bracket rising from top rail into the green enamel shade
@@ -5067,7 +5148,7 @@ class StudioClipEngine {
       try {
         if (!audio.ctx) audio.unlock();
         if (!audio.ctx) return null;
-        const resp = await fetch(`assets/trev_voice/${clipId}.mp3?v=3`);
+        const resp = await fetch(`assets/trev_voice/${clipId}.mp3?v=4`);
         if (!resp.ok) return null;
         const ab = await resp.arrayBuffer();
         const buf = await audio.ctx.decodeAudioData(ab.slice(0));
@@ -6242,6 +6323,7 @@ function takeDeepBreath() {
     aimGauge.cfg = applyNervesToAimCfg(aimGauge.baseCfg, aimGauge.nerves);
   }
   audio.playDeepBreath();
+  state.calmFlash = 1.0;
   applyAimCorridorBars();
   syncAimTacUI();
   updateAimGauge(0);
@@ -6806,7 +6888,7 @@ function openStageBriefing(stageId) {
   elBriefBg.classList.add('open');
 }
 
-function startLevelIntro(stageId) {
+function startLevelIntro(stageId, { silentIntro = false } = {}) {
   const demo = getLevelIntroDemo(stageId);
   if (!demo) {
     state.inIntroDemo = false;
@@ -6821,7 +6903,11 @@ function startLevelIntro(stageId) {
   state.weakSpotMode = false;
   const chCopy = JSON.parse(JSON.stringify(demo.challenge));
   loadChallenge(chCopy);
-  trev.onStageBriefing(stageId);
+  if (silentIntro) {
+    trev.say(`Untimed warm-up shot, mate — ${demo.hook}`, { mood: 'cheer', holdMs: 2000, speak: false });
+  } else {
+    trev.onStageBriefing(stageId);
+  }
   setFeedback(`Chalk-Talk Warm-Up (untimed): ${demo.hook}`, 'cue');
 }
 
@@ -7373,7 +7459,7 @@ function selectStage(stageId, startAsPlayer = true, forceBriefing = false) {
         mastery.data.seenLessons[stageId] = true;
         mastery.save();
         if (hasIntroDemo && !seenIntro) {
-          startLevelIntro(stageId);
+          startLevelIntro(stageId, { silentIntro: true });
         } else if (STAGE_BRIEFS[stageId]) {
           const briefTxt = stageId === 'LEVEL_7' ? STAGE_BRIEFS[stageId].replace('Big Dave', currentRival().name) : STAGE_BRIEFS[stageId];
           setFeedback(briefTxt, 'cue');
@@ -9945,6 +10031,15 @@ function handleBoardClick(bed, rawXY) {
     } else {
       const targetD = 'D' + (state.remainingScore / 2);
       if (bed.code === targetD) {
+        const finishB60 = (nailed, hitCode) => {
+          state.dartsLeft = 0;
+          const note = nailed ? `🎯 Pinned ${targetD}! ${it.cue}` : `Right finish (${targetD}, landed ${hitCode})! ${it.cue}`;
+          completeChallenge(true, note, [{ text: it.cue, kind: 'ok' }]);
+        };
+        if (state.matchFinishThrow && !state.ghostMode && !state.inTrial && !ch.isIntroDemo) {
+          startAimGauge('finish', bed, { x, y }, { onDone: finishB60 });
+          return;
+        }
         throwDartTo(x, y, { kind: 'D' });
         state.dartsLeft = 0;
         completeChallenge(true, `Game shot! ${it.cue}`, [{ text: it.cue, kind: 'ok' }]);
@@ -11022,6 +11117,11 @@ canvas.addEventListener('pointerdown', (e) => {
     state.isTouch = true;
     e.preventDefault();
     if (!audio.ctx) { audio.unlock(); elSoundPill.textContent = 'Sound: On'; elSoundPill.classList.add('on'); }
+    const wasGhost = state.ghostMode;
+    if (wasGhost && TREV_THEATER_LESSONS[state.stage] && !(mastery.data.seenLessons && mastery.data.seenLessons[state.stage])) {
+      selectStage(state.stage, true);
+      return;
+    }
     claimPlayerControl();
     touchAim.active = true;
     touchAim.pointerId = e.pointerId;
@@ -11035,6 +11135,10 @@ canvas.addEventListener('pointerdown', (e) => {
   if (e.button !== 0) return;
   const hit = raycastBoard(e.clientX, e.clientY);
   if (!hit) return;
+  if (state.ghostMode && TREV_THEATER_LESSONS[state.stage] && !(mastery.data.seenLessons && mastery.data.seenLessons[state.stage])) {
+    selectStage(state.stage, true);
+    return;
+  }
   claimPlayerControl();
   handleBoardClick(hit.bed, hit.pt);
 });
@@ -11850,10 +11954,10 @@ function onResize() {
     BASE_CAM.set(0.0, 0.42, zPortrait);
     BASE_LOOK.set(0.0, 0.30, 0);
   } else {
-    // Landscape / Desktop: symmetrical framing showing Left Coaching Slate, center 3D Dartboard & Right Score Slate cleanly!
+    // Landscape / Desktop: symmetrical framing showing glowing green brass oche lamp below top HUD, Left Coaching Slate, 3D Dartboard, Right Score Slate & bottom Brass Pub Records Plaque!
     const aspectPad = Math.max(0, 1.62 - camera.aspect) * 3.8;
-    BASE_CAM.set(0.0, 0.34, 11.45 + aspectPad);
-    BASE_LOOK.set(0.0, 0.14, 0.0);
+    BASE_CAM.set(0.0, 0.62, 12.15 + aspectPad);
+    BASE_LOOK.set(0.0, 0.44, 0.0);
   }
   camera.updateProjectionMatrix();
   postMat.uniforms.uFar.value = camera.far;
@@ -11869,8 +11973,15 @@ window.addEventListener('resize', onResize);
 document.addEventListener('fullscreenchange', () => setTimeout(onResize, 60));
 onResize();
 
-// Show non-blocking Quick-Start welcome banner on first visit (never blocks frame-1 Ghost Demo!)
-if (!mastery.data.welcomed) elWelcome.classList.add('show');
+// Show Full-Screen Coach Trev Menu Tour automatically on first visit (1-click skippable if already played!),
+// or keep the subtle Quick-Start banner if user skipped without dismissing welcome.
+if (!mastery.data.seenMenuTour) {
+  setTimeout(() => {
+    if (!state.theaterOpen) openMenuTour(true);
+  }, 420);
+} else if (!mastery.data.welcomed) {
+  elWelcome.classList.add('show');
+}
 
 // Apply player's equipped 3D Dart Set onto Darts-in-Hand & refresh 3D Brass Pub Records Plaque right at startup!
 applyDartSetToRack(state.dartSet);
@@ -11988,6 +12099,20 @@ function animate(now) {
   postMat.uniforms.uRattled.value = curRattled;
   postMat.uniforms.uTime.value = clockSec;
 
+  // Live Match-Dart Lub-Dub Heartbeat Tunnel-Vision Pulse + Deep Breath Calm Relief Flash!
+  const activeNerves = aimGauge.active && aimGauge.nerves && aimGauge.nerves.active && !aimGauge.nerves.calmed;
+  let nervePulseVal = 0;
+  if (activeNerves) {
+    const beatPeriod = 60 / Math.max(60, aimGauge.nerves.bpm || 96);
+    const beatFrac = ((state.nerveBeatAcc || 0) % beatPeriod) / beatPeriod;
+    const lub = Math.exp(-Math.pow((beatFrac - 0.08) / 0.065, 2));
+    const dub = Math.exp(-Math.pow((beatFrac - 0.24) / 0.075, 2)) * 0.72;
+    nervePulseVal = (0.30 + 0.70 * Math.max(lub, dub)) * (0.65 + 0.35 * (aimGauge.nerves.level || 0.7));
+  }
+  state.calmFlash = Math.max(0, (state.calmFlash || 0) - dt * 1.45);
+  postMat.uniforms.uNervePulse.value += (nervePulseVal - postMat.uniforms.uNervePulse.value) * (1 - Math.exp(-dt * 12));
+  postMat.uniforms.uNerveCalm.value = state.calmFlash;
+
   // Gently pulse highlighted target beds on the 3D board so cues read effortlessly
   for (const ch of overlayGroup.children) {
     if (ch.userData && ch.userData.pulse && ch.material) {
@@ -11995,12 +12120,13 @@ function animate(now) {
     }
   }
 
-  // Gentle oche camera breathing, Big-Moment 180/Match-Dart zoom & subtle dart-impact kick
+  // Gentle oche camera breathing, Nervous Heartbeat Sway, Big-Moment 180/Match-Dart zoom & subtle dart-impact kick
   cameraKick *= Math.exp(-dt * 12);
   const targetCam = BASE_CAM.clone();
   const targetLook = BASE_LOOK.clone();
-  targetCam.x += Math.sin(clockSec * 0.42) * 0.07;
-  targetCam.y += Math.cos(clockSec * 0.55) * 0.045 - cameraKick;
+  const swayMult = activeNerves ? 1.55 : (aimGauge.active && aimGauge.nerves && aimGauge.nerves.calmed ? 0.35 : 1.0);
+  targetCam.x += Math.sin(clockSec * 0.42) * 0.07 * swayMult + (activeNerves ? Math.sin(clockSec * 11.4) * 0.016 : 0);
+  targetCam.y += Math.cos(clockSec * 0.55) * 0.045 * swayMult + (activeNerves ? Math.sin(clockSec * 3.1) * 0.048 : 0) - cameraKick;
   // Big-Moment Camera Zoom: smoothly lean in toward T20 (on 180-Dart) or winning Double/Bull (on Match Dart)!
   if (curTension > 0.02 && camera.aspect >= 0.95) {
     const focusCode = is180Dart
