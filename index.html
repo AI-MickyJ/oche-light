@@ -303,14 +303,18 @@
   }
   .hand-darts.hidden, body.numpad-open .hand-darts { opacity: 0; transform: translateY(14px); }
   .hand-darts-fan {
-    width: 176px; height: 112px; display: block; position: relative;
+    width: 196px; height: 112px; display: block; position: relative;
   }
-  .hand-darts-fan svg { width: 100%; height: 100%; overflow: visible; display: block; }
+  .hand-darts-img {
+    position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain;
+    pointer-events: none; display: block;
+  }
+  .hand-darts-fan svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; display: block; }
   .hand-darts-fan .hd-dart {
     transition: opacity 0.28s ease, transform 0.34s cubic-bezier(0.22, 1, 0.36, 1);
   }
   .hand-darts-fan .hd-dart.spent {
-    opacity: 0; transform: translate(-26px, -12px);
+    opacity: 0; transform: translate(-28px, -10px);
   }
   .hand-darts-lbl {
     margin-right: 16px; padding: 2px 9px; border-radius: 99px;
@@ -321,8 +325,8 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.65);
   }
   @media (max-width: 960px) {
-    .hand-darts { right: 6px; bottom: 56px; }
-    .hand-darts-fan { width: 126px; height: 80px; }
+    .hand-darts { right: 0; bottom: 56px; }
+    .hand-darts-fan { width: 142px; height: 81px; }
     body.aim-open .hand-darts { opacity: 0; transform: translateY(14px); }
   }
   @media (max-width: 780px) {
@@ -4001,94 +4005,55 @@ function getFlightPatternTexture(pattern, flightHex, trimHex) {
   return tex;
 }
 
-// Render Authentic Illustrated Pub Off-Hand Gripping Spare Darts (3-layer sandwich: Palm -> Darts -> Thumb!)
+// Render Anatomically Accurate 5-Digit Pub Off-Hand (assets/hand_cradle.png) Cradling Your Dynamic Equipped 3D Dart Set!
 function buildHandWithDartsSvg(spec, leftCount) {
   const hex = (n) => '#' + Number(n).toString(16).padStart(6, '0');
   const fCol = hex(spec.flightHex), tCol = hex(spec.trimHex), bCol = hex(spec.barrelHex), sCol = hex(spec.stemHex);
-  const flightPattern = (idSuffix) => spec.pattern === 'leopard'
-    ? `<circle cx="107" cy="-3.5" r="2.2" fill="#2a1509"/><circle cx="114" cy="1.8" r="2.0" fill="#2a1509"/><circle cx="103" cy="3.6" r="1.9" fill="#2a1509"/><circle cx="117" cy="-3.2" r="1.7" fill="#9a571c"/>`
+  const flightPattern = () => spec.pattern === 'leopard'
+    ? `<circle cx="105" cy="-3.2" r="2.1" fill="#2a1509"/><circle cx="112" cy="1.8" r="1.9" fill="#2a1509"/><circle cx="101" cy="3.4" r="1.8" fill="#2a1509"/><circle cx="115" cy="-3.0" r="1.6" fill="#9a571c"/>`
     : spec.pattern === 'stripe'
-      ? `<rect x="101" y="-8.5" width="3.2" height="17" fill="${tCol}" opacity="0.92"/><rect x="108" y="-7.2" width="2" height="14.4" fill="${tCol}" opacity="0.88"/>`
+      ? `<rect x="99" y="-8" width="3.0" height="16" fill="${tCol}" opacity="0.92"/><rect x="106" y="-6.8" width="2.0" height="13.6" fill="${tCol}" opacity="0.88"/>`
       : spec.pattern === 'chevron'
-        ? `<path d="M101 -7 L109 0 L101 7" stroke="${tCol}" stroke-width="2.4" fill="none" stroke-linecap="round"/>`
-        : `<rect x="104" y="-8" width="3.2" height="16" fill="${tCol}" opacity="0.85"/>`;
+        ? `<path d="M99 -6.5 L107 0 L99 6.5" stroke="${tCol}" stroke-width="2.2" fill="none" stroke-linecap="round"/>`
+        : `<rect x="102" y="-7.5" width="3.0" height="15" fill="${tCol}" opacity="0.86"/>`;
 
-  // Each dart drawn horizontally along +X (tip at x=0 pointing left, barrel x=20..58, stem x=58..90, sculpted pear flight x=88..122)
+  // Sculpted dart resting across the open palm cradle (with soft contact shadow on palm!)
   const renderDart = (idx, tx, ty, rotDeg) => {
     const spent = idx >= leftCount ? ' spent' : '';
     return `<g class="hd-dart${spent}" transform="translate(${tx},${ty}) rotate(${rotDeg})">
-      <!-- Metallic steel point -->
-      <path d="M0 0 L22 -1.6 L22 1.6 Z" fill="url(#hdSteel)" stroke="#1b120d" stroke-width="0.7"/>
-      <!-- Knurled tungsten/brass barrel with grip rings -->
-      <rect x="21" y="-3.3" width="36" height="6.6" rx="2.4" fill="${bCol}" stroke="#1a100a" stroke-width="1.05"/>
-      <line x1="29" y1="-3.1" x2="29" y2="3.1" stroke="#efd089" stroke-width="1.25"/>
-      <line x1="35" y1="-3.1" x2="35" y2="3.1" stroke="#efd089" stroke-width="1.25"/>
-      <line x1="41" y1="-3.1" x2="41" y2="3.1" stroke="#efd089" stroke-width="1.25"/>
-      <line x1="47" y1="-3.1" x2="47" y2="3.1" stroke="#efd089" stroke-width="1.25"/>
-      <line x1="23" y1="-1.5" x2="55" y2="-1.5" stroke="rgba(255,248,225,0.42)" stroke-width="1"/>
+      <!-- Soft cast shadow onto the palm & fingers -->
+      <ellipse cx="64" cy="4.8" rx="46" ry="3.2" fill="rgba(34,14,6,0.34)"/>
+      <!-- Metallic steel needle point -->
+      <path d="M0 0 L22 -1.4 L22 1.4 Z" fill="url(#hdSteel)" stroke="#1b120d" stroke-width="0.65"/>
+      <!-- Knurled tungsten/brass barrel with gold grip rings -->
+      <rect x="21" y="-3.1" width="35" height="6.2" rx="2.2" fill="${bCol}" stroke="#1a100a" stroke-width="1.0"/>
+      <line x1="29" y1="-2.9" x2="29" y2="2.9" stroke="#efd089" stroke-width="1.2"/>
+      <line x1="35" y1="-2.9" x2="35" y2="2.9" stroke="#efd089" stroke-width="1.2"/>
+      <line x1="41" y1="-2.9" x2="41" y2="2.9" stroke="#efd089" stroke-width="1.2"/>
+      <line x1="47" y1="-2.9" x2="47" y2="2.9" stroke="#efd089" stroke-width="1.2"/>
+      <line x1="23" y1="-1.4" x2="54" y2="-1.4" stroke="rgba(255,248,225,0.45)" stroke-width="0.95"/>
       <!-- Shaft / Stem + brass flight collar -->
-      <rect x="57" y="-1.7" width="32" height="3.4" rx="1" fill="${sCol}" stroke="#1b110b" stroke-width="0.8"/>
-      <rect x="85" y="-2.5" width="4.5" height="5" rx="0.8" fill="#dfb35c" stroke="#1b110b" stroke-width="0.7"/>
-      <!-- Sculpted pear flight (top + bottom wings + center spine) -->
-      <path d="M89 0 L98 -9.5 L116 -9 L123 0 L116 9 L98 9.5 Z" fill="${fCol}" stroke="#20110a" stroke-width="1.25" stroke-linejoin="round"/>
-      ${flightPattern(idx)}
-      <line x1="89" y1="0" x2="122" y2="0" stroke="rgba(255,244,214,0.52)" stroke-width="1.15"/>
+      <rect x="56" y="-1.6" width="31" height="3.2" rx="1" fill="${sCol}" stroke="#1b110b" stroke-width="0.75"/>
+      <rect x="83" y="-2.4" width="4.5" height="4.8" rx="0.8" fill="#dfb35c" stroke="#1b110b" stroke-width="0.7"/>
+      <!-- Sculpted pear flight -->
+      <path d="M87 0 L96 -9.0 L114 -8.5 L121 0 L114 8.5 L96 9.0 Z" fill="${fCol}" stroke="#20110a" stroke-width="1.2" stroke-linejoin="round"/>
+      ${flightPattern()}
+      <line x1="87" y1="0" x2="120" y2="0" stroke="rgba(255,244,214,0.52)" stroke-width="1.1"/>
     </g>`;
   };
 
-  return `<svg viewBox="0 0 190 120" xmlns="http://www.w3.org/2000/svg">
+  return `<img class="hand-darts-img" src="./assets/hand_cradle.png" alt="Off-hand holding darts" />
+  <svg viewBox="0 0 210 120" xmlns="http://www.w3.org/2000/svg">
     <defs>
-      <linearGradient id="hdSkin" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stop-color="#f2c49c"/>
-        <stop offset="52%" stop-color="#d7966a"/>
-        <stop offset="100%" stop-color="#a5643f"/>
-      </linearGradient>
-      <linearGradient id="hdSkinDeep" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stop-color="#cf8d62"/>
-        <stop offset="100%" stop-color="#8b4e2e"/>
-      </linearGradient>
       <linearGradient id="hdSteel" x1="0%" y1="0%" x2="0%" y2="100%">
         <stop offset="0%" stop-color="#eef3f7"/>
         <stop offset="100%" stop-color="#7c8791"/>
       </linearGradient>
-      <linearGradient id="hdCuff" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stop-color="#a83329"/>
-        <stop offset="100%" stop-color="#611914"/>
-      </linearGradient>
     </defs>
-
-    <!-- LAYER 1: Back of Cupped Off-Hand (Wrist, Rolled Pub Sleeve & Cradling Back Fingers) -->
-    <g stroke="#24120a" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">
-      <!-- Rolled pub shirt sleeve cuff at bottom-right wrist -->
-      <path d="M148 82 L188 74 L190 118 L142 118 Z" fill="url(#hdCuff)"/>
-      <path d="M147 84 L188 76" stroke="#f0d598" stroke-width="2.2"/>
-      <!-- Cupped palm & lower heel of hand -->
-      <path d="M154 78 C134 62, 108 56, 86 64 C66 72, 60 92, 74 106 C92 120, 128 118, 152 108 Z" fill="url(#hdSkinDeep)"/>
-      <!-- 4 cradling back fingers behind the dart barrels -->
-      <path d="M62 48 C56 36, 68 28, 79 36 L94 56 L78 65 Z" fill="url(#hdSkin)"/>
-      <path d="M77 40 C74 28, 88 22, 97 32 L110 54 L94 61 Z" fill="url(#hdSkin)"/>
-      <path d="M94 38 C93 26, 107 22, 114 33 L124 56 L109 62 Z" fill="url(#hdSkin)"/>
-      <path d="M111 43 C112 32, 125 30, 130 41 L137 62 L123 68 Z" fill="url(#hdSkin)"/>
-    </g>
-
-    <!-- LAYER 2: 3 Angled Sculpted Darts Cradled Across the Fingers (pointing toward the board!) -->
-    ${renderDart(2, 10, 48, 11)}
-    ${renderDart(1, 14, 34, 15)}
-    ${renderDart(0, 20, 20, 19)}
-
-    <!-- LAYER 3: Foreground Thumb & Curled Fingertip Pads Overlapping the Barrels! -->
-    <g stroke="#24120a" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">
-      <!-- Soft grip shadow cast by thumb onto barrels -->
-      <ellipse cx="96" cy="64" rx="22" ry="9" transform="rotate(-14 96 64)" fill="rgba(22,10,5,0.34)" stroke="none"/>
-      <!-- Lower curled index/middle finger tips cradling underneath the barrels -->
-      <path d="M58 68 C52 78, 62 90, 76 86 L86 80 C82 72, 70 64, 58 68 Z" fill="url(#hdSkin)"/>
-      <path d="M73 81 C68 91, 80 101, 93 96 L104 89 C98 81, 84 76, 73 81 Z" fill="url(#hdSkin)"/>
-      <!-- Foreground Thumb resting snugly across the dart barrels! -->
-      <path d="M150 82 C136 66, 112 52, 86 52 C74 52, 68 60, 74 69 C80 78, 98 76, 114 82 C126 88, 136 98, 148 106 Z" fill="url(#hdSkin)"/>
-      <!-- Thumbnail + warm knuckle highlight -->
-      <path d="M75 58 C78 55, 84 55, 86 60 C84 65, 78 65, 75 62 Z" fill="#f7dec4" stroke="#7d4a2d" stroke-width="1"/>
-      <path d="M104 60 C112 62, 120 67, 126 73" fill="none" stroke="rgba(255,235,210,0.48)" stroke-width="1.5"/>
-    </g>
+    <!-- 3 Angled Darts Nestled Naturally Across the Open Cupped Palm & Curled Fingers -->
+    ${renderDart(2, 26, 67, -3)}
+    ${renderDart(1, 20, 58, -7)}
+    ${renderDart(0, 18, 49, -11)}
   </svg>`;
 }
 

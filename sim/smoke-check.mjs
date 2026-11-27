@@ -179,6 +179,7 @@ async function run() {
   }
   assert(!idxHtml.includes('dartRackGroup') && !idxHtml.includes('matRound') && !idxHtml.includes('matSquare'), 'Weird glowing cabinet dart rack & unreadable white beer mats should remain removed');
   assert(idxHtml.includes('recordsPlaqueMesh') && idxHtml.includes('function renderHandDarts'), 'Missing 3D brass records plaque or Darts-in-Hand widget');
+  assert(fs.existsSync(path.join(ROOT, 'assets', 'hand_cradle.png')), 'Missing assets/hand_cradle.png anatomical 5-digit hand sprite');
   // Unified Chalk Chain (Croupier Snap, Chunk Hop) & Universal Slip Recovery assertions
   const snap1 = engine.buildCroupierSnap(['S20', 'T19', 'S19']);
   assert(snap1.total === 96 && snap1.pairSum === 76 && snap1.oddIdx === 0, 'Croupier Snap groups T19+S19=76 + S20');
