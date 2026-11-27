@@ -140,7 +140,7 @@
 
   /* Center Score & Prompt Plaque — Bottle-Green Baize & Riveted Brass */
   .prompt-plate {
-    padding: 7px 18px 8px; text-align: center; min-width: 288px; max-width: 492px;
+    padding: 7px 16px 8px; text-align: center; min-width: 288px; max-width: min(620px, 50vw);
     display: flex; flex-direction: column; align-items: center; gap: 3px;
     background:
       radial-gradient(circle 2.4px at 7px 7px, #f7df9f 0%, #996d28 65%, transparent 100%),
@@ -150,10 +150,10 @@
       linear-gradient(180deg, rgba(20, 42, 30, 0.93) 0%, rgba(16, 26, 20, 0.95) 55%, rgba(22, 14, 10, 0.96) 100%);
   }
   .prompt-meta {
-    display: flex; align-items: center; gap: 10px; width: 100%;
-    justify-content: center;
+    display: flex; align-items: center; gap: 4px 7px; width: 100%;
+    justify-content: center; flex-wrap: wrap;
     font-family: var(--font-mono);
-    font-size: 10px; letter-spacing: 0.9px; color: #ccbda0;
+    font-size: 9.5px; letter-spacing: 0.65px; color: #ccbda0;
     text-transform: uppercase;
   }
   .dart-icons { display: inline-flex; gap: 5px; align-items: center; }
@@ -174,8 +174,8 @@
     background: rgba(24, 78, 44, 0.48);
   }
   .bridge-tag {
-    padding: 1px 7px; border-radius: 3px; font-size: 9.5px; font-weight: 700;
-    letter-spacing: 0.55px; display: none;
+    padding: 1px 7px; border-radius: 3px; font-size: 9px; font-weight: 700;
+    letter-spacing: 0.45px; display: none; white-space: nowrap; flex-shrink: 0;
     border: 1px solid rgba(242, 210, 139, 0.78); color: #fff5d6;
     background: rgba(132, 92, 26, 0.55);
   }
@@ -269,17 +269,225 @@
   .controls-row { display: flex; gap: 7px; align-items: center; }
   .hud-btn {
     pointer-events: auto;
-    background: linear-gradient(180deg, rgba(38, 25, 17, 0.92), rgba(20, 13, 9, 0.95));
-    border: 1px solid rgba(207, 162, 85, 0.46);
-    box-shadow: 0 4px 14px rgba(0,0,0,0.52), inset 0 1px 0 rgba(255, 234, 180, 0.18);
-    color: var(--chalk); border-radius: 5px;
+    background: linear-gradient(180deg, rgba(52, 34, 21, 0.94) 0%, rgba(28, 17, 10, 0.97) 54%, rgba(19, 11, 7, 0.98) 100%);
+    border: 1px solid rgba(218, 174, 96, 0.56);
+    box-shadow:
+      0 4px 14px rgba(0, 0, 0, 0.62),
+      inset 0 1px 0 rgba(255, 236, 186, 0.28),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.55);
+    color: #f4e6c6; border-radius: 5px;
     padding: 7px 11px; font-family: var(--font-mono);
     font-size: 10.5px; letter-spacing: 0.7px; text-transform: uppercase;
     cursor: pointer; backdrop-filter: blur(4px);
     transition: all 0.16s ease;
   }
-  .hud-btn:hover { border-color: var(--brass-bright); color: var(--brass-foil); background: linear-gradient(180deg, rgba(58, 39, 22, 0.94), rgba(32, 21, 12, 0.96)); }
-  .hud-btn.active { border-color: var(--brass-bright); background: linear-gradient(180deg, rgba(128, 90, 32, 0.56), rgba(74, 50, 16, 0.72)); color: var(--brass-foil); }
+  .hud-btn:hover { border-color: var(--brass-bright); color: var(--brass-foil); background: linear-gradient(180deg, rgba(72, 47, 26, 0.96), rgba(34, 22, 12, 0.98)); }
+  .hud-btn.active { border-color: var(--brass-bright); background: linear-gradient(180deg, rgba(138, 96, 34, 0.62), rgba(74, 50, 16, 0.78)); color: var(--brass-foil); }
+  .mfinish-pill {
+    display: none; pointer-events: auto; white-space: nowrap; flex-shrink: 0;
+    padding: 2px 7px; border-radius: 99px; cursor: pointer;
+    border: 1px solid rgba(207, 162, 85, 0.45);
+    background: rgba(24, 17, 12, 0.76); color: var(--chalk-dim);
+    font-family: var(--font-mono); font-size: 9px; font-weight: 700;
+    letter-spacing: 0.45px; text-transform: uppercase; transition: all 0.14s;
+  }
+  .mfinish-pill.visible { display: inline-block; }
+  .mfinish-pill.on { border-color: rgba(126, 224, 160, 0.72); background: rgba(24, 72, 42, 0.62); color: #c8f9d8; }
+  /* Authentic Darts-in-Hand Fanned Grip Widget (replaces glowing cabinet rack!) */
+  .hand-darts {
+    position: fixed; right: 16px; bottom: 64px; z-index: 18;
+    pointer-events: none; display: flex; flex-direction: column; align-items: center; gap: 3px;
+    padding: 7px 12px 6px; border-radius: 10px;
+    background: linear-gradient(180deg, rgba(30, 19, 13, 0.86), rgba(15, 9, 6, 0.92));
+    border: 1px solid rgba(214, 170, 92, 0.48);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.72), inset 0 1px 0 rgba(255, 234, 180, 0.22);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+  .hand-darts.hidden, body.numpad-open .hand-darts { opacity: 0; transform: translateY(8px); }
+  .hand-darts-fan {
+    display: flex; align-items: flex-end; justify-content: center; gap: 3px; height: 56px; padding: 0 4px;
+    position: relative;
+  }
+  .hand-darts-fan::after {
+    content: ''; position: absolute; left: 8px; right: 8px; bottom: 1px; height: 9px;
+    background: radial-gradient(ellipse at 50% 80%, rgba(214, 162, 114, 0.34), rgba(140, 88, 52, 0.14) 70%, transparent 100%);
+    border-radius: 50%; pointer-events: none;
+  }
+  .hand-dart-slot {
+    width: 24px; height: 52px; transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.24s ease;
+    transform-origin: center bottom;
+  }
+  .hand-dart-slot:nth-child(1) { transform: rotate(-14deg) translateY(2px); }
+  .hand-dart-slot:nth-child(2) { transform: rotate(0deg); }
+  .hand-dart-slot:nth-child(3) { transform: rotate(14deg) translateY(2px); }
+  .hand-dart-slot.spent { opacity: 0.14; transform: translateY(-18px) scale(0.84) !important; filter: grayscale(0.9); }
+  .hand-darts-lbl {
+    font-family: var(--font-mono); font-size: 9px; font-weight: 700;
+    letter-spacing: 0.7px; text-transform: uppercase; color: var(--brass-bright);
+  }
+  @media (max-width: 960px) { .hand-darts { display: none; } }
+
+  /* Match-Dart Game Nerves & Deep Breath Composure UI */
+  .aim-gauge-panel.nervous {
+    border-color: rgba(235, 92, 78, 0.86);
+    box-shadow: 0 14px 36px rgba(0, 0, 0, 0.9), 0 0 26px rgba(224, 72, 58, 0.36), inset 0 1px 0 rgba(255, 220, 190, 0.22);
+    animation: nervePulse 0.72s ease-in-out infinite alternate;
+  }
+  @keyframes nervePulse {
+    0% { box-shadow: 0 14px 36px rgba(0,0,0,0.9), 0 0 16px rgba(224,72,58,0.22); }
+    100% { box-shadow: 0 14px 36px rgba(0,0,0,0.9), 0 0 32px rgba(242,102,78,0.48); }
+  }
+  .aim-nerve-pill {
+    display: none; padding: 2px 7px; border-radius: 99px;
+    font-family: var(--font-mono); font-size: 9.5px; font-weight: 800; letter-spacing: 0.45px;
+    background: rgba(164, 34, 28, 0.42); border: 1px solid rgba(245, 118, 102, 0.78); color: #ffd4ce;
+  }
+  .aim-nerve-pill.visible { display: inline-flex; align-items: center; gap: 4px; }
+  .aim-nerve-pill.calmed {
+    background: rgba(26, 86, 52, 0.56); border-color: rgba(126, 224, 160, 0.8); color: #cbffe0;
+  }
+  .aim-breath-btn {
+    display: none; pointer-events: auto; cursor: pointer;
+    padding: 3px 9px; border-radius: 99px;
+    background: linear-gradient(180deg, #256f46 0%, #15452a 100%);
+    border: 1px solid #96f0b8; color: #e8fff0;
+    font-family: var(--font-mono); font-size: 9.5px; font-weight: 800; letter-spacing: 0.45px;
+    text-transform: uppercase; transition: filter 0.14s, transform 0.1s;
+    box-shadow: 0 2px 10px rgba(42, 168, 96, 0.35);
+  }
+  .aim-breath-btn.visible { display: inline-block; }
+  .aim-breath-btn:hover { filter: brightness(1.16); }
+  .aim-breath-btn.used {
+    background: rgba(28, 52, 38, 0.65); border-color: rgba(126, 224, 160, 0.45);
+    color: rgba(196, 240, 212, 0.72); cursor: default; box-shadow: none;
+  }
+
+  /* Full-Screen Coach Trev Pub Chalk-Talk Theater */
+  .trev-theater {
+    position: fixed; inset: 0; z-index: 44;
+    display: flex; align-items: center; justify-content: center; padding: 18px;
+    background: radial-gradient(ellipse at 32% 46%, rgba(56, 32, 16, 0.88), rgba(10, 6, 4, 0.95) 72%);
+    backdrop-filter: blur(8px);
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.36s ease;
+  }
+  .trev-theater.open { opacity: 1; pointer-events: auto; }
+  .trev-theater.leaving { opacity: 0; pointer-events: none; }
+  .theater-card {
+    width: min(880px, 100%); max-height: min(92vh, 720px); overflow-y: auto;
+    display: grid; grid-template-columns: 236px 1fr; gap: 18px; align-items: center;
+    padding: 20px 22px 18px; border-radius: 12px;
+    background: linear-gradient(162deg, rgba(36, 23, 15, 0.98) 0%, rgba(18, 12, 8, 0.99) 100%);
+    border: 2px solid rgba(224, 180, 98, 0.74);
+    box-shadow:
+      0 26px 70px rgba(0, 0, 0, 0.92),
+      0 0 42px rgba(226, 168, 72, 0.18),
+      inset 0 1px 0 rgba(255, 238, 192, 0.24);
+    transform: translateY(14px) scale(0.95);
+    transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.32s ease;
+  }
+  .trev-theater.open .theater-card { transform: translateY(0) scale(1); }
+  .trev-theater.leaving .theater-card { transform: translate(-22vw, 24vh) scale(0.45); opacity: 0; }
+  .theater-hero {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+    position: relative; padding: 8px 4px;
+  }
+  .theater-hero::before {
+    content: ''; position: absolute; width: 210px; height: 210px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(240, 184, 86, 0.30) 0%, rgba(168, 92, 30, 0.08) 54%, transparent 74%);
+    filter: blur(4px); pointer-events: none;
+  }
+  .theater-trev-img {
+    width: 210px; height: 235px; object-fit: contain; position: relative; z-index: 1;
+    filter: drop-shadow(0 14px 24px rgba(0, 0, 0, 0.85)) drop-shadow(0 -2px 14px rgba(242, 188, 86, 0.35));
+    transform-origin: center bottom;
+  }
+  .theater-trev-img.talking { animation: trevTalk 0.28s ease-in-out infinite alternate; }
+  .theater-hero-badge {
+    position: relative; z-index: 1;
+    padding: 3px 10px; border-radius: 99px;
+    background: rgba(24, 15, 10, 0.88); border: 1px solid rgba(214, 170, 92, 0.56);
+    font-family: var(--font-mono); font-size: 9.5px; font-weight: 700; letter-spacing: 0.7px;
+    text-transform: uppercase; color: var(--brass-bright);
+  }
+  .theater-main { display: flex; flex-direction: column; gap: 11px; min-width: 0; }
+  .theater-top {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    font-family: var(--font-mono); font-size: 10px; font-weight: 800; letter-spacing: 0.8px;
+    text-transform: uppercase; color: var(--brass-bright);
+  }
+  .theater-title {
+    margin: 0; font-family: var(--font-display); font-size: clamp(20px, 2.5vw, 27px);
+    line-height: 1.15; color: #fbf1d8; letter-spacing: 0.3px;
+  }
+  .theater-quote {
+    padding: 10px 13px; border-radius: 9px;
+    background: linear-gradient(168deg, #f6ead0 0%, #e8d4ab 100%);
+    border: 1.5px solid #c9a362;
+    box-shadow: inset 0 0 0 2.5px #f4e8cd, inset 0 0 0 4px rgba(142, 46, 36, 0.45);
+    color: var(--ink-dark); font-size: 13px; line-height: 1.44; font-style: italic;
+  }
+  .theater-purpose {
+    padding: 7px 11px; border-radius: 6px;
+    background: rgba(24, 52, 36, 0.44); border: 1px solid rgba(126, 224, 160, 0.45);
+    color: #d6f6e1; font-size: 12px; line-height: 1.4;
+  }
+  .theater-purpose strong { color: #9df2bc; font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.5px; text-transform: uppercase; margin-right: 6px; }
+  .theater-cards {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(185px, 1fr)); gap: 9px;
+  }
+  .t-card {
+    padding: 9px 11px; border-radius: 7px;
+    background: rgba(16, 11, 8, 0.82); border: 1px solid rgba(207, 162, 85, 0.36);
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .t-card-head {
+    font-family: var(--font-mono); font-size: 10.5px; font-weight: 800; letter-spacing: 0.4px;
+    color: var(--brass-foil); display: flex; align-items: center; gap: 5px;
+  }
+  .t-card-body { font-size: 11.8px; line-height: 1.4; color: #ebe1cc; }
+  .theater-foot {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+    margin-top: 2px; padding-top: 10px; border-top: 1px solid rgba(207, 162, 85, 0.25);
+  }
+  .theater-replay-btn {
+    padding: 3px 9px; border-radius: 5px; cursor: pointer;
+    background: rgba(176, 130, 50, 0.24); border: 1px solid rgba(242, 210, 139, 0.56);
+    color: var(--brass-foil); font-family: var(--font-mono); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.4px; transition: all 0.14s;
+  }
+  .theater-replay-btn:hover { background: rgba(207, 162, 85, 0.38); border-color: var(--brass-foil); }
+  .theater-skip {
+    padding: 8px 13px; border-radius: 6px; cursor: pointer;
+    background: rgba(34, 23, 15, 0.90); border: 1px solid rgba(214, 170, 92, 0.54);
+    color: #e8dab9; font-family: var(--font-mono); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.4px; transition: all 0.14s;
+  }
+  .theater-skip:hover { background: rgba(62, 42, 24, 0.92); color: var(--brass-foil); border-color: var(--brass-bright); }
+  .theater-go {
+    padding: 10px 18px; border-radius: 7px; cursor: pointer;
+    background: linear-gradient(180deg, #cf9a42 0%, #8e5f1c 100%);
+    border: 1.5px solid #fae1a4; color: #fffaf0;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 246, 212, 0.45);
+    font-family: var(--font-mono); font-size: 12px; font-weight: 800; letter-spacing: 0.5px;
+    text-transform: uppercase; transition: filter 0.14s, transform 0.1s;
+  }
+  .theater-go:hover { filter: brightness(1.12); }
+  .theater-go:active { transform: translateY(1px); }
+  @media (max-width: 780px) {
+    .trev-theater { padding: 10px; }
+    .theater-card { grid-template-columns: 1fr; gap: 10px; padding: 13px 13px 12px; max-height: 94vh; }
+    .theater-hero { flex-direction: row; justify-content: flex-start; gap: 12px; padding: 0; }
+    .theater-hero::before { width: 105px; height: 105px; left: -6px; }
+    .theater-trev-img { width: 88px; height: 98px; }
+    .theater-quote { font-size: 11.8px; padding: 8px 10px; }
+    .theater-purpose { font-size: 11px; padding: 6px 9px; }
+    .theater-cards { grid-template-columns: 1fr; gap: 7px; }
+    .t-card { padding: 7px 9px; }
+    .t-card-body { font-size: 11px; }
+    .theater-foot { flex-direction: column-reverse; align-items: stretch; }
+    .theater-go, .theater-skip { width: 100%; text-align: center; }
+  }
   .flow-plate {
     padding: 6px 13px; display: flex; align-items: center; gap: 10px;
     font-family: var(--font-mono); font-size: 10.5px;
@@ -884,7 +1092,7 @@
   .trev-dock:has(.mood-crown) { gap: 34px; }
   .trev-bubble {
     pointer-events: auto; position: relative;
-    max-width: 248px; min-width: 196px;
+    max-width: 256px; min-width: 196px; max-height: 148px; overflow-y: auto;
     background: linear-gradient(168deg, #f6ead0 0%, #e9d6ae 100%);
     border: 1.5px solid #c9a362;
     box-shadow:
@@ -1117,12 +1325,12 @@
     .flow-plate { padding: 4px 9px; gap: 10px; font-size: 10px; justify-content: space-between; width: 100%; }
     .flow-plate .hide-sm { display: none; }
     .hud-bottom { gap: 6px; }
-    .feedback-strip { font-size: 10.5px; padding: 4px 8px; min-height: 32px; max-height: 44px; line-height: 1.18; overflow: hidden; }
+    .feedback-strip { font-size: 10.5px; padding: 4px 8px; min-height: 32px; max-height: 46px; line-height: 1.18; overflow: hidden; }
     .sound-pill { padding: 5px 8px; font-size: 9.5px; white-space: nowrap; }
     .hover-bed { display: none; }
     .numpad-panel {
       left: 50%; right: auto; transform: translateX(-50%);
-      bottom: 46px; width: min(296px, calc(100vw - 16px)); padding: 5px 8px 5px; gap: 3px;
+      bottom: 56px; width: min(296px, calc(100vw - 16px)); padding: 5px 8px 5px; gap: 3px;
     }
     .numpad-meta { font-size: 8.5px; }
     .chalk-assist { padding: 3px 5px; gap: 2px; }
@@ -1140,9 +1348,9 @@
     .aim-throw-btn { padding: 8px 10px; font-size: 11px; }
     .relock-pill { bottom: 152px; padding: 6px 14px; font-size: 10.5px; }
     body.numpad-open .trev-dock, body.aim-open .trev-dock { opacity: 0; pointer-events: none; }
-    .toast-stack { bottom: 52px; }
+    .toast-stack { bottom: 58px; }
     .trev-dock {
-      left: 6px; right: 6px; bottom: 52px;
+      left: 6px; right: 6px; bottom: 58px;
       flex-direction: row-reverse; align-items: flex-end; justify-content: flex-end; gap: 8px;
     }
     .trev-stage { width: 70px; height: 78px; flex-shrink: 0; }
@@ -1191,6 +1399,7 @@
         </span>
         <span id="bridge-tag" class="bridge-tag">Rule of 30</span>
         <span id="rival-tag" class="rival-tag" style="display:none">Rival on D16</span>
+        <button id="mfinish-pill" class="mfinish-pill" type="button" title="Toggle live 3-Beat throw on final winning Double/Bull!">🎯 Throw Finish: Off</button>
         <button id="intro-skip-btn" class="intro-skip-btn" type="button" title="Skip this 1-shot interactive warm-up">Skip Intro &rarr;</button>
       </div>
       <div class="prompt-main">
@@ -1307,9 +1516,43 @@
       <button id="welcome-close" class="chip-x" aria-label="Dismiss">×</button>
     </div>
     <div class="banner-actions">
-      <button id="w-start-0a" class="chip-btn">Start Level 1 (Doubles)</button>
-      <button id="w-calib" class="chip-btn">60s Placement Check</button>
+      <button id="w-tour" class="chip-btn">Meet Trev &amp; Menu Tour &rarr;</button>
+      <button id="w-start-0a" class="chip-btn ghost">Start Level 1</button>
+      <button id="w-calib" class="chip-btn ghost">60s Placement Check</button>
       <button id="w-howto" class="chip-btn ghost">How to Play ?</button>
+    </div>
+  </div>
+</div>
+
+<!-- Authentic Darts-in-Hand Fanned Grip (mirrors your equipped 3D Dart Set!) -->
+<div id="hand-darts" class="hand-darts" title="Darts left in your off-hand — mirrors your equipped 3D Dart Set!">
+  <div id="hand-darts-fan" class="hand-darts-fan"></div>
+  <span id="hand-darts-lbl" class="hand-darts-lbl">3 IN HAND</span>
+</div>
+
+<!-- Full-Screen Coach Trev Pub Chalk-Talk Theater (Menu Tour + Level Explainers & Lesson Reminders!) -->
+<div id="trev-theater" class="trev-theater" role="dialog" aria-modal="true" aria-labelledby="theater-title">
+  <div class="theater-card">
+    <div class="theater-hero">
+      <img id="theater-trev-img" class="theater-trev-img" alt="Coach Trev" />
+      <span class="theater-hero-badge">Coach Trev · East End Oche</span>
+    </div>
+    <div class="theater-main">
+      <div class="theater-top">
+        <span id="theater-tag">LEVEL EXPLAINER</span>
+        <div style="display:flex;gap:6px;align-items:center">
+          <button id="theater-replay" class="theater-replay-btn" type="button" title="Replay Coach Trev's voice">🔊 Replay</button>
+          <button id="theater-x" class="chip-x" type="button" aria-label="Close">×</button>
+        </div>
+      </div>
+      <h2 id="theater-title" class="theater-title">Welcome to the Boozer</h2>
+      <div id="theater-quote" class="theater-quote"></div>
+      <div id="theater-purpose" class="theater-purpose"></div>
+      <div id="theater-cards" class="theater-cards"></div>
+      <div class="theater-foot">
+        <button id="theater-skip" class="theater-skip" type="button">Already Played — Skip</button>
+        <button id="theater-go" class="theater-go" type="button">Step Up to the Oche! &rarr;</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1364,6 +1607,8 @@
     <span id="aim-high-lbl" class="aim-edge-lbl neutral">HI</span>
   </div>
   <div id="aim-tac-row" class="aim-tac-row">
+    <span id="aim-nerve-pill" class="aim-nerve-pill"></span>
+    <button id="aim-breath-btn" class="aim-breath-btn" type="button" title="Exhale to calm Match-Dart nerves & steady the aim bars (1 per visit!)">🫁 Deep Breath [S]</button>
     <span id="aim-lie-pill" class="aim-flow-pill"></span>
     <button id="aim-bias-btn" class="aim-bias-btn" type="button">Bias Safe Wire [B]</button>
   </div>
@@ -1449,8 +1694,9 @@ import {
   FAV_DOUBLES, preferredDoubleSetup, evaluateBedLie, getWireBiasInfo,
   buildOchePrepPrompt, BOARD_AUDIT_101_109, GAUNTLET_170_SCORES, build170GauntletStep,
   getLevelIntroDemo, getPipBandForStage, computeComplexityParMs, DEFAULT_ADAPTIVE_STAGE, updateAdaptiveStage, computeAdaptiveMultiplier,
-} from './src/engine.mjs?v=7';
-import { BOT_PROFILES, BOT_IDS, simulateBot501Visit } from './src/bots.mjs?v=7';
+  computeMatchDartNerves, TREV_THEATER_LESSONS,
+} from './src/engine.mjs?v=8';
+import { BOT_PROFILES, BOT_IDS, simulateBot501Visit } from './src/bots.mjs?v=8';
 
 /* ============================================================================
    1. 7-LEVEL PUB CAREER & CURRICULUM STAGES (Geometry & Data live in src/engine.mjs)
@@ -1660,7 +1906,7 @@ class MasteryEngine {
     const base = {
       items: {}, streak: 0, bestStreak: 0, totalCorrect: 0, totalAttempts: 0,
       xp: 0, difficulty: 'adaptive', welcomed: false, promotedStages: {},
-      levelPips: {}, levelStars: {}, seenIntros: {}, adaptive: {},
+      levelPips: {}, levelStars: {}, seenIntros: {}, seenLessons: {}, seenMenuTour: false, adaptive: {},
       autoCall: true, dartSet: 'pub_brass', matchFinishThrow: false,
       records: { bestVisit: 0, count180: 0, tonPlusVisits: 0, fastestMs: 99999, legsWon501: 0, bestLegDarts: 999 },
     };
@@ -1671,6 +1917,7 @@ class MasteryEngine {
         return {
           ...base, ...parsed,
           seenIntros: { ...base.seenIntros, ...(parsed.seenIntros || {}) },
+          seenLessons: { ...base.seenLessons, ...(parsed.seenLessons || {}) },
           adaptive: { ...base.adaptive, ...(parsed.adaptive || {}) },
           records: { ...base.records, ...(parsed.records || {}) },
         };
@@ -1686,7 +1933,7 @@ class MasteryEngine {
     this.data = {
       items: {}, streak: 0, bestStreak: 0, totalCorrect: 0, totalAttempts: 0,
       xp: 0, difficulty: diff, welcomed: true, promotedStages: {},
-      levelPips: {}, levelStars: {}, seenIntros: {}, adaptive: {},
+      levelPips: {}, levelStars: {}, seenIntros: {}, seenLessons: {}, seenMenuTour: false, adaptive: {},
       autoCall: this.data.autoCall !== false, dartSet: 'pub_brass', matchFinishThrow: !!this.data.matchFinishThrow,
       records: { bestVisit: 0, count180: 0, tonPlusVisits: 0, fastestMs: 99999, legsWon501: 0, bestLegDarts: 999 },
     };
@@ -2353,11 +2600,64 @@ class PubAudio {
     this.tensionHushed = active;
     if (!this.ambientMaster || !this.ctx) return;
     const t = this.ctx.currentTime;
-    const target = this.ducked ? 0.22 : (active ? 0.34 : 1.0);
+    const target = this.ducked ? 0.22 : (active ? 0.30 : 1.0);
     try {
       this.ambientMaster.gain.cancelScheduledValues(t);
       this.ambientMaster.gain.setTargetAtTime(target, t, 0.28);
     } catch (_) {}
+  }
+  playDeepBreath() {
+    if (!this.enabled || !this.ctx) return;
+    const ctx = this.ctx, t = ctx.currentTime;
+    // Calming 0.72s oche exhale sigh + soft warm composure chord!
+    const nLen = Math.floor(ctx.sampleRate * 0.75);
+    const buf = ctx.createBuffer(1, nLen, ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < nLen; i++) {
+      const u = i / nLen;
+      const env = Math.sin(Math.min(1, u * 4.0) * (Math.PI / 2)) * Math.pow(1 - u, 1.35);
+      d[i] = (Math.random() * 2 - 1) * env;
+    }
+    const src = ctx.createBufferSource(); src.buffer = buf;
+    const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.setValueAtTime(920, t);
+    bp.frequency.exponentialRampToValueAtTime(420, t + 0.7); bp.Q.value = 1.6;
+    const g = ctx.createGain(); g.gain.value = 0.14;
+    src.connect(bp).connect(g).connect(ctx.destination);
+    src.start(t);
+    [293.66, 440.0].forEach((f, idx) => {
+      const o = ctx.createOscillator();
+      const og = ctx.createGain();
+      o.type = 'sine';
+      o.frequency.setValueAtTime(f, t + 0.08);
+      og.gain.setValueAtTime(0.001, t + 0.08);
+      og.gain.linearRampToValueAtTime(0.032 / (idx + 1), t + 0.26);
+      og.gain.exponentialRampToValueAtTime(0.0005, t + 0.72);
+      o.connect(og).connect(ctx.destination);
+      o.start(t + 0.08); o.stop(t + 0.76);
+    });
+  }
+  playPubGasp() {
+    if (!this.enabled || !this.ctx) return;
+    const ctx = this.ctx, t = ctx.currentTime;
+    // Collective East End pub "OOOOOH!" gasp when kissing the wire on a Match Dart!
+    const nLen = Math.floor(ctx.sampleRate * 0.65);
+    const buf = ctx.createBuffer(1, nLen, ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < nLen; i++) {
+      const u = i / nLen;
+      const env = Math.sin(Math.min(1, u * 5.0) * (Math.PI / 2)) * Math.pow(1 - u, 1.1);
+      d[i] = (Math.random() * 2 - 1) * env;
+    }
+    [480, 960].forEach((freq, idx) => {
+      const s = ctx.createBufferSource(); s.buffer = buf;
+      const bp = ctx.createBiquadFilter(); bp.type = 'bandpass';
+      bp.frequency.setValueAtTime(freq * 1.15, t);
+      bp.frequency.exponentialRampToValueAtTime(freq * 0.74, t + 0.58);
+      bp.Q.value = 3.2;
+      const g = ctx.createGain(); g.gain.value = idx === 0 ? 0.16 : 0.085;
+      s.connect(bp).connect(g).connect(ctx.destination);
+      s.start(t);
+    });
   }
   ensureVoiceBus() {
     if (!this.ctx) return null;
@@ -3494,10 +3794,10 @@ function makePubGlassTexture() {
   tex.colorSpace = THREE.SRGBColorSpace;
   return tex;
 }
-const pubGlassMat = new THREE.MeshBasicMaterial({ map: makePubGlassTexture(), transparent: true, opacity: 0.56 });
-[-7.1, 8.0].forEach(wx => {
+const pubGlassMat = new THREE.MeshBasicMaterial({ map: makePubGlassTexture(), transparent: true, opacity: 0.78 });
+[-6.05, 6.45].forEach(wx => {
   const winGroup = new THREE.Group();
-  winGroup.position.set(wx, 0.45, -1.14);
+  winGroup.position.set(wx, 0.45, -1.12);
   const pane = new THREE.Mesh(new THREE.PlaneGeometry(2.6, 5.2), pubGlassMat);
   winGroup.add(pane);
   const frameTop = new THREE.Mesh(new THREE.BoxGeometry(2.85, 0.16, 0.16), darkWoodMat);
@@ -3510,6 +3810,10 @@ const pubGlassMat = new THREE.MeshBasicMaterial({ map: makePubGlassTexture(), tr
   });
   scene.add(winGroup);
 });
+// Warm mahogany dado wainscoting rail running behind the cabinet for authentic pub-room depth
+const dadoRail = new THREE.Mesh(new THREE.BoxGeometry(20, 0.22, 0.16), darkWoodMat);
+dadoRail.position.set(0.2, -2.92, -1.08);
+scene.add(dadoRail);
 
 // Open Mahogany Dartboard Cabinet
 const cabinetGroup = new THREE.Group();
@@ -3559,92 +3863,53 @@ const leftSlateMesh = new THREE.Mesh(
 leftSlateMesh.position.set(-1.32, 0.04, 0.095);
 leftSlateMesh.receiveShadow = true;
 leftDoorPivot.add(leftSlateMesh);
-// Symmetrical wooden ledge under left slate
+// Symmetrical wooden ledge under left slate (clean dark mahogany — no blown-out beer mat or glowing cabinet darts!)
 const leftLedge = new THREE.Mesh(new THREE.BoxGeometry(2.14, 0.12, 0.26), darkWoodMat);
 leftLedge.position.set(-1.32, -2.26, 0.16);
 leftDoorPivot.add(leftLedge);
 
-// Procedural Vintage East End Beer Mats tucked cleanly on the lower-right corner of the Left Door (never covering upper instructions!)
-function makeBeerMatTexture(kind = 'round') {
-  const c = document.createElement('canvas');
-  c.width = c.height = 256;
-  const ctx = c.getContext('2d');
-  if (kind === 'round') {
-    ctx.clearRect(0, 0, 256, 256);
-    ctx.beginPath(); ctx.arc(128, 128, 120, 0, Math.PI * 2);
-    ctx.fillStyle = '#efe0be'; ctx.fill();
-    ctx.strokeStyle = '#99261d'; ctx.lineWidth = 8; ctx.stroke();
-    ctx.beginPath(); ctx.arc(128, 128, 102, 0, Math.PI * 2);
-    ctx.strokeStyle = '#b48234'; ctx.lineWidth = 3; ctx.stroke();
-    ctx.fillStyle = '#8b2119'; ctx.font = '800 26px Georgia, serif'; ctx.textAlign = 'center';
-    ctx.fillText('OCHE LIGHT', 128, 96);
-    ctx.fillStyle = '#2a1b10'; ctx.font = '700 18px Georgia, serif';
-    ctx.fillText('EAST END ALE', 128, 134);
-    ctx.fillStyle = '#7e551e'; ctx.font = '700 16px monospace';
-    ctx.fillText('EST. 1894', 128, 168);
-  } else {
-    ctx.fillStyle = '#183a27';
-    ctx.fillRect(8, 8, 240, 240);
-    ctx.strokeStyle = '#e5bf72'; ctx.lineWidth = 8;
-    ctx.strokeRect(18, 18, 220, 220);
-    ctx.strokeStyle = 'rgba(244, 224, 178, 0.48)'; ctx.lineWidth = 2;
-    ctx.strokeRect(30, 30, 196, 196);
-    ctx.fillStyle = '#f6e3b4'; ctx.font = '800 28px Georgia, serif'; ctx.textAlign = 'center';
-    ctx.fillText('DOUBLE', 128, 102);
-    ctx.fillText('OUT', 128, 136);
-    ctx.fillStyle = '#dfb462'; ctx.font = '700 22px monospace';
-    ctx.fillText('· 501 ·', 128, 180);
-  }
-  const tex = new THREE.CanvasTexture(c);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  return tex;
+// 3D Riveted Brushed-Brass "PUB RECORDS" Plaque mounted cleanly on the lower cabinet rail!
+const plaqueCanvas = document.createElement('canvas');
+plaqueCanvas.width = 768; plaqueCanvas.height = 128;
+const plaqueCtx = plaqueCanvas.getContext('2d');
+const plaqueTex = new THREE.CanvasTexture(plaqueCanvas);
+plaqueTex.colorSpace = THREE.SRGBColorSpace;
+function renderRecordsPlaque() {
+  const ctx = plaqueCtx;
+  const g = ctx.createLinearGradient(0, 0, 768, 128);
+  g.addColorStop(0, '#8d6424'); g.addColorStop(0.28, '#e3be6c');
+  g.addColorStop(0.55, '#b98834'); g.addColorStop(0.82, '#e6c578'); g.addColorStop(1, '#7d561c');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, 768, 128);
+  ctx.strokeStyle = '#3b240b'; ctx.lineWidth = 6; ctx.strokeRect(8, 8, 752, 112);
+  ctx.strokeStyle = 'rgba(255, 245, 206, 0.55)'; ctx.lineWidth = 2; ctx.strokeRect(15, 15, 738, 98);
+  [[28, 28], [740, 28], [28, 100], [740, 100]].forEach(([rx, ry]) => {
+    ctx.beginPath(); ctx.arc(rx, ry, 7, 0, Math.PI * 2);
+    ctx.fillStyle = '#472c0e'; ctx.fill();
+    ctx.beginPath(); ctx.arc(rx - 1.5, ry - 1.5, 4, 0, Math.PI * 2);
+    ctx.fillStyle = '#f6dc9c'; ctx.fill();
+  });
+  const rec = (typeof mastery !== 'undefined' && mastery.data && mastery.data.records) ? mastery.data.records : { bestVisit: 0, count180: 0, legsWon501: 0 };
+  const stars = (typeof mastery !== 'undefined' && typeof mastery.totalStars === 'function') ? mastery.totalStars() : 0;
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#241407';
+  ctx.font = '800 24px Georgia, serif';
+  ctx.fillText('THE OCHE LIGHT · PUB RECORDS · EST. 1894', 384, 52);
+  ctx.font = '700 24px monospace';
+  ctx.fillText(`BEST VISIT: ${rec.bestVisit || '—'}   ·   180s: ${rec.count180 || 0}   ·   STARS: ${stars}/21 ★`, 384, 92);
+  plaqueTex.needsUpdate = true;
 }
-
-const matSquare = new THREE.Mesh(
-  new THREE.PlaneGeometry(0.48, 0.48),
-  new THREE.MeshStandardMaterial({ map: makeBeerMatTexture('square'), roughness: 0.92 })
+renderRecordsPlaque();
+const recordsPlaqueMesh = new THREE.Mesh(
+  new THREE.BoxGeometry(2.65, 0.30, 0.045),
+  [
+    brassMat, brassMat, brassMat, brassMat,
+    new THREE.MeshStandardMaterial({ map: plaqueTex, roughness: 0.34, metalness: 0.58 }),
+    brassMat,
+  ]
 );
-matSquare.position.set(-0.98, -1.56, 0.106);
-matSquare.rotation.z = 0.14;
-leftDoorPivot.add(matSquare);
-const pin2 = new THREE.Mesh(new THREE.SphereGeometry(0.02, 10, 10), brassMat);
-pin2.position.set(-1.01, -1.36, 0.118);
-leftDoorPivot.add(pin2);
-
-const matRound = new THREE.Mesh(
-  new THREE.CircleGeometry(0.31, 32),
-  new THREE.MeshStandardMaterial({ map: makeBeerMatTexture('round'), roughness: 0.92, transparent: true })
-);
-matRound.position.set(-0.56, -1.46, 0.114);
-matRound.rotation.z = -0.12;
-leftDoorPivot.add(matRound);
-const pin1 = new THREE.Mesh(new THREE.SphereGeometry(0.02, 10, 10), brassMat);
-pin1.position.set(-0.56, -1.21, 0.126);
-leftDoorPivot.add(pin1);
-
-// Live 3D Brass & Mahogany 3-Dart Rack resting on Left Ledge (right beside Trev's shoulder, darts vanish 3 -> 2 -> 1 -> 0!)
-const dartRackGroup = new THREE.Group();
-dartRackGroup.position.set(-0.68, -2.14, 0.21);
-dartRackGroup.scale.setScalar(0.84);
-leftDoorPivot.add(dartRackGroup);
-
-const rackBlock = new THREE.Mesh(new THREE.BoxGeometry(0.82, 0.14, 0.16), darkWoodMat);
-dartRackGroup.add(rackBlock);
-const rackBrassRail = new THREE.Mesh(new THREE.BoxGeometry(0.84, 0.036, 0.175), brassMat);
-rackBrassRail.position.set(0, 0.075, 0.004);
-dartRackGroup.add(rackBrassRail);
-[-0.34, 0.34].forEach(rx => {
-  const stud = new THREE.Mesh(new THREE.SphereGeometry(0.022, 8, 8), brassMat);
-  stud.position.set(rx, -0.01, 0.088);
-  dartRackGroup.add(stud);
-});
-
-const rackDarts = [];
-const rackTipMat = new THREE.MeshStandardMaterial({ color: 0xc2c8ce, roughness: 0.28, metalness: 0.88 });
-const rackBarrelMat = new THREE.MeshStandardMaterial({ color: 0x868c94, roughness: 0.34, metalness: 0.86 });
-const rackStemMat = new THREE.MeshStandardMaterial({ color: 0x181412, roughness: 0.6 });
-const rackFlightMat = new THREE.MeshStandardMaterial({ color: 0xa4261e, roughness: 0.65, side: THREE.DoubleSide });
-const rackTrimMat = new THREE.MeshStandardMaterial({ color: 0xebca7e, roughness: 0.42, metalness: 0.45, side: THREE.DoubleSide });
+recordsPlaqueMesh.position.set(0, -2.72, 0.13);
+cabinetGroup.add(recordsPlaqueMesh);
 
 const flightTexCache = new Map();
 function getFlightPatternTexture(pattern, flightHex, trimHex) {
@@ -3659,7 +3924,6 @@ function getFlightPatternTexture(pattern, flightHex, trimHex) {
   ctx.fillRect(0, 0, 256, 256);
 
   if (pattern === 'leopard') {
-    // Bev's Iconic Leopard-Print Cardigan Flights! Warm ochre base + rich sienna & dark espresso rosettes!
     const grad = ctx.createLinearGradient(0, 0, 256, 256);
     grad.addColorStop(0, '#e3ad4e');
     grad.addColorStop(0.55, '#cf8f34');
@@ -3676,12 +3940,10 @@ function getFlightPatternTexture(pattern, flightHex, trimHex) {
       ctx.save();
       ctx.translate(sx, sy);
       ctx.rotate((idx * 1.1) % Math.PI);
-      // Warm amber inner core
       ctx.fillStyle = '#99571c';
       ctx.beginPath();
       ctx.ellipse(0, 0, sr * 0.56, sr * 0.44, 0, 0, Math.PI * 2);
       ctx.fill();
-      // Broken dark espresso C-rings around the rosette
       ctx.strokeStyle = '#2b160a';
       ctx.lineWidth = Math.max(4, sr * 0.25);
       ctx.lineCap = 'round';
@@ -3697,7 +3959,6 @@ function getFlightPatternTexture(pattern, flightHex, trimHex) {
     ctx.lineWidth = 8;
     ctx.strokeRect(4, 4, 248, 248);
   } else if (pattern === 'stripe') {
-    // East End Oxblood Gold double gilded metallic pinstripes
     ctx.fillStyle = hexStr(trimHex);
     ctx.fillRect(0, 34, 256, 16);
     ctx.fillRect(0, 62, 256, 8);
@@ -3706,7 +3967,6 @@ function getFlightPatternTexture(pattern, flightHex, trimHex) {
     ctx.lineWidth = 6;
     ctx.strokeRect(8, 8, 240, 240);
   } else if (pattern === 'chevron') {
-    // Alley-Cat Black Tungsten emerald pub-felt chevron
     ctx.strokeStyle = hexStr(trimHex);
     ctx.lineWidth = 14;
     for (let y = 32; y <= 232; y += 54) {
@@ -3725,54 +3985,49 @@ function getFlightPatternTexture(pattern, flightHex, trimHex) {
   return tex;
 }
 
-function applyDartSetToRack(setId) {
-  const spec = getDartSetSpec(setId);
-  rackBarrelMat.color.setHex(spec.barrelHex);
-  rackBarrelMat.roughness = spec.id === 'black_tungsten' ? 0.44 : spec.id === 'oxblood_gold' ? 0.26 : 0.34;
-  rackStemMat.color.setHex(spec.stemHex);
-  const pTex = getFlightPatternTexture(spec.pattern, spec.flightHex, spec.trimHex);
-  rackFlightMat.map = pTex;
-  rackFlightMat.color.setHex(pTex ? 0xffffff : spec.flightHex);
-  rackFlightMat.needsUpdate = true;
-  rackTrimMat.color.setHex(spec.trimHex);
+// Render Authentic Fanned "Darts-in-Hand" Grip Indicator mirroring the player's equipped 3D Dart Set!
+function buildHandDartSvg(spec) {
+  const hex = (n) => '#' + Number(n).toString(16).padStart(6, '0');
+  const fCol = hex(spec.flightHex), tCol = hex(spec.trimHex), bCol = hex(spec.barrelHex), sCol = hex(spec.stemHex);
+  const patternSvg = spec.pattern === 'leopard'
+    ? `<circle cx="9.5" cy="40" r="2.2" fill="#2b160a"/><circle cx="14.5" cy="43.5" r="2.1" fill="#2b160a"/><circle cx="11.5" cy="47.5" r="1.9" fill="#2b160a"/><circle cx="15" cy="37.5" r="1.6" fill="#99571c"/>`
+    : spec.pattern === 'stripe'
+      ? `<rect x="5" y="42" width="14" height="2.2" fill="${tCol}"/><rect x="6" y="46" width="12" height="1.4" fill="${tCol}"/>`
+      : spec.pattern === 'chevron'
+        ? `<path d="M5 46 L12 41 L19 46" stroke="${tCol}" stroke-width="2" fill="none"/>`
+        : `<rect x="5" y="45" width="14" height="2.2" fill="${tCol}" opacity="0.88"/>`;
+  return `<svg viewBox="0 0 24 54" width="24" height="52" xmlns="http://www.w3.org/2000/svg">
+    <path d="M12 2 L13.1 12 L10.9 12 Z" fill="#cfd6dc"/>
+    <rect x="9.6" y="12" width="4.8" height="14" rx="1.6" fill="${bCol}" stroke="#1a120c" stroke-width="0.7"/>
+    <line x1="9.6" y1="16" x2="14.4" y2="16" stroke="#e5c172" stroke-width="1.2"/>
+    <line x1="9.6" y1="19.5" x2="14.4" y2="19.5" stroke="#e5c172" stroke-width="1.2"/>
+    <line x1="9.6" y1="23" x2="14.4" y2="23" stroke="#e5c172" stroke-width="1.2"/>
+    <rect x="10.9" y="26" width="2.2" height="10" fill="${sCol}"/>
+    <rect x="10.2" y="34" width="3.6" height="2" fill="#d8ad5a"/>
+    <path d="M12 35 L4.5 39 L4.5 49 L12 52 L19.5 49 L19.5 39 Z" fill="${fCol}" stroke="#20130b" stroke-width="1.1"/>
+    ${patternSvg}
+    <line x1="12" y1="35" x2="12" y2="52" stroke="rgba(255,245,215,0.45)" stroke-width="1"/>
+  </svg>`;
 }
 
-[-0.22, 0, 0.22].forEach((dx, idx) => {
-  const dg = new THREE.Group();
-  dg.position.set(dx, 0.09, 0.01);
-  dg.rotation.z = (idx - 1) * -0.035;
-  dg.rotation.x = 0.08;
-  // Steel point seated in brass socket
-  const pt = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.004, 0.16, 8), rackTipMat);
-  pt.position.y = 0.04; dg.add(pt);
-  // Knurled barrel + brass grip rings
-  const bar = new THREE.Mesh(new THREE.CylinderGeometry(0.028, 0.022, 0.34, 12), rackBarrelMat);
-  bar.position.y = 0.27; dg.add(bar);
-  [0.20, 0.28, 0.36].forEach(ry => {
-    const gr = new THREE.Mesh(new THREE.TorusGeometry(0.028, 0.005, 6, 12), brassMat);
-    gr.rotation.x = Math.PI / 2; gr.position.y = ry; dg.add(gr);
-  });
-  // Stem + brass collar
-  const st = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.015, 0.30, 8), rackStemMat);
-  st.position.y = 0.57; dg.add(st);
-  const col = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.015, 0.04, 8), brassMat);
-  col.position.y = 0.68; dg.add(col);
-  // 4-vane cross flights standing tall in the rack!
-  for (let v = 0; v < 4; v++) {
-    const fin = new THREE.Mesh(new THREE.PlaneGeometry(0.11, 0.27), rackFlightMat);
-    fin.position.set(0, 0.80, 0);
-    fin.rotation.y = v * (Math.PI / 2);
-    fin.translateX(0.055);
-    dg.add(fin);
-    const band = new THREE.Mesh(new THREE.PlaneGeometry(0.108, 0.026), rackTrimMat);
-    band.position.set(0, 0.87, 0);
-    band.rotation.y = v * (Math.PI / 2);
-    band.translateX(0.055);
-    dg.add(band);
-  }
-  dartRackGroup.add(dg);
-  rackDarts.push(dg);
-});
+function renderHandDarts() {
+  const wrap = document.getElementById('hand-darts');
+  const fan = document.getElementById('hand-darts-fan');
+  const lbl = document.getElementById('hand-darts-lbl');
+  if (!wrap || !fan || !lbl) return;
+  const spec = getDartSetSpec(typeof state !== 'undefined' ? state.dartSet : 'pub_brass');
+  const left = typeof state !== 'undefined' ? Math.max(0, Math.min(3, state.dartsLeft || 0)) : 3;
+  const hideForSpec = typeof state !== 'undefined' && (state.spectator && state.spectator.active);
+  const isMarkingDone = typeof state !== 'undefined' && left === 0 && state.challenge && state.challenge.kind === 'marking';
+  wrap.classList.toggle('hidden', !!hideForSpec || !!isMarkingDone);
+  const svg = buildHandDartSvg(spec);
+  fan.innerHTML = [0, 1, 2].map(idx => `<div class="hand-dart-slot ${idx >= left ? 'spent' : ''}">${svg}</div>`).join('');
+  lbl.textContent = left > 0 ? `${left} IN HAND` : 'COLLECTING…';
+}
+
+function applyDartSetToRack(setId) {
+  renderHandDarts();
+}
 
 // Open Right Door with Live 3D Hand-Chalked Welsh Slate
 const rightDoorPivot = new THREE.Group();
@@ -3855,55 +4110,55 @@ scene.add(brassCup);
 
 const pintGlass = new THREE.Mesh(
   new THREE.CylinderGeometry(0.24, 0.17, 0.85, 18),
-  new THREE.MeshStandardMaterial({ color: 0x7b3e12, emissive: 0x261002, emissiveIntensity: 0.45, roughness: 0.24, metalness: 0.12, transparent: true, opacity: 0.78 })
+  new THREE.MeshStandardMaterial({ color: 0xa45418, emissive: 0x451c04, emissiveIntensity: 0.78, roughness: 0.22, metalness: 0.14, transparent: true, opacity: 0.84 })
 );
-pintGlass.position.set(4.15, -2.98, 0.05);
+pintGlass.position.set(3.85, -2.98, 0.08);
 pintGlass.castShadow = true;
 scene.add(pintGlass);
 const pintFoam = new THREE.Mesh(
   new THREE.CylinderGeometry(0.236, 0.23, 0.13, 18),
-  new THREE.MeshStandardMaterial({ color: 0xe6d7b6, roughness: 0.94 })
+  new THREE.MeshStandardMaterial({ color: 0xf0e4c8, roughness: 0.92 })
 );
-pintFoam.position.set(4.15, -2.53, 0.05);
+pintFoam.position.set(3.85, -2.53, 0.08);
 scene.add(pintFoam);
 
-// Overhead Victorian Green-Enamel & Brass Gooseneck Oche Lamp + Volumetric Amber Haze Cone
+// Overhead Victorian Green-Enamel & Brass Gooseneck Oche Lamp (brought cleanly into visible frame right above the cabinet!)
 const lampGroup = new THREE.Group();
-lampGroup.position.set(0, 3.35, 1.65);
+lampGroup.position.set(0, 2.86, 1.38);
 scene.add(lampGroup);
 
 // Curved brass gooseneck bracket rising from top rail into the green enamel shade
 const gooseCurve = new THREE.CatmullRomCurve3([
-  new THREE.Vector3(0, -0.58, -1.96),
-  new THREE.Vector3(0, 0.42, -1.78),
-  new THREE.Vector3(0, 0.56, -0.82),
-  new THREE.Vector3(0, 0.24, -0.05),
+  new THREE.Vector3(0, -0.18, -1.68),
+  new THREE.Vector3(0, 0.42, -1.48),
+  new THREE.Vector3(0, 0.50, -0.72),
+  new THREE.Vector3(0, 0.22, -0.04),
 ]);
-const lampArm = new THREE.Mesh(new THREE.TubeGeometry(gooseCurve, 24, 0.042, 10, false), brassMat);
+const lampArm = new THREE.Mesh(new THREE.TubeGeometry(gooseCurve, 24, 0.046, 10, false), brassMat);
 lampGroup.add(lampArm);
 const lampMount = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.13, 0.08, 16), brassMat);
-lampMount.position.set(0, -0.56, -1.94);
+lampMount.position.set(0, -0.18, -1.66);
 lampGroup.add(lampMount);
-const lampNeck = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.11, 0.16, 14), brassMat);
-lampNeck.position.set(0, 0.22, -0.04);
+const lampNeck = new THREE.Mesh(new THREE.CylinderGeometry(0.095, 0.115, 0.16, 14), brassMat);
+lampNeck.position.set(0, 0.20, -0.03);
 lampNeck.rotation.x = 0.28;
 lampGroup.add(lampNeck);
 
 const lampShade = new THREE.Mesh(
-  new THREE.ConeGeometry(0.65, 0.46, 28, 1, true),
-  new THREE.MeshStandardMaterial({ color: 0x164226, roughness: 0.38, metalness: 0.28, side: THREE.DoubleSide })
+  new THREE.ConeGeometry(0.68, 0.44, 28, 1, true),
+  new THREE.MeshStandardMaterial({ color: 0x1b522f, roughness: 0.34, metalness: 0.30, side: THREE.DoubleSide })
 );
 lampShade.rotation.x = 0.34;
 lampGroup.add(lampShade);
-const lampRim = new THREE.Mesh(new THREE.TorusGeometry(0.65, 0.026, 8, 32), brassMat);
+const lampRim = new THREE.Mesh(new THREE.TorusGeometry(0.68, 0.028, 8, 32), brassMat);
 lampRim.rotation.x = Math.PI / 2 + 0.34;
-lampRim.position.set(0, -0.21, 0.075);
+lampRim.position.set(0, -0.20, 0.072);
 lampGroup.add(lampRim);
 const lampBulb = new THREE.Mesh(
-  new THREE.SphereGeometry(0.145, 14, 14),
-  new THREE.MeshBasicMaterial({ color: 0xffe0a3 })
+  new THREE.SphereGeometry(0.15, 14, 14),
+  new THREE.MeshBasicMaterial({ color: 0xffe6ad })
 );
-lampBulb.position.set(0, -0.1, 0.03);
+lampBulb.position.set(0, -0.09, 0.03);
 lampGroup.add(lampBulb);
 
 // Silky Volumetric Amber Oche Lamp Cone (soft view-normal Fresnel edge & vertical dissipation!)
@@ -4056,9 +4311,20 @@ scene.add(slateLight);
 const coldRim = new THREE.DirectionalLight(0x7c9eb2, 0.85);
 coldRim.position.set(-5.8, 2.0, 3.4);
 scene.add(coldRim);
-const leftDoorAccent = new THREE.PointLight(0xffedd0, 24.0, 12.5, 1.2);
+const leftDoorAccent = new THREE.PointLight(0xffedd0, 23.0, 12.5, 1.2);
 leftDoorAccent.position.set(-3.65, 0.65, 3.35);
 scene.add(leftDoorAccent);
+
+// Warm Back-Bar Wall-Wash Sconces so Victorian brick, leaded pub glass & amber pint silhouette glow warmly (never pitch black!)
+const backWashL = new THREE.PointLight(0xffb45a, 18.0, 14.0, 1.4);
+backWashL.position.set(-5.8, 1.1, 1.2);
+scene.add(backWashL);
+const backWashR = new THREE.PointLight(0xffb45a, 18.0, 14.0, 1.4);
+backWashR.position.set(5.8, 1.1, 1.2);
+scene.add(backWashR);
+const shelfGlow = new THREE.PointLight(0xffcb7a, 12.0, 10.0, 1.4);
+shelfGlow.position.set(1.6, -2.5, 2.2);
+scene.add(shelfGlow);
 
 // Floating Chalk-Dust Motes inside the Warm Lamp Cone
 const DUST_COUNT = 110;
@@ -4257,6 +4523,25 @@ function showBoardOverlays({ highlights = [], link = null, aimHigh = null, trapB
   if (aimHigh) {
     const m = makeBedShapeMesh(aimHigh, 0xf2ba5c, 0.34, { aimHigh: true });
     overlayGroup.add(m);
+    const pb = parseBedCode(aimHigh);
+    if (pb && pb.sector && SECTOR_INDEX[pb.sector] !== undefined) {
+      const ca = SECTOR_INDEX[pb.sector] * (Math.PI / 10);
+      const halfArc = (Math.PI / 10) * 0.78;
+      const rArc = R_TREBLE_OUT + (R_DOUBLE_IN - R_TREBLE_OUT) * 0.62;
+      const arcPts = [];
+      for (let i = 0; i <= 14; i++) {
+        const a = ca - halfArc + (i / 14) * halfArc * 2;
+        arcPts.push(new THREE.Vector3(Math.sin(a) * rArc, Math.cos(a) * rArc, 0.032));
+      }
+      const arcCurve = new THREE.CatmullRomCurve3(arcPts);
+      const aimArc = new THREE.Mesh(
+        new THREE.TubeGeometry(arcCurve, 18, 0.022, 8, false),
+        new THREE.MeshBasicMaterial({ color: 0xffd36e, transparent: true, opacity: 0.92 })
+      );
+      aimArc.userData.pulse = true;
+      aimArc.userData.baseOp = 0.92;
+      overlayGroup.add(aimArc);
+    }
   }
   for (const tb of trapBeds) {
     const m = makeBedShapeMesh(tb, 0xd94338, 0.38);
@@ -4265,15 +4550,25 @@ function showBoardOverlays({ highlights = [], link = null, aimHigh = null, trapB
   if (link && link.length === 2) {
     const p1 = bedToXY(link[0]);
     const p2 = bedToXY(link[1]);
-    const mid = new THREE.Vector3((p1.x + p2.x) * 0.5, (p1.y + p2.y) * 0.5, 0.22);
+    const mid = new THREE.Vector3((p1.x + p2.x) * 0.5, (p1.y + p2.y) * 0.5, 0.24);
     const curve = new THREE.QuadraticBezierCurve3(
-      new THREE.Vector3(p1.x, p1.y, 0.02), mid, new THREE.Vector3(p2.x, p2.y, 0.02)
+      new THREE.Vector3(p1.x, p1.y, 0.026), mid, new THREE.Vector3(p2.x, p2.y, 0.026)
     );
     const tube = new THREE.Mesh(
-      new THREE.TubeGeometry(curve, 24, 0.017, 8, false),
-      new THREE.MeshBasicMaterial({ color: 0x9ec9ed, transparent: true, opacity: 0.78 })
+      new THREE.TubeGeometry(curve, 28, 0.019, 8, false),
+      new THREE.MeshBasicMaterial({ color: 0x9ed4f5, transparent: true, opacity: 0.84 })
     );
+    tube.userData.pulse = true;
+    tube.userData.baseOp = 0.84;
     overlayGroup.add(tube);
+    for (const ep of [p1, p2]) {
+      const dot = new THREE.Mesh(
+        new THREE.SphereGeometry(0.044, 12, 12),
+        new THREE.MeshBasicMaterial({ color: 0xffe494, transparent: true, opacity: 0.92 })
+      );
+      dot.position.set(ep.x, ep.y, 0.032);
+      overlayGroup.add(dot);
+    }
   }
   for (const gr of groupRings) {
     const ring = new THREE.Mesh(
@@ -4626,7 +4921,7 @@ const TREV_STAGE_CLIPS = {
 };
 
 const TREV_PINT_LINE = "Blimey, mate, you are so accurate I'd let you have a go at knocking this off — except I don't want to part with a perfectly good pint!";
-const TREV_PINT_ALT  = "Five on the spin! I'd balance my pint on my head for ya — if it weren't six quid a pop in London! Tidy throwing, mate!";
+const TREV_PINT_ALT  = "Five on the spin! I'd balance my pint on my head for ya — if it weren't over seven quid a pop in London! Tidy throwing, mate!";
 const TREV_SUB_TRICK_LINE = "Quick chalker's trick, mate: don't wrestle with big numbers in your head! Knock a clean hundred off first, then chuck the spare back on — hit Tab if you want me to hop the slate for ya.";
 const TREV_BEV_DARTS_LINE = "Wahey! You've unlocked Bev's leopard-print flights, mate — love her to bits, don't tell her I nicked the pattern off her favorite cardigan!";
 
@@ -4772,7 +5067,7 @@ class StudioClipEngine {
       try {
         if (!audio.ctx) audio.unlock();
         if (!audio.ctx) return null;
-        const resp = await fetch(`assets/trev_voice/${clipId}.mp3?v=2`);
+        const resp = await fetch(`assets/trev_voice/${clipId}.mp3?v=3`);
         if (!resp.ok) return null;
         const ab = await resp.arrayBuffer();
         const buf = await audio.ctx.decodeAudioData(ab.slice(0));
@@ -5043,9 +5338,11 @@ class CoachTrev {
     this.elImg = document.getElementById('trev-img');
     this.elBriefImg = document.getElementById('briefing-trev-img');
     this.elBriefQuote = document.getElementById('briefing-trev-quote');
+    this.elTheaterImg = document.getElementById('theater-trev-img');
 
     this.elImg.src = TREV_IMG_URI;
     this.elBriefImg.src = TREV_IMG_URI;
+    if (this.elTheaterImg) this.elTheaterImg.src = TREV_IMG_URI;
 
     this.voiceOn = true;
     this.voiceMode = 'cockney'; // 'cockney' (Chatterbox studio MP3 clips) | 'kokoro' | 'browser'
@@ -5215,6 +5512,10 @@ class CoachTrev {
     }
     return s;
   }
+  _setTalking(on) {
+    this.elStage.classList.toggle('talking', !!on);
+    if (this.elTheaterImg) this.elTheaterImg.classList.toggle('talking', !!on);
+  }
   speakBrowser(text) {
     if (!('speechSynthesis' in window)) return;
     try {
@@ -5232,8 +5533,8 @@ class CoachTrev {
           u.pitch = 0.85; // warm gruff East End bloke timbre
           u.volume = 0.96;
           this._activeUtterance = u; // prevent Chrome GC cutting off onend!
-          u.onstart = () => { audio.duckAmbience(true); this.elStage.classList.add('talking'); };
-          u.onend = u.onerror = () => { audio.duckAmbience(false); this.elStage.classList.remove('talking'); };
+          u.onstart = () => { audio.duckAmbience(true); this._setTalking(true); };
+          u.onend = u.onerror = () => { audio.duckAmbience(false); this._setTalking(false); };
           synth.speak(u);
         } catch (_) {}
       };
@@ -5251,8 +5552,8 @@ class CoachTrev {
         try { window.speechSynthesis.cancel(); } catch (_) {}
       }
       trevClips.play(clipId, {
-        onStart: () => { this.elStage.classList.add('talking'); },
-        onEnd: () => { this.elStage.classList.remove('talking'); },
+        onStart: () => { this._setTalking(true); },
+        onEnd: () => { this._setTalking(false); },
         onFallback: () => { this.speakBrowser(text); },
       });
       return;
@@ -5266,8 +5567,8 @@ class CoachTrev {
         const cfg = KOKORO_VOICES[this.kokoroVoice] || KOKORO_VOICES.bm_george;
         kokoro.speak(this.toSpokenText(text, true), cfg.id, {
           rate: cfg.rate,
-          onStart: () => { this.elStage.classList.add('talking'); },
-          onEnd: () => { this.elStage.classList.remove('talking'); },
+          onStart: () => { this._setTalking(true); },
+          onEnd: () => { this._setTalking(false); },
           onFallback: () => { this.speakBrowser(text); },
         });
         return;
@@ -5355,9 +5656,9 @@ class CoachTrev {
   }
   pulseTalk(ms = 1400) {
     if (this.talkTimer) clearTimeout(this.talkTimer);
-    this.elStage.classList.add('talking');
+    this._setTalking(true);
     this.talkTimer = setTimeout(() => {
-      this.elStage.classList.remove('talking');
+      this._setTalking(false);
       this.talkTimer = null;
     }, ms);
   }
@@ -5619,6 +5920,12 @@ const state = {
   lastPlayerInputAt: 0,
   ghostTimer: 0,
   briefingOpen: false,
+  theaterOpen: false,
+  theaterCtx: null,
+  theaterClosing: false,
+  missedDoubleStreak: 0,
+  nerveBeatAcc: 0,
+  lastNerveVoiceAt: 0,
   seenBriefings: new Set(),
   challenge: null,
   challengeStartMs: 0,
@@ -5743,6 +6050,7 @@ function resetMatch501(keepSeries = false) {
     rivalRows: [{ scored: null, rem: 501 }],
   };
   if (!keepSeries) state.mathFlow = { ...DEFAULT_MATH_FLOW };
+  state.missedDoubleStreak = 0;
 }
 
 // Pure darts shortcuts, pub scatter & audit501Decision imported from ./src/engine.mjs
@@ -5821,14 +6129,28 @@ const elAimThrowBtn  = document.getElementById('aim-throw-btn');
 const elAimTacRow    = document.getElementById('aim-tac-row');
 const elAimLiePill   = document.getElementById('aim-lie-pill');
 const elAimBiasBtn   = document.getElementById('aim-bias-btn');
+const elAimNervePill = document.getElementById('aim-nerve-pill');
+const elAimBreathBtn = document.getElementById('aim-breath-btn');
+const elMFinishPill  = document.getElementById('mfinish-pill');
+const elTheater       = document.getElementById('trev-theater');
+const elTheaterTag    = document.getElementById('theater-tag');
+const elTheaterTitle  = document.getElementById('theater-title');
+const elTheaterQuote  = document.getElementById('theater-quote');
+const elTheaterPurp   = document.getElementById('theater-purpose');
+const elTheaterCards  = document.getElementById('theater-cards');
+const elTheaterSkip   = document.getElementById('theater-skip');
+const elTheaterGo     = document.getElementById('theater-go');
+const elTheaterReplay = document.getElementById('theater-replay');
+const elTheaterX      = document.getElementById('theater-x');
 
 /* ---------- 3-Beat / 2-Beat Oche Rhythm Multi-Axis Aiming Engine ---------- */
 const aimGauge = {
   active: false,
-  mode: null, // '301' | '501'
+  mode: null, // '301' | '501' | 'finish'
   aimedBed: null,
   aimXY: null,
   baseAimXY: null,
+  baseCfg: null,
   cfg: null,
   step: 'focus', // 'focus' | 'horiz' | 'vert'
   is2Beat: false,
@@ -5844,13 +6166,37 @@ const aimGauge = {
   wireBias: null,
   biasActive: false,
   cleanCoverSwitch: false,
+  nerves: null,
+  nerveParams: null,
+  breathUsed: false,
 };
+
+function applyNervesToAimCfg(baseCfg, nerves) {
+  const cfg = { ...baseCfg };
+  if (!nerves || !nerves.active) return cfg;
+  const sm = nerves.speedMult || 1.0;
+  const zm = nerves.zoneMult || 1.0;
+  cfg.focusSpeed = +(cfg.focusSpeed * sm).toFixed(3);
+  cfg.horizSpeed = +(cfg.horizSpeed * sm).toFixed(3);
+  cfg.vertSpeed  = +(cfg.vertSpeed  * sm).toFixed(3);
+  const clampPair = (sw, am) => {
+    const nSw = Math.max(0.06, Math.min(0.42, sw * zm));
+    const nAm = Math.max(nSw + 0.10, Math.min(0.74, am * zm));
+    return [nSw, nAm];
+  };
+  [cfg.focusSweet, cfg.focusAmber] = clampPair(cfg.focusSweet, cfg.focusAmber);
+  [cfg.horizSweet, cfg.horizAmber] = clampPair(cfg.horizSweet, cfg.horizAmber);
+  [cfg.vertSweet,  cfg.vertAmber]  = clampPair(cfg.vertSweet,  cfg.vertAmber);
+  return cfg;
+}
 
 function syncAimTacUI() {
   if (!elAimTacRow) return;
   const hasLie = !!aimGauge.bedLie;
   const hasBias = !!aimGauge.wireBias;
-  elAimTacRow.classList.toggle('visible', hasLie || hasBias);
+  const hasNerves = Boolean(aimGauge.nerves && aimGauge.nerves.active);
+  elAimTacRow.classList.toggle('visible', hasLie || hasBias || hasNerves);
+  elAimPanel.classList.toggle('nervous', Boolean(hasNerves && !aimGauge.nerves.calmed));
   if (hasLie) {
     elAimLiePill.textContent = aimGauge.bedLie.tag;
     elAimLiePill.className = 'aim-flow-pill visible ' + (aimGauge.bedLie.lie === 'guide' ? 'flow-hot' : 'flow-cold');
@@ -5867,7 +6213,44 @@ function syncAimTacUI() {
   } else {
     elAimBiasBtn.classList.remove('visible', 'active');
   }
+  if (elAimNervePill) {
+    if (hasNerves) {
+      elAimNervePill.textContent = aimGauge.nerves.label;
+      elAimNervePill.className = 'aim-nerve-pill visible' + (aimGauge.nerves.calmed ? ' calmed' : '');
+    } else {
+      elAimNervePill.textContent = '';
+      elAimNervePill.className = 'aim-nerve-pill';
+    }
+  }
+  if (elAimBreathBtn) {
+    if (hasNerves) {
+      elAimBreathBtn.className = 'aim-breath-btn visible' + (aimGauge.breathUsed ? ' used' : '');
+      elAimBreathBtn.textContent = aimGauge.breathUsed ? '✓ Composed (74 BPM)' : '🫁 Deep Breath [S]';
+      elAimBreathBtn.disabled = !!aimGauge.breathUsed;
+    } else {
+      elAimBreathBtn.className = 'aim-breath-btn';
+      elAimBreathBtn.disabled = false;
+    }
+  }
 }
+
+function takeDeepBreath() {
+  if (!aimGauge.active || !aimGauge.nerves || !aimGauge.nerves.active || aimGauge.breathUsed) return false;
+  aimGauge.breathUsed = true;
+  aimGauge.nerves = computeMatchDartNerves({ ...(aimGauge.nerveParams || {}), calmed: true });
+  if (aimGauge.baseCfg) {
+    aimGauge.cfg = applyNervesToAimCfg(aimGauge.baseCfg, aimGauge.nerves);
+  }
+  audio.playDeepBreath();
+  applyAimCorridorBars();
+  syncAimTacUI();
+  updateAimGauge(0);
+  const pt = aimGauge.aimXY || { x: 0, y: 0.25 };
+  spawnCallout('🫁 STEADY BREATH · 74 BPM', { x: pt.x, y: pt.y + 0.28, style: 'ok' });
+  setFeedback('Deep breath exhaled — heart rate dropped to 74 BPM! Tremor stilled & sweet spot widened (+6%).', 'ok');
+  return true;
+}
+if (elAimBreathBtn) elAimBreathBtn.addEventListener('click', (e) => { e.stopPropagation(); elAimBreathBtn.blur(); takeDeepBreath(); });
 
 function toggleWireBias() {
   if (!aimGauge.active || !aimGauge.wireBias) return;
@@ -6005,7 +6388,7 @@ function syncAimRowClasses() {
 
 function updateRelockPill() {
   const ch = state.challenge;
-  const blocked = state.briefingOpen || elDrawerBg.classList.contains('open') || elLevelUp.classList.contains('show') || elNumpad.classList.contains('visible');
+  const blocked = state.briefingOpen || state.theaterOpen || elDrawerBg.classList.contains('open') || elLevelUp.classList.contains('show') || elNumpad.classList.contains('visible');
   const canRepeat = !state.ghostMode && state.useAimGauge && !aimGauge.active && !state.busy && !blocked
     && ch && (ch.kind === 'countdown301' || ch.kind === 'match501') && ch.phase === 'throw'
     && ch.darts && ch.darts.length > 0 && ch.darts.length < 3 && state.lastAimBed;
@@ -6062,7 +6445,22 @@ function startAimGauge(mode, bed, rawXY, finishCtx = null) {
   aimGauge.aimedBed = bed;
   aimGauge.baseAimXY = { x: pt.x, y: pt.y };
   aimGauge.aimXY = { x: pt.x, y: pt.y };
-  aimGauge.cfg = cfg;
+  aimGauge.baseCfg = { ...cfg };
+
+  const dartNum = (ch && ch.darts ? ch.darts.length : 0) + 1;
+  // Dramatic Match-Dart Game Nerves on Dart 3 for a 180 OR aiming at a winning Double-Out in 501 / Match-Finish Throw!
+  const on180Dart = dartNum === 3 && ch && ch.darts && ch.darts[0] === 'T20' && ch.darts[1] === 'T20' && bed.code === 'T20';
+  const onMatchDart = mode === 'finish' || (mode === '501' && ch && (ch.liveRem === bed.value) && (bed.ring === 'D' || bed.ring === 'BULL'));
+  const rivalLow = Boolean(mode === '501' && state.match501.rivalScore <= 100);
+  const missedPrevDouble = (state.missedDoubleStreak || 0) > 0;
+  const nerveParams = { isMatchDart: onMatchDart, is180Dart: on180Dart, rivalLow, missedPrevDouble };
+  const nerves = computeMatchDartNerves({ ...nerveParams, calmed: false });
+
+  aimGauge.nerveParams = nerveParams;
+  aimGauge.nerves = nerves;
+  aimGauge.breathUsed = false;
+  state.nerveBeatAcc = 0;
+  aimGauge.cfg = applyNervesToAimCfg(aimGauge.baseCfg, nerves);
   aimGauge.bedLie = bedLie;
   aimGauge.wireBias = wireBias;
   aimGauge.biasActive = false;
@@ -6078,13 +6476,18 @@ function startAimGauge(mode, bed, rawXY, finishCtx = null) {
   aimGauge.curDrop = null;
   aimGauge.phase = (Math.random() < 0.5 ? -1 : 1) * (0.92 + Math.random() * 0.35);
 
-  const dartNum = (ch && ch.darts ? ch.darts.length : 0) + 1;
-  // Dramatic tension heartbeat on Dart 3 for a 180!! OR aiming at a winning Double-Out in 501 / Match-Finish Throw!
-  const on180Dart = dartNum === 3 && ch && ch.darts && ch.darts[0] === 'T20' && ch.darts[1] === 'T20' && bed.code === 'T20';
-  const onMatchDart = mode === 'finish' || (mode === '501' && ch && (ch.liveRem === bed.value) && (bed.ring === 'D' || bed.ring === 'BULL'));
-  if (on180Dart || onMatchDart) {
+  if (nerves.active) {
     audio.playHeartbeat();
-    spawnCallout(on180Dart ? '180 DART!' : 'MATCH DART!', { x: pt.x, y: pt.y + 0.25, style: 'gold' });
+    spawnCallout(
+      on180Dart ? '❤️ 180 DART! BREATHE!' : rivalLow ? '❤️ MATCH DART · RIVAL SITTING!' : '❤️ MATCH DART! BREATHE!',
+      { x: pt.x, y: pt.y + 0.25, style: 'gold' }
+    );
+    if (!state.ghostMode && now - (state.lastNerveVoiceAt || 0) > 14000) {
+      state.lastNerveVoiceAt = now;
+      trev.say("Shhh, whole boozer's gone quiet, mate — Match Dart! Hit Deep Breath [S] to steady those knees and pin that double!", {
+        mood: 'toast', holdMs: 2800, speak: true, clipId: 'nerve_breathe',
+      });
+    }
   }
 
   elAimTarget.textContent = mode === 'finish' ? `MATCH FINISH · ${bed.code}` : `AIMING ${bed.code} · DART ${dartNum}/3`;
@@ -6115,7 +6518,9 @@ function startAimGauge(mode, bed, rawXY, finishCtx = null) {
   aimGroup.visible = true;
   updateHoverBed(null);
   updateAimGauge(0);
-  if (wireBias) {
+  if (nerves.active) {
+    setFeedback(`❤️ Game Nerves (${nerves.bpm} BPM) on ${bed.code}! Tap 🫁 Deep Breath [S] to steady your hand before releasing!`, 'cue');
+  } else if (wireBias) {
     setFeedback(`${wireBias.cue} (Tap Bias [B]!)`, 'cue');
   } else if (bedLie) {
     setFeedback(bedLie.cue, bedLie.lie === 'guide' ? 'ok' : 'warn');
@@ -6137,6 +6542,7 @@ function cancelAimGauge() {
   aimGauge.aimedBed = null;
   aimGauge.aimXY = null;
   aimGauge.baseAimXY = null;
+  aimGauge.baseCfg = null;
   aimGauge.cfg = null;
   aimGauge.focusRes = null;
   aimGauge.curDrop = null;
@@ -6144,31 +6550,49 @@ function cancelAimGauge() {
   aimGauge.wireBias = null;
   aimGauge.biasActive = false;
   aimGauge.cleanCoverSwitch = false;
+  aimGauge.nerves = null;
+  aimGauge.nerveParams = null;
+  aimGauge.breathUsed = false;
   aimLineGuide.visible = false;
   aimCrosshair.scale.setScalar(1.0);
   aimGroup.visible = false;
   if (elAimTacRow) elAimTacRow.classList.remove('visible');
-  elAimPanel.classList.remove('visible');
+  elAimPanel.classList.remove('visible', 'nervous');
   document.body.classList.remove('aim-open');
 }
 
 function updateAimGauge(dt) {
   if (!aimGauge.active) return;
   const cfg = aimGauge.cfg || multiAxisConfigForDifficulty(state.difficulty);
-  const allowMiss = aimGauge.mode === '501';
+  const allowMiss = aimGauge.mode === '501' || aimGauge.mode === 'finish';
   const biasU = (aimGauge.biasActive && aimGauge.wireBias) ? (aimGauge.wireBias.shiftU || 0) : 0;
   const biasV = (aimGauge.biasActive && aimGauge.wireBias) ? (aimGauge.wireBias.shiftV || 0) : 0;
 
+  // Match-Dart Game Nerves: subtle organic hand tremor + live accelerating BPM heartbeat!
+  const nerves = aimGauge.nerves;
+  let tremor = 0;
+  if (nerves && nerves.active && !nerves.calmed) {
+    tremor = Math.sin(clockSec * 21.3) * nerves.tremorAmp + Math.sin(clockSec * 33.7) * (nerves.tremorAmp * 0.42);
+    if (dt > 0) {
+      const beatPeriod = 60 / Math.max(60, nerves.bpm || 96);
+      state.nerveBeatAcc = (state.nerveBeatAcc || 0) + dt;
+      if (state.nerveBeatAcc >= beatPeriod) {
+        state.nerveBeatAcc -= beatPeriod;
+        audio.playHeartbeat();
+      }
+    }
+  }
+
   if (aimGauge.step === 'focus') {
     aimGauge.phase += dt * cfg.focusSpeed;
-    const u = Math.sin(aimGauge.phase);
+    const u = Math.max(-1, Math.min(1, Math.sin(aimGauge.phase) + tremor));
     aimGauge.focusU = u;
     elAimFNeedle.style.left = `${(u + 1) * 50}%`;
     const fPrev = evaluateFocusBeat(u, cfg);
     elAimFStat.textContent = fPrev.zone === 'green' ? 'LOCK' : fPrev.zone === 'amber' ? 'LOSE' : 'SNCH';
     elAimLive.textContent = `1/3 ${fPrev.label}`;
     elAimLive.className = 'aim-live-bed zone-' + fPrev.zone;
-    aimCrosshair.position.set(aimGauge.aimXY.x, aimGauge.aimXY.y, 0);
+    aimCrosshair.position.set(aimGauge.aimXY.x + tremor * 0.14, aimGauge.aimXY.y - tremor * 0.10, 0);
     aimCrosshair.scale.setScalar(fPrev.zone === 'green' ? 0.84 : fPrev.zone === 'amber' ? 1.18 : 1.56);
     aimCrossMat.color.setHex(fPrev.zone === 'green' ? 0x7ae09f : fPrev.zone === 'amber' ? 0xf3cc7d : 0xf0685e);
     aimLineGuide.visible = false;
@@ -6178,7 +6602,7 @@ function updateAimGauge(dt) {
   const f = aimGauge.focusRes || { zone: 'amber', speedMult: 1.0, zoneMult: 1.0, jitter: 0.035 };
   if (aimGauge.step === 'horiz') {
     aimGauge.phase += dt * cfg.horizSpeed * f.speedMult;
-    const u = Math.sin(aimGauge.phase);
+    const u = Math.max(-1, Math.min(1, Math.sin(aimGauge.phase) + tremor));
     aimGauge.horizU = u;
     elAimHNeedle.style.left = `${(u + 1) * 50}%`;
     const effU = Math.max(-1, Math.min(1, u + biasU));
@@ -6195,7 +6619,7 @@ function updateAimGauge(dt) {
 
   // Step 3: Vertical Height release along the locked horizontal line!
   aimGauge.phase += dt * cfg.vertSpeed * f.speedMult;
-  const v = Math.sin(aimGauge.phase);
+  const v = Math.max(-1, Math.min(1, Math.sin(aimGauge.phase) + tremor));
   aimGauge.vertV = v;
   elAimVNeedle.style.left = `${(v + 1) * 50}%`;
   const effU = Math.max(-1, Math.min(1, aimGauge.horizU + biasU));
@@ -6281,19 +6705,89 @@ function releaseAimGauge() {
       ringScale: nailed ? 3.8 : 2.2,
     });
     if (nailed) {
+      state.missedDoubleStreak = 0;
       mastery.data.xp = (mastery.data.xp || 0) + 15;
       mastery.save();
       audio.playCrowdRoar(1.1);
       spawnBurst(drop.x, drop.y, 'gold');
       spawnCallout(`🎯 PINNED ${aimedBed.code}! +15 XP`, { x: drop.x, y: drop.y + 0.22, style: 'gold' });
     } else {
-      spawnCallout(`RIGHT ROUTE! (HIT ${drop.bed ? drop.bed.code : 'WIRE'})`, { x: drop.x, y: drop.y + 0.20, style: 'ok' });
+      state.missedDoubleStreak = Math.min(3, (state.missedDoubleStreak || 0) + 1);
+      audio.playPubGasp();
+      spawnCallout(`😱 OOOOOH! WIRE AGONY (${drop.bed ? drop.bed.code : 'WIRE'})`, { x: drop.x, y: drop.y + 0.20, style: 'warn' });
+      trev.say("OOOOOH! Right on the wire, mate — whole pub felt that one! Shake the hand out, take a Deep Breath, and go again!", {
+        mood: 'wince', holdMs: 2600, speak: true, clipId: 'nerve_wire_gasp',
+      });
     }
     finishCtx.onDone(nailed, drop.bed ? drop.bed.code : 'WIRE');
   }
 }
 
+/* ---------- Full-Screen Coach Trev Pub Chalk-Talk Theater ---------- */
+function openTrevTheater(lessonId, { onGo = null, onSkip = null, isReview = false } = {}) {
+  const lesson = TREV_THEATER_LESSONS[lessonId];
+  if (!lesson || !elTheater) {
+    if (typeof onGo === 'function') onGo();
+    return false;
+  }
+  cancelAimGauge();
+  dismissWelcome();
+  state.theaterOpen = true;
+  state.theaterClosing = false;
+  state.theaterCtx = { lessonId, onGo, onSkip, isReview, lesson };
+  if (elTheaterTag)   elTheaterTag.textContent = lesson.tag;
+  if (elTheaterTitle) elTheaterTitle.textContent = lesson.title;
+  if (elTheaterQuote) elTheaterQuote.textContent = `“${lesson.quote}”`;
+  if (elTheaterPurp)  elTheaterPurp.innerHTML = `<strong>Purpose:</strong> ${lesson.purpose}`;
+  if (elTheaterCards) {
+    elTheaterCards.innerHTML = (lesson.cards || []).map(c => `
+      <div class="t-card">
+        <div class="t-card-head"><span>${c.icon || '🎯'}</span><span>${c.title}</span></div>
+        <div class="t-card-body">${c.body}</div>
+      </div>
+    `).join('');
+  }
+  if (elTheaterGo)   elTheaterGo.textContent = isReview ? 'Back to the Board →' : (lesson.ctaLabel || 'Step Up to the Oche! →');
+  if (elTheaterSkip) elTheaterSkip.textContent = isReview ? 'Close' : (lesson.skipLabel || 'Skip Lesson');
+  elTheater.classList.remove('leaving');
+  elTheater.classList.add('open');
+
+  // Speak lesson in Trev's genuine Cockney voice (never crash if audio still locked)
+  if (!audio.ctx) { try { audio.unlock(); elSoundPill.textContent = 'Sound: On'; elSoundPill.classList.add('on'); } catch (_) {} }
+  trev.speakNow(lesson.quote, lesson.clipId);
+  updateRelockPill();
+  return true;
+}
+
+function closeTrevTheater(action = 'go') {
+  if (!state.theaterOpen || state.theaterClosing || !elTheater) return;
+  state.theaterClosing = true;
+  const ctx = state.theaterCtx;
+  trevClips.cancelPending();
+  kokoro.cancelPending();
+  if ('speechSynthesis' in window) { try { window.speechSynthesis.cancel(); } catch (_) {} }
+  trev._setTalking(false);
+  elTheater.classList.add('leaving');
+  setTimeout(() => {
+    elTheater.classList.remove('open', 'leaving');
+    state.theaterOpen = false;
+    state.theaterClosing = false;
+    state.theaterCtx = null;
+    state.challengeStartMs = performance.now();
+    state.lastPlayerInputAt = performance.now();
+    updateRelockPill();
+    if (ctx) {
+      if (action === 'skip' && typeof ctx.onSkip === 'function') ctx.onSkip();
+      else if (action === 'go' && typeof ctx.onGo === 'function') ctx.onGo();
+    }
+  }, 320);
+}
+
 function openStageBriefing(stageId) {
+  if (TREV_THEATER_LESSONS[stageId]) {
+    openTrevTheater(stageId, { isReview: true });
+    return;
+  }
   const card = STAGE_BRIEFING_CARDS[stageId];
   if (!card) return;
   cancelAimGauge();
@@ -6864,10 +7358,45 @@ function selectStage(stageId, startAsPlayer = true, forceBriefing = false) {
   if (stageId === 'LEVEL_7') resetMatch501(false);
 
   const seenIntro = Boolean(mastery.data.seenIntros && mastery.data.seenIntros[stageId]);
+  const seenLesson = Boolean(mastery.data.seenLessons && mastery.data.seenLessons[stageId]);
   const hasIntroDemo = Boolean(getLevelIntroDemo(stageId));
-  const useInteractiveIntro = startAsPlayer && !forceBriefing && hasIntroDemo && !seenIntro
-    && !state.fdiPairsOnly && !state.fdiBridgesOnly && !state.gauntlet170Mode;
+  const hasTheaterLesson = Boolean(TREV_THEATER_LESSONS[stageId]);
+  const isSpecialArcade = Boolean(state.fdiPairsOnly || state.fdiBridgesOnly || state.gauntlet170Mode);
 
+  // Full-Screen Coach Trev Level Explainer & Lesson Reminder on first visit to Levels 1-7 (1-click skippable!)
+  if (startAsPlayer && hasTheaterLesson && !isSpecialArcade && (forceBriefing || !seenLesson)) {
+    loadChallenge(nextChallengeForStage(stageId));
+    openTrevTheater(stageId, {
+      isReview: false,
+      onGo: () => {
+        mastery.data.seenLessons = mastery.data.seenLessons || {};
+        mastery.data.seenLessons[stageId] = true;
+        mastery.save();
+        if (hasIntroDemo && !seenIntro) {
+          startLevelIntro(stageId);
+        } else if (STAGE_BRIEFS[stageId]) {
+          const briefTxt = stageId === 'LEVEL_7' ? STAGE_BRIEFS[stageId].replace('Big Dave', currentRival().name) : STAGE_BRIEFS[stageId];
+          setFeedback(briefTxt, 'cue');
+        }
+      },
+      onSkip: () => {
+        mastery.data.seenLessons = mastery.data.seenLessons || {};
+        mastery.data.seenLessons[stageId] = true;
+        mastery.data.seenIntros = mastery.data.seenIntros || {};
+        mastery.data.seenIntros[stageId] = true;
+        mastery.save();
+        state.inIntroDemo = false;
+        state.introDemo = null;
+        if (STAGE_BRIEFS[stageId]) {
+          const briefTxt = stageId === 'LEVEL_7' ? STAGE_BRIEFS[stageId].replace('Big Dave', currentRival().name) : STAGE_BRIEFS[stageId];
+          setFeedback(`Lesson skipped — ${briefTxt}`, 'cue');
+        }
+      },
+    });
+    return;
+  }
+
+  const useInteractiveIntro = startAsPlayer && !forceBriefing && hasIntroDemo && !seenIntro && !isSpecialArcade;
   if (useInteractiveIntro) {
     startLevelIntro(stageId);
     return;
@@ -6878,7 +7407,7 @@ function selectStage(stageId, startAsPlayer = true, forceBriefing = false) {
     const briefTxt = stageId === 'LEVEL_7' ? STAGE_BRIEFS[stageId].replace('Big Dave', currentRival().name) : STAGE_BRIEFS[stageId];
     setFeedback(briefTxt, 'cue');
   }
-  if (startAsPlayer && (forceBriefing || (!hasIntroDemo && !state.seenBriefings.has(stageId)))) {
+  if (startAsPlayer && (forceBriefing || (!hasIntroDemo && !hasTheaterLesson && !state.seenBriefings.has(stageId)))) {
     openStageBriefing(stageId);
   }
 }
@@ -6918,8 +7447,13 @@ function updateHudStats() {
   elGhostPill.classList.toggle('active-player', !state.ghostMode);
   const dartPips = elDartIcons.querySelectorAll('.dart-pip');
   dartPips.forEach((p, idx) => p.classList.toggle('spent', idx >= state.dartsLeft));
-  if (typeof rackDarts !== 'undefined' && rackDarts.length) {
-    rackDarts.forEach((d, idx) => { d.visible = idx < state.dartsLeft; });
+  if (typeof renderHandDarts === 'function') renderHandDarts();
+  if (typeof renderRecordsPlaque === 'function') renderRecordsPlaque();
+  if (elMFinishPill) {
+    const showMFinish = !state.ghostMode && !state.inTrial && (state.stage === 'LEVEL_5' || state.stage === 'LEVEL_6');
+    elMFinishPill.classList.toggle('visible', showMFinish);
+    elMFinishPill.classList.toggle('on', !!state.matchFinishThrow);
+    elMFinishPill.textContent = state.matchFinishThrow ? '🎯 Throw Finish: ON' : '🎯 Throw Finish: Off';
   }
 
   // Render Practice Pips / Pub Trial / 501 Scoreboard Bar
@@ -8088,7 +8622,8 @@ function applyChallengeHint(auto = false) {
     const hl = state.stepIndex === 0
       ? it.setup.map(c => ({ code: c, color: 0xf3cc7d, opacity: 0.45 }))
       : [{ code: 'D' + (state.remainingScore / 2), color: 0x79d499, opacity: 0.52 }];
-    showBoardOverlays({ highlights: hl, aimHigh: it.aimHigh && state.stepIndex === 0 ? it.setup[0] : null });
+    const needAimHigh = (it.aimHigh || it.score === 56 || it.score === 52 || it.score === 50) && state.stepIndex === 0;
+    showBoardOverlays({ highlights: hl, aimHigh: needAimHigh ? it.setup[0] : null });
     setFeedback(`Cue: ${it.cue}`, 'cue');
   } else if (ch.kind === 'g44') {
     const it = ch.item;
@@ -8100,8 +8635,8 @@ function applyChallengeHint(auto = false) {
       const ringOv = fdi ? buildFdiNumberOverlays(fdi, { showT: true, showD: true, link: true }) : {};
       showBoardOverlays({
         highlights: [{ code: target, color: state.stepIndex === 1 ? 0x79d499 : 0xf3cc7d, opacity: 0.52 }],
-        link: it.link || null,
-        aimHigh: it.aimHigh && state.stepIndex === 0 ? 'S20' : null,
+        link: it.link || (fdi ? [fdi.treble, fdi.dbl] : null),
+        aimHigh: (it.aimHigh || it.score === 60) && state.stepIndex === 0 ? 'S20' : null,
         ...ringOv,
       });
       setFeedback(fdi
@@ -9020,18 +9555,33 @@ function commit501Dart(aimedBed, landedBed, pt, zone = null, tac = {}) {
   m.dartsThrown++;
   const isWin = res501.isWin;
   const isBust = res501.isBust;
+  const wasMatchDoubleAttempt = !state.ghostMode && (
+    (remBefore === 50 && aimedBed.code === 'BULL') ||
+    (remBefore >= 2 && remBefore <= 40 && remBefore % 2 === 0 && aimedBed.ring === 'D' && aimedBed.value === remBefore)
+  );
 
   if (isBust) {
     elRelockPill.classList.remove('visible');
     ch.noPeekFdi = null;
+    if (wasMatchDoubleAttempt) {
+      state.missedDoubleStreak = Math.min(3, (state.missedDoubleStreak || 0) + 1);
+      audio.playPubGasp();
+    } else {
+      audio.playPubGroan();
+    }
     throwDartTo(dartPt.x, dartPt.y, { kind: landed.ring === 'MISS' ? 'S' : landed.ring, wireTink: true });
-    audio.playPubGroan();
-    spawnCallout('BUST!!', { center: true, style: 'warn' });
+    spawnCallout(wasMatchDoubleAttempt ? '😱 OOOOOH! BUSTED DOUBLE!' : 'BUST!!', { center: true, style: 'warn' });
     state.dartsLeft = 0;
     m.playerRows = m.playerRows || [{ scored: null, rem: 501 }];
     m.playerRows.push({ scored: 'BUST', rem: ch.startScore });
     setFeedback(`BUST! ${bedPretty(landed.code)} on ${remBefore} — score stays ${ch.startScore}!`, 'warn');
-    trev.sayDeck('bust', { mood: 'wince', holdMs: 2400, speak: true });
+    if (wasMatchDoubleAttempt) {
+      trev.say("OOOOOH! Right on the wire, mate — whole pub felt that one! Shake the hand out, take a Deep Breath, and go again!", {
+        mood: 'wince', holdMs: 2600, speak: true, clipId: 'nerve_wire_gasp',
+      });
+    } else {
+      trev.sayDeck('bust', { mood: 'wince', holdMs: 2400, speak: true });
+    }
     draw501Slate({
       footer: `BUST! ${landed.code} on ${remBefore}`,
       footer2: `Reverts to ${ch.startScore} · ${rv.short}'s throw`,
@@ -9068,6 +9618,7 @@ function commit501Dart(aimedBed, landedBed, pt, zone = null, tac = {}) {
   state.dartsLeft = Math.max(0, 3 - ch.darts.length);
 
   if (isWin) {
+    state.missedDoubleStreak = 0;
     elRelockPill.classList.remove('visible');
     if (ch.noPeekFdi && landed.code === ch.noPeekFdi.dbl && !state.ghostMode) {
       mastery.data.xp = (mastery.data.xp || 0) + 25;
@@ -9082,6 +9633,16 @@ function commit501Dart(aimedBed, landedBed, pt, zone = null, tac = {}) {
     updateHudStats();
     finish501Leg(true);
     return;
+  }
+
+  // Match-Dart Wire Agony: missed a winning double without busting (outside wire or inside single)!
+  if (wasMatchDoubleAttempt) {
+    state.missedDoubleStreak = Math.min(3, (state.missedDoubleStreak || 0) + 1);
+    audio.playPubGasp();
+    spawnCallout(landed.code === 'MISS' ? '😱 OOOOOH! OUTSIDE WIRE!' : `😱 OOOOOH! INSIDE ${landed.code}!`, { x: dartPt.x, y: dartPt.y + 0.24, style: 'warn' });
+    trev.say("OOOOOH! Right on the wire, mate — whole pub felt that one! Shake the hand out, take a Deep Breath, and go again!", {
+      mood: 'wince', holdMs: 2600, speak: true, clipId: 'nerve_wire_gasp',
+    });
   }
 
   // Clear prior No-Peek lock if player threw at double and missed without busting
@@ -10278,8 +10839,11 @@ function tickGhost(dt) {
   state.ghostTimer = 0;
 
   if (ch.kind === 'double_find' || ch.kind === 'treble_find' || ch.kind === 'halving') {
+    const pt = bedToXY(ch.target);
+    spawnCallout(`GHOST · ${ch.target} (${bedValue(ch.target)})`, { x: pt.x, y: pt.y + 0.20, style: 'ok' });
     handleBoardClick({ code: ch.target, ring: ch.target === 'BULL' ? 'BULL' : ch.target[0], value: bedValue(ch.target) });
   } else if (ch.kind === 'double_val' || ch.kind === 'treble_val') {
+    spawnCallout(`GHOST CALLS ${ch.val}`, { x: 0, y: 0.34, style: 'ok' });
     submitNumericAnswer(String(ch.val));
   } else if (ch.kind === 'countdown301') {
     if (ch.phase === 'throw') {
@@ -10317,6 +10881,9 @@ function tickGhost(dt) {
     handleBoardClick({ code, ring: code[0], value: bedValue(code), sub: 'OS' });
   } else if (ch.kind === 'g44') {
     const code = state.stepIndex === 0 ? ch.item.route[0] : (state.remainingScore === 50 ? 'BULL' : 'D' + (state.remainingScore / 2));
+    const pt = bedToXY(code);
+    const fdi = getFdiRule(ch.item.score);
+    spawnCallout(state.stepIndex === 0 && fdi ? `GHOST FDI (${fdi.sum}): ${code}` : `GHOST FINISH: ${code}!`, { x: pt.x, y: pt.y + 0.20, style: 'gold' });
     handleBoardClick({ code, ring: code === 'BULL' ? 'BULL' : code[0], value: bedValue(code), sub: 'OS' });
   } else if (ch.kind === 'sods') {
     if (state.stepIndex === 0) {
@@ -10486,14 +11053,26 @@ canvas.addEventListener('pointercancel', () => {
   if (touchAim.active) hideTouchAimPill();
 });
 
-// Keyboard support (Digits, Enter, Backspace, H=Cue, N=Next, L=Ledger)
+// Keyboard support (Digits, Enter, Backspace, H=Cue, N=Next, L=Ledger, S=Deep Breath)
 window.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') { cancelAimGauge(); closeDrawer(); closeStageBriefing(); return; }
+  if (e.key === 'Escape') {
+    if (state.theaterOpen) { closeTrevTheater('skip'); return; }
+    cancelAimGauge(); closeDrawer(); closeStageBriefing(); return;
+  }
+  if (state.theaterOpen) {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); closeTrevTheater('go'); }
+    return;
+  }
   if (state.briefingOpen) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); closeStageBriefing(); } return; }
   if (elDrawerBg.classList.contains('open')) return;
   if (aimGauge.active && (e.key === ' ' || e.key === 'Enter')) {
     e.preventDefault();
     releaseAimGauge();
+    return;
+  }
+  if (aimGauge.active && e.key.toLowerCase() === 's' && aimGauge.nerves && aimGauge.nerves.active && !aimGauge.breathUsed) {
+    e.preventDefault();
+    takeDeepBreath();
     return;
   }
   if (aimGauge.active && e.key.toLowerCase() === 'b' && aimGauge.wireBias) {
@@ -10585,7 +11164,52 @@ document.getElementById('levelup-close').addEventListener('click', () => {
   elLevelUp.classList.remove('show');
   if (state.busy && !state.advanceTimerId) loadChallenge(nextChallengeForStage(state.stage));
 });
-document.getElementById('w-start-0a').addEventListener('click', () => selectStage('LEVEL_1', true));
+function openMenuTour(startLevel1OnGo = true) {
+  openTrevTheater('MENU_TOUR', {
+    isReview: false,
+    onGo: () => {
+      mastery.data.seenMenuTour = true;
+      mastery.save();
+      if (startLevel1OnGo) selectStage('LEVEL_1', true);
+    },
+    onSkip: () => {
+      mastery.data.seenMenuTour = true;
+      mastery.save();
+      dismissWelcome();
+      claimPlayerControl();
+    },
+  });
+}
+
+if (elTheaterGo)     elTheaterGo.addEventListener('click', () => closeTrevTheater('go'));
+if (elTheaterSkip)   elTheaterSkip.addEventListener('click', () => closeTrevTheater('skip'));
+if (elTheaterX)      elTheaterX.addEventListener('click', () => closeTrevTheater('skip'));
+if (elTheaterReplay) elTheaterReplay.addEventListener('click', () => {
+  const ctx = state.theaterCtx;
+  if (!ctx || !ctx.lesson) return;
+  if (!audio.ctx) { audio.unlock(); elSoundPill.textContent = 'Sound: On'; elSoundPill.classList.add('on'); }
+  trev.speakNow(ctx.lesson.quote, ctx.lesson.clipId);
+});
+if (elTheater) elTheater.addEventListener('click', (e) => { if (e.target === elTheater) closeTrevTheater('skip'); });
+
+if (elMFinishPill) elMFinishPill.addEventListener('click', () => {
+  elMFinishPill.blur();
+  claimPlayerControl();
+  state.matchFinishThrow = !state.matchFinishThrow;
+  mastery.data.matchFinishThrow = state.matchFinishThrow;
+  mastery.save();
+  updateHudStats();
+  setFeedback(state.matchFinishThrow
+    ? 'Match-Finish Throw ON — throw the winning Double/Bull with 3-Beat Oche Rhythm & Match-Dart Nerves!'
+    : 'Match-Finish Throw Off — tap the finishing double directly for rapid maths drills.', 'cue');
+});
+
+const elWTour = document.getElementById('w-tour');
+if (elWTour) elWTour.addEventListener('click', () => openMenuTour(true));
+document.getElementById('w-start-0a').addEventListener('click', () => {
+  if (!mastery.data.seenMenuTour) openMenuTour(true);
+  else selectStage('LEVEL_1', true);
+});
 document.getElementById('w-calib').addEventListener('click', () => selectStage('CALIBRATION', true));
 document.getElementById('w-howto').addEventListener('click', () => { dismissWelcome(); openDrawer('howto'); });
 document.getElementById('aim-throw-btn').addEventListener('click', () => releaseAimGauge());
@@ -10710,7 +11334,7 @@ function equipDartSet(setId) {
   if (spec.id === 'bev_leopard') {
     trev.say(TREV_BEV_DARTS_LINE, { mood: 'toast', holdMs: 4200, forceOpen: true, speak: true, clipId: 'bev_darts_unlock' });
   } else {
-    setFeedback(`Equipped ${spec.name} on your Left-Door Rack & throw darts!`, 'ok');
+    setFeedback(`Equipped ${spec.name} in your Darts-in-Hand & 3D throw darts!`, 'ok');
   }
   renderDrawer();
 }
@@ -10764,7 +11388,7 @@ function renderDrawer() {
             <div><span>Coach Trev Voice</span></div>
             <div style="font-size:11px;color:var(--chalk-dim);margin-top:2px">${
               trev.voiceMode === 'cockney'
-                ? 'East London Cockney Trev · 111 Studio clips incl. Bev banter!'
+                ? 'Broad East London Cockney Trev · 121 Studio clips incl. Lesson Theater & Bev banter!'
                 : !trev.kokoroOn
                   ? 'Built-in browser voice (instant)'
                   : kokoro.status === 'loading'
@@ -10781,6 +11405,15 @@ function renderDrawer() {
             <button class="seg-btn ${trev.voiceMode === 'browser' ? 'active' : ''}" data-kvoice="browser">Browser</button>
             <button class="seg-btn ${trev.voiceMode === 'kokoro' && trev.kokoroVoice === 'bm_george' ? 'active' : ''}" data-kvoice="bm_george">George</button>
             <button class="seg-btn ${trev.voiceMode === 'kokoro' && trev.kokoroVoice === 'bm_lewis' ? 'active' : ''}" data-kvoice="bm_lewis">Lewis</button>
+          </div>
+        </div>
+        <div class="setting-row" style="flex-wrap:wrap">
+          <div>
+            <div><span>Coach Trev Chalk-Talks</span></div>
+            <div style="font-size:11px;color:var(--chalk-dim);margin-top:2px">Full-screen Menu Tour &amp; per-level explainers (always skippable if already learnt)</div>
+          </div>
+          <div class="seg-group">
+            <button class="seg-btn" id="drawer-tour-btn">🎬 Replay Menu Tour</button>
           </div>
         </div>
         ${STAGES.filter(s => s.id !== 'CALIBRATION').map(st => {
@@ -11092,6 +11725,8 @@ function renderDrawer() {
     elDrawerBody.querySelectorAll('[data-dartset]').forEach(card => card.addEventListener('click', () => {
       equipDartSet(card.dataset.dartset);
     }));
+    const elDrawerTour = document.getElementById('drawer-tour-btn');
+    if (elDrawerTour) elDrawerTour.addEventListener('click', () => { closeDrawer(); openMenuTour(false); });
     elDrawerBody.querySelectorAll('[data-stage]').forEach(card => card.addEventListener('click', () => {
       state.fdiPairsOnly = false;
       state.fdiBridgesOnly = false;
@@ -11237,11 +11872,13 @@ onResize();
 // Show non-blocking Quick-Start welcome banner on first visit (never blocks frame-1 Ghost Demo!)
 if (!mastery.data.welcomed) elWelcome.classList.add('show');
 
-// Apply player's equipped 3D Dart Set onto the Left-Door Dart Rack right at startup!
+// Apply player's equipped 3D Dart Set onto Darts-in-Hand & refresh 3D Brass Pub Records Plaque right at startup!
 applyDartSetToRack(state.dartSet);
+if (typeof renderHandDarts === 'function') renderHandDarts();
+if (typeof renderRecordsPlaque === 'function') renderRecordsPlaque();
 
-// Start immediately with Oche Ghost demonstrating Level 1 (Doubles) and cycling through the career!
-const GHOST_ROTATION = ['LEVEL_1', 'LEVEL_2', 'LEVEL_3', 'LEVEL_4', 'LEVEL_5', 'LEVEL_6'];
+// Start immediately with Oche Ghost demonstrating Level 1 (Doubles) and cycling through checkouts & career!
+const GHOST_ROTATION = ['LEVEL_1', 'LEVEL_5', 'LEVEL_6', 'LEVEL_2', 'LEVEL_3', 'LEVEL_4'];
 let ghostRotIdx = 0;
 state.stage = 'LEVEL_1';
 loadChallenge(nextChallengeForStage('LEVEL_1'));
@@ -11252,8 +11889,8 @@ function animate(now) {
   lastTime = now;
   clockSec += dt;
 
-  // Pause inactivity return, hint-on-pause, and countdown clock cleanly while Briefing, Drawer or Level-Up Banner is open!
-  const pausedByOverlay = state.briefingOpen || elDrawerBg.classList.contains('open') || elLevelUp.classList.contains('show');
+  // Pause inactivity return, hint-on-pause, and countdown clock cleanly while Theater, Briefing, Drawer or Level-Up Banner is open!
+  const pausedByOverlay = state.theaterOpen || state.briefingOpen || elDrawerBg.classList.contains('open') || elLevelUp.classList.contains('show');
 
   // Return seamlessly to Oche Ghost after 18s of player inactivity (never interrupt an active 501 match, Spectator mode, Pub Trial, or live Aim Gauge!)
   if (!state.ghostMode && !state.inTrial && !aimGauge.active && !state.spectator.active && state.stage !== 'LEVEL_7' && !touchAim.active && !pausedByOverlay && now - state.lastPlayerInputAt > 18000) {

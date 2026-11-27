@@ -30,6 +30,7 @@ import {
   DEFAULT_MATH_FLOW,
   computeMathFlowModifier,
   applyMathFlowToConfig,
+  computeMatchDartNerves,
 } from '../src/engine.mjs';
 import { BOT_PROFILES, simulateBot501Visit } from '../src/bots.mjs';
 
@@ -352,6 +353,62 @@ function printTable(title, rows) {
   }
 }
 
+function runNervesComparison({ trialsPerCell = 1200, seed = 20261127 } = {}) {
+  const rng = createSeededRng(seed);
+  const d16 = parseBedCode('D16');
+  const d16xy = bedToXY('D16');
+  const rows = [];
+  const scaleCfg = (base, nv) => {
+    const c = { ...base };
+    c.focusSpeed *= nv.speedMult; c.horizSpeed *= nv.speedMult; c.vertSpeed *= nv.speedMult;
+    c.focusSweet = clamp(c.focusSweet * nv.zoneMult, 0.06, 0.42);
+    c.horizSweet = clamp(c.horizSweet * nv.zoneMult, 0.06, 0.42);
+    c.vertSweet  = clamp(c.vertSweet  * nv.zoneMult, 0.06, 0.42);
+    c.focusAmber = clamp(c.focusAmber * nv.zoneMult, c.focusSweet + 0.1, 0.74);
+    c.horizAmber = clamp(c.horizAmber * nv.zoneMult, c.horizSweet + 0.1, 0.74);
+    c.vertAmber  = clamp(c.vertAmber  * nv.zoneMult, c.vertSweet  + 0.1, 0.74);
+    return c;
+  };
+  const simDouble = (prof, diff, nv) => {
+    const cfg = scaleCfg(multiAxisConfigForDifficulty(diff), nv);
+    let hits = 0, outsideWire = 0;
+    for (let i = 0; i < trialsPerCell; i++) {
+      const trF = (rng() * 2 - 1) * nv.tremorAmp;
+      const trH = (rng() * 2 - 1) * nv.tremorAmp;
+      const trV = (rng() * 2 - 1) * nv.tremorAmp;
+      const focusU = clamp(Math.sin(cfg.focusSpeed * sampleNormal(rng) * prof.sigmaTimeSec) + trF, -1, 1);
+      const focusRes = evaluateFocusBeat(focusU, cfg);
+      const horizU = clamp(Math.sin(cfg.horizSpeed * focusRes.speedMult * sampleNormal(rng) * prof.sigmaTimeSec) + trH, -1, 1);
+      const vertV  = clamp(Math.sin(cfg.vertSpeed  * focusRes.speedMult * sampleNormal(rng) * prof.sigmaTimeSec) + trV, -1, 1);
+      const ja = rng() * Math.PI * 2;
+      const jr = rng() * focusRes.jitter;
+      const dr = computeMultiAxisDrop(d16, d16xy, focusRes, horizU, vertV, cfg, true, { x: Math.cos(ja) * jr, y: Math.sin(ja) * jr });
+      if (dr.bed.code === 'D16') hits++;
+      else if (dr.bed.code === 'MISS') outsideWire++;
+    }
+    return { hitPct: +((hits / trialsPerCell) * 100).toFixed(1), missWirePct: +((outsideWire / trialsPerCell) * 100).toFixed(1) };
+  };
+  const nvHot = computeMatchDartNerves({ isMatchDart: true, rivalLow: true, missedPrevDouble: false, calmed: false });
+  const nvCalm = computeMatchDartNerves({ isMatchDart: true, rivalLow: true, missedPrevDouble: false, calmed: true });
+  for (const diff of ['relaxed', 'league', 'pro']) {
+    for (const prof of HUMAN_PROFILES) {
+      const hot = simDouble(prof, diff, nvHot);
+      const calm = simDouble(prof, diff, nvCalm);
+      rows.push({
+        diff,
+        playerLabel: prof.label,
+        hotBpm: nvHot.bpm,
+        hotHitPct: hot.hitPct,
+        hotWirePct: hot.missWirePct,
+        calmBpm: nvCalm.bpm,
+        calmHitPct: calm.hitPct,
+        liftPct: +(calm.hitPct - hot.hitPct).toFixed(1),
+      });
+    }
+  }
+  return rows;
+}
+
 const args = process.argv.slice(2);
 const outIdx = args.indexOf('--out');
 const outPath = outIdx >= 0 ? args[outIdx + 1] : null;
@@ -359,14 +416,21 @@ const outPath = outIdx >= 0 ? args[outIdx + 1] : null;
 const t0 = Date.now();
 const rows3 = runSuite({ legsPerCell: 200, seed: 20261125, aimMode: '3beat' }); // 3,600 legs!
 const rows2 = runSuite({ legsPerCell: 200, seed: 20261126, aimMode: '2beat' }); // 3,600 legs!
+const nervesRows = runNervesComparison({ trialsPerCell: 1200, seed: 20261127 });
 const elapsed = Date.now() - t0;
 
 console.log(`# Oche Light — Human-Timing Multi-Axis + Maths-Flow 501 Simulation (7,200 Total Legs in ${elapsed}ms)`);
 printTable('3-Beat Oche Rhythm (3,600 Legs · 200/cell)', rows3);
 printTable('2-Beat Line+Ht Comparison (3,600 Legs · 200/cell)', rows2);
+console.log('\n## Match-Dart Game Nerves vs. Deep Breath [S] Composure (D16 Winning Double · 1,200 throws/cell)');
+console.log('| Diff | Human | Nervous (112 BPM) D16 % | Outside Wire % | Composed (74 BPM) D16 % | Deep Breath Lift |');
+console.log('| --- | --- | ---: | ---: | ---: | ---: |');
+for (const r of nervesRows) {
+  console.log(`| ${r.diff} | ${r.playerLabel} | ${r.hotHitPct}% | ${r.hotWirePct}% | ${r.calmHitPct}% | +${r.liftPct} pp |`);
+}
 
 if (outPath) {
   const full = path.resolve(ROOT, outPath);
-  fs.writeFileSync(full, JSON.stringify({ generatedAt: new Date().toISOString(), rows3, rows2 }, null, 2));
+  fs.writeFileSync(full, JSON.stringify({ generatedAt: new Date().toISOString(), rows3, rows2, nervesRows }, null, 2));
   console.log(`\nSaved human sim report to ${full}`);
 }

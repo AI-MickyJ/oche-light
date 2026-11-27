@@ -174,9 +174,11 @@ async function run() {
   assert(d6Lbls.right === 'OUT' && d6Lbls.high === '13' && d6Lbls.low === '10', `D6 axis labels mismatch: ${JSON.stringify(d6Lbls)}`);
   assert(engine.subtractionMethodInfo(301, 85).badge === 'Method: -100, +?', 'Round-100 subtraction method badge');
   assert(engine.subtractionMethodInfo(301, 57).badge === 'Method: -60, +?', 'Round-up tens subtraction method badge');
-  for (const domId of ['aim-row-focus', 'aim-row-horiz', 'aim-row-vert', 'aim-f-needle', 'aim-h-needle', 'aim-v-needle', 'aim-flow-pill', 'aim-low-lbl', 'aim-high-lbl', 'aim-tac-row', 'aim-lie-pill', 'aim-bias-btn', 'chalk-assist', 'chalk-assist-btn', 'np-eq', 'np-val', 'np-autocall-btn', 'intro-skip-btn', 'briefing-demo']) {
+  for (const domId of ['aim-row-focus', 'aim-row-horiz', 'aim-row-vert', 'aim-f-needle', 'aim-h-needle', 'aim-v-needle', 'aim-flow-pill', 'aim-low-lbl', 'aim-high-lbl', 'aim-tac-row', 'aim-lie-pill', 'aim-bias-btn', 'aim-nerve-pill', 'aim-breath-btn', 'mfinish-pill', 'hand-darts', 'hand-darts-fan', 'trev-theater', 'theater-trev-img', 'theater-go', 'theater-skip', 'w-tour', 'chalk-assist', 'chalk-assist-btn', 'np-eq', 'np-val', 'np-autocall-btn', 'intro-skip-btn', 'briefing-demo']) {
     assert(idxHtml.includes(`id="${domId}"`), `Missing DOM element #${domId}`);
   }
+  assert(!idxHtml.includes('dartRackGroup') && !idxHtml.includes('matRound') && !idxHtml.includes('matSquare'), 'Weird glowing cabinet dart rack & unreadable white beer mats should remain removed');
+  assert(idxHtml.includes('recordsPlaqueMesh') && idxHtml.includes('function renderHandDarts'), 'Missing 3D brass records plaque or Darts-in-Hand widget');
   // Unified Chalk Chain (Croupier Snap, Chunk Hop) & Universal Slip Recovery assertions
   const snap1 = engine.buildCroupierSnap(['S20', 'T19', 'S19']);
   assert(snap1.total === 96 && snap1.pairSum === 76 && snap1.oddIdx === 0, 'Croupier Snap groups T19+S19=76 + S20');
@@ -302,15 +304,32 @@ async function run() {
   assert(ad.mult > tightMult, `Adaptive eases +15% after 2 misses (mult=${ad.mult} > ${tightMult})`);
   assert(engine.computeAdaptiveMultiplier({ mult: 0.1 }) === 0.72 && engine.computeAdaptiveMultiplier({ mult: 9.0 }) === 2.10, 'Adaptive mult clamps cleanly to [0.72, 2.10]');
 
-  // Cockney Trev & Bev Chatterbox Studio Voice Pack verification
+  // Phase 8: Match-Dart Game Nerves & Full-Screen Coach Trev Lesson Theater assertions
+  const nvIdle = engine.computeMatchDartNerves({});
+  assert(!nvIdle.active && nvIdle.bpm === 72 && nvIdle.tremorAmp === 0, 'Non-match dart has zero nerves');
+  const nvHot = engine.computeMatchDartNerves({ isMatchDart: true, rivalLow: true, missedPrevDouble: true, calmed: false });
+  assert(nvHot.active && nvHot.bpm >= 112 && nvHot.tremorAmp > 0.08 && nvHot.speedMult > 1.1 && nvHot.zoneMult < 0.9, `Match-dart nerves scale cleanly (got ${JSON.stringify(nvHot)})`);
+  const nvCalm = engine.computeMatchDartNerves({ isMatchDart: true, rivalLow: true, missedPrevDouble: true, calmed: true });
+  assert(nvCalm.active && nvCalm.calmed && nvCalm.bpm === 74 && nvCalm.tremorAmp <= 0.015 && nvCalm.speedMult < 1.0 && nvCalm.zoneMult > 1.0, `Deep Breath calms nerves cleanly (got ${JSON.stringify(nvCalm)})`);
+  for (const lid of ['MENU_TOUR', 'LEVEL_1', 'LEVEL_2', 'LEVEL_3', 'LEVEL_4', 'LEVEL_5', 'LEVEL_6', 'LEVEL_7']) {
+    const les = engine.TREV_THEATER_LESSONS[lid];
+    assert(les && les.title && les.quote && les.purpose && les.clipId && Array.isArray(les.cards) && les.cards.length >= 2, `TREV_THEATER_LESSONS[${lid}] complete`);
+  }
+  assert(idxHtml.includes('over seven quid a pop in London'), 'London pint inflation line updated to >£7');
+
+  // Cockney Trev & Bev Chatterbox Studio Voice Pack verification (v3 genuine East London voice!)
   const voiceDir = path.join(ROOT, 'assets', 'trev_voice');
   const manifestPath = path.join(voiceDir, 'manifest.json');
   assert(fs.existsSync(manifestPath), 'Missing assets/trev_voice/manifest.json');
   const voiceManifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
   const clipIds = Object.keys(voiceManifest.clips || {});
-  assert(clipIds.length >= 111, `Expected >=111 Cockney Trev & Bev studio clips (got ${clipIds.length})`);
+  assert(clipIds.length >= 121, `Expected >=121 genuine Cockney Trev & Bev studio clips (got ${clipIds.length})`);
   const bevClips = clipIds.filter(id => id.startsWith('bev_'));
   assert(bevClips.length === 14, `Expected 14 Bev banter clips (got ${bevClips.length})`);
+  const phase8Clips = ['intro_menu_tour', 'lesson_l1', 'lesson_l2', 'lesson_l3', 'lesson_l4', 'lesson_l5', 'lesson_l6', 'lesson_l7', 'nerve_breathe', 'nerve_wire_gasp'];
+  for (const p8 of phase8Clips) {
+    assert(p8 in voiceManifest.clips, `Missing Phase 8 clip "${p8}" in manifest.json`);
+  }
   for (const cid of clipIds) {
     const fp = path.join(voiceDir, `${cid}.mp3`);
     assert(fs.existsSync(fp) && fs.statSync(fp).size > 2000, `Missing or tiny MP3 clip: ${cid}.mp3`);
@@ -318,15 +337,16 @@ async function run() {
   const usedClipIds = [
     ...[...rawScript.matchAll(/clipId:\s*['"]([a-z0-9_]+)['"]/g)].map(m => m[1]),
     ...[...rawScript.matchAll(/cid:\s*['"]([a-z0-9_]+)['"]/g)].map(m => m[1]),
+    ...Object.values(engine.TREV_THEATER_LESSONS).map(l => l.clipId),
   ];
-  assert(usedClipIds.length >= 90, `Expected >=90 wired clipId/deck references in index.html (got ${usedClipIds.length})`);
+  assert(usedClipIds.length >= 100, `Expected >=100 wired clipId/deck/theater references (got ${usedClipIds.length})`);
   for (const bc of bevClips) {
     assert(usedClipIds.includes(bc), `Bev clip "${bc}" is not wired in index.html!`);
   }
   for (const cid of usedClipIds) {
-    assert(cid in voiceManifest.clips, `index.html references missing clipId "${cid}"`);
+    assert(cid in voiceManifest.clips, `index.html/engine references missing clipId "${cid}"`);
   }
-  console.log(`PASS: Cockney Trev & Bev Chatterbox voice pack (${clipIds.length} MP3 clips incl. 14 Bev clips, ${usedClipIds.length} wired call sites & deck items)`);
+  console.log(`PASS: Real East London Cockney Trev & Bev voice pack (${clipIds.length} MP3 clips incl. 14 Bev + 10 Phase 8 Theater/Nerves clips, ${usedClipIds.length} wired refs)`);
   console.log('PASS: Curriculum, auditor, 3-beat physics, subtraction method, maths-flow, FDI outer-ring & Phase 6 mechanics assertions (all green)');
 
   // 4. Smoke test all 5 physics bots

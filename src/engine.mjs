@@ -2053,3 +2053,163 @@ export function computeAdaptiveMultiplier(stageStats = null) {
   return Math.max(0.72, Math.min(2.10, stageStats.mult));
 }
 
+/* ============================================================================
+   MATCH-DART GAME NERVES & DEEP-BREATH COMPOSURE MECHANIC
+   ============================================================================ */
+
+export function computeMatchDartNerves({
+  isMatchDart = false,
+  is180Dart = false,
+  rivalLow = false,
+  missedPrevDouble = false,
+  calmed = false,
+} = {}) {
+  if (!isMatchDart && !is180Dart) {
+    return { active: false, level: 0, bpm: 72, tremorAmp: 0, speedMult: 1.0, zoneMult: 1.0, label: '', calmed: false };
+  }
+  const level = Math.min(1.0, 0.55 + (rivalLow ? 0.25 : 0) + (missedPrevDouble ? 0.20 : 0));
+  if (calmed) {
+    return {
+      active: true,
+      level: 0.15,
+      bpm: 74,
+      tremorAmp: 0.010,
+      speedMult: 0.94,
+      zoneMult: 1.06,
+      label: '💚 COMPOSED · 74 BPM',
+      calmed: true,
+    };
+  }
+  const bpm = Math.round(86 + level * 32);
+  return {
+    active: true,
+    level,
+    bpm,
+    tremorAmp: +(0.052 + level * 0.056).toFixed(3),
+    speedMult: +(1.0 + level * 0.14).toFixed(3),
+    zoneMult: +(1.0 - level * 0.12).toFixed(3),
+    label: is180Dart ? `❤️ ${bpm} BPM · 180 DART!` : rivalLow ? `❤️ ${bpm} BPM · RIVAL SITTING!` : `❤️ ${bpm} BPM · MATCH DART!`,
+    calmed: false,
+  };
+}
+
+// Structured Full-Screen Coach Trev Lesson Theater Scripts (Menu Tour + Levels 1–7 Explainers & Reminders)
+export const TREV_THEATER_LESSONS = {
+  MENU_TOUR: {
+    id: 'MENU_TOUR',
+    tag: 'WELCOME TO THE OCHE · QUICK TOUR',
+    title: 'How to Find Your Way Around the Boozer',
+    clipId: 'intro_menu_tour',
+    quote: "Awright mate! I'm Trev — click the Levels button top-left anytime to pick your round, try Arcade Drills, or jump straight into 501. Light 8 brass pips to unlock each Pub Trial — or hit Skip if you already know the ropes!",
+    purpose: 'Pick any level or drill freely — jump straight to what you want to practise, or climb the 7-level ladder in order.',
+    cards: [
+      { icon: '📋', title: 'Levels Menu (Top-Left)', body: 'Click the dropdown top-left to switch between Career (Levels 1–7), Arcade Drills (Weak-Spot Warm-Up, 170 Down, FDI Pairs, 5-Treble Audits), and Match Night (501).' },
+      { icon: '🟡', title: '8 Brass Pips → Pub Trial', body: 'Every clean shot lights 1 of 8 pips across 3 progressive Acts (Foundation → Pub Twist → Cold Mix). Fill all 8 to unlock the timed Pub Trial & Brass Stars (★)!' },
+      { icon: '🎯', title: 'Fair Auto Pace & Dart Sets', body: 'Auto Pace adapts to your speed (with untimed LEARN grace reps on new beds). Earn Brass Stars to unlock custom 3D dart sets — including Bev\'s Leopard-Print flights at 8★!' },
+    ],
+    ctaLabel: 'Got It — Start Playing! →',
+    skipLabel: 'Already Played — Skip Tour',
+  },
+  LEVEL_1: {
+    id: 'LEVEL_1',
+    tag: 'LEVEL 1 · DOUBLES MASTERY',
+    title: 'Doubles Both Ways: Board ↔ Number Box',
+    clipId: 'lesson_l1',
+    quote: "Gotta know your doubles in your sleep, mate! I'll test you BOTH ways — finding the double on the board AND typing what a lit double is worth in the number box. Keep an eye on 20 down to 15!",
+    purpose: 'Wire instant (<2s) two-way recall for every double (D1–D20 & Bull = 50) plus inside-miss Halving Escapes so you never stall on a finish.',
+    cards: [
+      { icon: '🎯', title: 'Test 1 · Find It on the Board', body: 'I call a total score (e.g. 32 or 36) → click the matching outer double ring (D16 or D18) straight on the 3D dartboard!' },
+      { icon: '🔢', title: 'Test 2 · Enter It in the Number Box', body: 'A double bed glows on the board (e.g. D14) → type its total (28) in the 3×4 Number Box on the right! Auto-Call snaps exact right answers in automatically.' },
+      { icon: '✂️', title: 'Halving Escapes & 1.4× Match Odds', body: 'Sectors 20–15 & wire neighbors appear 1.4× more often. Inside miss on D16? Halve cleanly: D16 → D8 → D4 → D2 → D1 (D20 → D10 → D5)!' },
+    ],
+    ctaLabel: 'Step Up to Level 1 →',
+    skipLabel: 'Skip Intro (I Know Doubles)',
+  },
+  LEVEL_2: {
+    id: 'LEVEL_2',
+    tag: 'LEVEL 2 · TREBLES MASTERY',
+    title: 'Trebles Both Ways: Board ↔ Number Box',
+    clipId: 'lesson_l2',
+    quote: "Trebles all round the clock, pal! Just like doubles, you'll be tested both ways — clicking the treble for a called score, OR entering a lit treble's total in the number box. Watch out for T14 = 42!",
+    purpose: 'Turn every treble (T1–T20) into instant reflex memory so 3-dart counting and 2-dart finishes happen without pausing to multiply.',
+    cards: [
+      { icon: '🎯', title: 'Test 1 · Find the Treble on the Board', body: 'I call a treble total (e.g. 57 or 51) → click the matching inner treble ring (T19 or T17) directly on the 3D board!' },
+      { icon: '🔢', title: 'Test 2 · Enter the Total in the Number Box', body: 'A treble glows on the board (e.g. T14) → type its value (42) into the 3×4 Number Box (keyboard digits or click keys)!' },
+      { icon: '⚡', title: 'Steps of 3 (Power Trebles)', body: 'Anchor the top six: T20=60, T19=57, T18=54, T17=51, T16=48, T15=45 (and T14=42, T13=39, T12=36). 20–15 & neighbors hit 1.4× more often!' },
+    ],
+    ctaLabel: 'Step Up to Level 2 →',
+    skipLabel: 'Skip Intro (I Know Trebles)',
+  },
+  LEVEL_3: {
+    id: 'LEVEL_3',
+    tag: 'LEVEL 3 · PURPOSE & LESSON REMINDER',
+    title: '3-Dart Adding Like a Pub Croupier',
+    clipId: 'lesson_l3',
+    quote: "Stop counting one by one like primary school, mate! Snap the two easy darts together first — like T20 + S20 = 80 — then slap the stray third dart on top!",
+    purpose: 'Count real 3-dart visits (20–15 scoring, stray 1/5/3/7 wire misses, Bull 50 & Outer Bull 25) in under 3 seconds without finger-counting.',
+    cards: [
+      { icon: '👀', title: 'Lesson: "What Do I Know?" Snap Pairs', body: 'Never add Dart 1 + Dart 2 + Dart 3. Snap 2 familiar darts first (e.g. T20+S20=80, T19+S19=76, T18+S18=72, T17+S17=68) — press [Tab] anytime to highlight the easy pair!' },
+      { icon: '🎯', title: 'Anchor Bull (50) & Outer Bull (25)', body: 'Spot Bull (50) or 25 first, pair clean tens (e.g. 25 + 15 = 40, or 50 + 20 = 70), then add the odd dart using nearest-10 rounding.' },
+    ],
+    ctaLabel: 'Got It — Count Some Visits! →',
+    skipLabel: 'Skip Lesson (Already Learnt)',
+  },
+  LEVEL_4: {
+    id: 'LEVEL_4',
+    tag: 'LEVEL 4 · PURPOSE & LESSON REMINDER',
+    title: '301 / 260 Throw, Chalk & Round-Hop Subtract',
+    clipId: 'lesson_l4',
+    quote: "Time to throw AND chalk the slate, pal! Don't wrestle with awkward subtractions in your head — knock a clean 100 or 60 off first, then chuck the spare back on!",
+    purpose: 'Combine real 3-Beat throwing, 3-dart visit counting, and fast chalkboard subtraction — while earning ⚡ IN FLOW aim boosts for quick maths.',
+    cards: [
+      { icon: '➖', title: 'Lesson: The −100, +? / −60, +? Round Hop', body: 'Example: 241 − 85 → knock 100 off first (141), you took 15 too much, so add +15 back → 156! Press [Tab] on the Number Box to practise the hop live!' },
+      { icon: '⚡', title: 'Maths Flow → Aim Ease + Bogey Watch', body: 'Fast clean chalking puts you ⚡ IN FLOW (+18% wider sweet spots on your 3-Beat aim bars). On 179–189 with 1 dart left, throw Teen Cover S(10+d) to dodge bogeys!' },
+    ],
+    ctaLabel: 'Step Up to the 301 Slate →',
+    skipLabel: 'Skip Lesson (Already Learnt)',
+  },
+  LEVEL_5: {
+    id: 'LEVEL_5',
+    tag: 'LEVEL 5 · PURPOSE & LESSON REMINDER',
+    title: 'Two-Dart Finishes & The 25 / 30 / 35 Rules',
+    clipId: 'lesson_l5',
+    quote: "This turns you into a lethal finisher from 110 down, mate! Remember your three golden sums — 60s add to 25, 70s add to 30, 80s add to 35 — no peeking at the scoreboard!",
+    purpose: 'Master every finish ≤110 without ever stopping to divide in your head, plus instant recovery when Sod\'s Law drops your treble into the big single.',
+    cards: [
+      { icon: '📐', title: 'Below-60 Favorite Double Tricks', body: 'D20: read off 40 (55→S15) · D16: last digit −2 (49→S17, cap 52) · D18: last digit +4 (48→S12, 42→S6). Pick your favorite double anytime in the menu!' },
+      { icon: '🟡', title: 'Golden 44 FDI Rules (No Peek!)', body: '60s (+70): T + D = 25 (miss = 50) · 70s: T + D = 30 (miss = 60, e.g. 75 = T15 D15!) · 80s (+90): T + D = 35 (miss = 70). On 1 dart left, bin the FDI → T10 Hub!' },
+    ],
+    ctaLabel: 'Step Up to 2-Dart Finishes →',
+    skipLabel: 'Skip Lesson (Already Learnt)',
+  },
+  LEVEL_6: {
+    id: 'LEVEL_6',
+    tag: 'LEVEL 6 · PURPOSE & LESSON REMINDER',
+    title: 'Ton-Plus Bridges (101–170), Traps & Bogeys',
+    clipId: 'lesson_l6',
+    quote: "Collapse three digits into a 2-dart finish in one snap, pal! Drop the leading 1, add +40 for T20 or +43 for T19 — dodge the splash traps on 101 to 109 and steer clear of bogeys!",
+    purpose: 'Navigate 101–170 checkouts, stray-wire danger audits, and 220s/260s/300s bogey covers like a seasoned league player.',
+    cards: [
+      { icon: '🌉', title: 'Lesson: Rule of 40 & Rule of 43 Bridges', body: 'Drop the leading 1! T20 → +40 (147 → 47+40 = 87 → T17 D18) · T19 → +43 (126 → 26+43 = 69 → T19 D6) · Two T19s = 114 (−14 trick).' },
+      { icon: '🛡️', title: '5-Treble Splash Traps & Bogey Covers', body: 'On 101–109 (3 darts), dodge dead stray-wire leaves (104→T19/T16, 107→T19, 106/109→T20 20/5 wire). Never leave 159/162/163/165/166/168/169 — and NEVER throw 25 on 228/268/308!' },
+    ],
+    ctaLabel: 'Step Up to Ton-Plus Finishes →',
+    skipLabel: 'Skip Lesson (Already Learnt)',
+  },
+  LEVEL_7: {
+    id: 'LEVEL_7',
+    tag: 'FINAL LEVEL 7 · CHAMPIONSHIP 501',
+    title: 'Full 501 Match, Board IQ & Match-Dart Nerves',
+    clipId: 'lesson_l7',
+    quote: "Match night at the oche, mate! Chalk your throws, mark your rival on the slate, hit Deep Breath [S] when the knees start knocking on a winning double — I'm grading every call!",
+    purpose: 'Put every arithmetic, checkout, and board-management lesson under real pub match pressure against 5 physics-driven bots (Single Leg or Best of 3).',
+    cards: [
+      { icon: '📝', title: 'Chalk, Mark Rival & Pre-Calc', body: 'Add your visit, subtract with round hops, mark your rival\'s 3 darts for ⚡ MARKER FLOW, and pre-calc 101–170 checkouts off the oche!' },
+      { icon: '🫁', title: 'Hold Your Nerve on Final Doubles', body: 'Going for a winning double or 180? Feel the heartbeat & hand tremor kick in — tap 🫁 Deep Breath [S] once per visit to exhale, drop your BPM, and pin the double!' },
+    ],
+    ctaLabel: 'Game On — Play 501! →',
+    skipLabel: 'Skip Briefing — Throw Now',
+  },
+};
+
+
